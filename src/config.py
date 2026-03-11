@@ -109,6 +109,30 @@ ESPN_LEAGUES = {
         "label": "Matchs amicaux", "emoji": "⚽",
         "channels_fr": ["TF1", "M6", "France 2"],
     },
+    "world-cup": {
+        "sport": "soccer", "league": "fifa.world",
+        "label": "Coupe du Monde", "emoji": "⚽",
+        "channels_fr": ["TF1", "M6", "beIN Sports"],
+    },
+    # Olympics
+    "jo-basket-m": {
+        "sport": "basketball", "league": "mens-olympics-basketball",
+        "label": "JO Basketball (H)", "emoji": "🏅",
+        "channels_fr": ["France 2", "France 3", "Eurosport"],
+        "season_window": (7, 15, 8, 15),
+    },
+    "jo-basket-w": {
+        "sport": "basketball", "league": "womens-olympics-basketball",
+        "label": "JO Basketball (F)", "emoji": "🏅",
+        "channels_fr": ["France 2", "France 3", "Eurosport"],
+        "season_window": (7, 15, 8, 15),
+    },
+    "jo-foot": {
+        "sport": "soccer", "league": "fifa.olympics",
+        "label": "JO Football (H)", "emoji": "🏅",
+        "channels_fr": ["France 2", "France 3", "Eurosport"],
+        "season_window": (7, 15, 8, 15),
+    },
     # Rugby
     "top-14": {
         "sport": "rugby", "league": "270559",
@@ -129,6 +153,11 @@ ESPN_LEAGUES = {
         "sport": "rugby", "league": "180659",
         "label": "Six Nations", "emoji": "🏉",
         "channels_fr": ["France 2"],
+    },
+    "rugby-world-cup": {
+        "sport": "rugby", "league": "164205",
+        "label": "Coupe du Monde Rugby", "emoji": "🏉",
+        "channels_fr": ["TF1", "France 2"],
     },
     # Tennis Grand Slams
     "australian-open": {

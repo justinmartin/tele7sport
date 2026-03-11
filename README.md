@@ -30,9 +30,10 @@ Un bot qui envoie une newsletter hebdomadaire avec le programme de vos équipes 
 | 🏀 Basketball | NBA, Betclic Élite |
 | 🏈 Football US | NFL, NCAA Football (AP Top 25) |
 | 🏀 College | NCAA Basketball (AP Top 25) |
-| ⚽ Football | Ligue 1, Ligue 2, Champions League, Europa League, Conference League, Coupe de France, Ligue des Nations, Qualif. Coupe du Monde, Euro, Amicaux |
-| 🏉 Rugby | Top 14, Champions Cup, Challenge Cup, Six Nations |
+| ⚽ Football | Ligue 1, Ligue 2, Champions League, Europa League, Conference League, Coupe de France, Ligue des Nations, Qualif. Coupe du Monde, **Coupe du Monde**, Euro, Amicaux |
+| 🏉 Rugby | Top 14, Champions Cup, Challenge Cup, Six Nations, **Coupe du Monde** |
 | 🎾 Tennis | Open d'Australie, Roland-Garros, Wimbledon, US Open (demi-finales + finales) |
+| 🏅 Jeux Olympiques | Basketball (H/F), Football (H) |
 | 🚴 Cyclisme | Grands Tours, Monuments, courses World Tour |
 | 🚵 VTT | Coupe du Monde DH, Coupe du Monde Enduro |
 
@@ -188,10 +189,15 @@ Le classement est récupéré dynamiquement chaque semaine via l'API ESPN, donc 
 | `world-cup-qual` | Qualif. Coupe du Monde |
 | `euro` | Euro |
 | `equipe-de-france-foot` | Matchs amicaux France |
+| `world-cup` | Coupe du Monde FIFA |
+| `jo-basket-m` | JO Basketball (Hommes) |
+| `jo-basket-w` | JO Basketball (Femmes) |
+| `jo-foot` | JO Football (Hommes) |
 | `top-14` | Top 14 |
 | `champions-cup-rugby` | Champions Cup Rugby |
 | `challenge-cup-rugby` | Challenge Cup Rugby |
 | `six-nations` | Six Nations |
+| `rugby-world-cup` | Coupe du Monde Rugby |
 | `australian-open` | Open d'Australie |
 | `roland-garros` | Roland-Garros |
 | `wimbledon` | Wimbledon |

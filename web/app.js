@@ -19,11 +19,17 @@ const LEAGUES = [
     { id: "world-cup-qual", emoji: "⚽", label: "Qualif. Coupe du Monde", sport: "soccer", espnLeague: "fifa.worldq.uefa", hasTeams: true },
     { id: "euro", emoji: "⚽", label: "Euro", sport: "soccer", espnLeague: "uefa.euro", hasTeams: true },
     { id: "equipe-de-france-foot", emoji: "⚽", label: "Équipe de France", detail: "Matchs amicaux", sport: "soccer", espnLeague: "fifa.friendly", hasTeams: true },
+    { id: "world-cup", emoji: "⚽", label: "Coupe du Monde", sport: "soccer", espnLeague: "fifa.world", hasTeams: true, hasPhases: true },
+    // Olympics
+    { id: "jo-basket-m", emoji: "🏅", label: "JO Basketball", detail: "Hommes", sport: "basketball", espnLeague: "mens-olympics-basketball", hasTeams: true, hasPhases: true },
+    { id: "jo-basket-w", emoji: "🏅", label: "JO Basketball", detail: "Femmes", sport: "basketball", espnLeague: "womens-olympics-basketball", hasTeams: true, hasPhases: true },
+    { id: "jo-foot", emoji: "🏅", label: "JO Football", detail: "Hommes", sport: "soccer", espnLeague: "fifa.olympics", hasTeams: true, hasPhases: true },
     // Rugby
     { id: "top-14", emoji: "🏉", label: "Top 14", detail: "France", sport: "rugby", espnLeague: "270559", hasTeams: true },
     { id: "champions-cup-rugby", emoji: "🏉", label: "Champions Cup", detail: "Rugby", sport: "rugby", espnLeague: "271937", hasTeams: true },
     { id: "challenge-cup-rugby", emoji: "🏉", label: "Challenge Cup", detail: "Rugby", sport: "rugby", espnLeague: "272073", hasTeams: true },
     { id: "six-nations", emoji: "🏉", label: "Six Nations", sport: "rugby", espnLeague: "180659", hasTeams: true },
+    { id: "rugby-world-cup", emoji: "🏉", label: "Coupe du Monde", detail: "Rugby", sport: "rugby", espnLeague: "164205", hasTeams: true, hasPhases: true },
     // Tennis
     { id: "australian-open", emoji: "🎾", label: "Open d'Australie", hasTeams: false, hasRounds: true },
     { id: "roland-garros", emoji: "🎾", label: "Roland-Garros", hasTeams: false, hasRounds: true },
@@ -67,7 +73,7 @@ function renderLeagues() {
             <span class="label">
                 ${l.label}
                 ${l.detail ? `<small>${l.detail}</small>` : ""}
-                ${l.hasApRanked ? `<small style="color:#f7b731;">AP Top 25</small>` : ""}
+                ${l.hasApRanked ? `<small>AP Top 25</small>` : ""}
             </span>
         </div>
     `).join("");

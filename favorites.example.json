@@ -84,6 +84,28 @@
     {
       "league": "ncaam",
       "teams": "AP_RANKED"
+    },
+    {
+      "league": "world-cup",
+      "teams": ["France"],
+      "phases_only": ["QUARTERFINAL", "SEMIFINAL", "FINAL"]
+    },
+    {
+      "league": "rugby-world-cup",
+      "teams": ["France"],
+      "phases_only": ["QUARTERFINAL", "SEMIFINAL", "FINAL"]
+    },
+    {
+      "league": "jo-basket-m",
+      "phases_only": ["QUARTERFINAL", "SEMIFINAL", "FINAL"]
+    },
+    {
+      "league": "jo-basket-w",
+      "phases_only": ["QUARTERFINAL", "SEMIFINAL", "FINAL"]
+    },
+    {
+      "league": "jo-foot",
+      "phases_only": ["QUARTERFINAL", "SEMIFINAL", "FINAL"]
     }
   ],
   "channels": [
