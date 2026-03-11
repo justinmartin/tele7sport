@@ -11,6 +11,8 @@ jobs:
   newsletter:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout repository
@@ -47,6 +49,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: newsletter
+          name: newsletter-${{ github.run_id }}
           path: out/
           retention-days: 30
