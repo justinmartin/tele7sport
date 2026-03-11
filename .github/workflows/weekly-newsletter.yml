@@ -17,13 +17,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: ''
-
       - name: Install dependencies
-        run: pip install --no-cache-dir -r requirements.txt
+        run: pip install --no-cache-dir --break-system-packages -r requirements.txt
 
       - name: Create favorites.json from secret (if set)
         run: |
@@ -42,7 +37,7 @@ jobs:
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           TIMEZONE: ${{ secrets.TIMEZONE }}
           LANGUAGE: ${{ secrets.LANGUAGE }}
-        run: python run.py once
+        run: python3 run.py once
 
       - name: Upload newsletter artifact
         if: always()
