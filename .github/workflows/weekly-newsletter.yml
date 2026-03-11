@@ -1,0 +1,53 @@
+name: 📺 Télé7Sport Weekly Newsletter
+
+on:
+  schedule:
+    # Every Monday at 7:00 AM UTC = 8:00 AM CET / 9:00 AM CEST
+    - cron: '0 7 * * 1'
+
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  newsletter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install --no-cache-dir -r requirements.txt
+
+      - name: Create favorites.json from secret (if set)
+        run: |
+          if [ -n "$FAVORITES_JSON" ]; then
+            echo "$FAVORITES_JSON" > favorites.json
+          else
+            cp favorites.example.json favorites.json
+          fi
+        env:
+          FAVORITES_JSON: ${{ secrets.FAVORITES_JSON }}
+
+      - name: Generate and send newsletter
+        env:
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          TIMEZONE: ${{ secrets.TIMEZONE || 'Europe/Paris' }}
+          LANGUAGE: ${{ secrets.LANGUAGE || 'fr' }}
+        run: python run.py once
+
+      - name: Upload newsletter artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newsletter
+          path: out/
+          retention-days: 30

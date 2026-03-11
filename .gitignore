@@ -1,0 +1,28 @@
+# Environment
+.env
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+venv/
+.venv/
+
+# Output
+out/
+
+# User config (personal favorites)
+favorites.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel/
+
+# Node
+node_modules/

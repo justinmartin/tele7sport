@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Télé7Sport — Configurateur</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📺</text></svg>">
+</head>
+<body>
+    <div class="hero">
+        <h1>📺 Télé7Sport</h1>
+        <p class="tagline">Votre programme sportif personnalisé, chaque semaine dans votre boîte mail.</p>
+        <a href="#configurator" class="cta-btn">Configurer mes favoris</a>
+        <a href="https://github.com/justinmartin/tele7sport" class="cta-btn secondary" target="_blank">Voir sur GitHub</a>
+    </div>
+
+    <div class="container" id="configurator">
+        <!-- Step 1: Choose leagues & teams -->
+        <section class="step">
+            <h2><span class="step-num">1</span> Choisir vos sports & équipes</h2>
+            <p class="step-desc">Sélectionnez les ligues que vous voulez suivre, puis ajoutez vos équipes favorites.</p>
+
+            <div id="leagues-grid" class="leagues-grid"></div>
+
+            <!-- Team search (shown when a league is selected) -->
+            <div id="team-search-panel" class="team-search-panel hidden">
+                <h3 id="team-search-title">Rechercher une équipe</h3>
+                <div class="search-bar">
+                    <input type="text" id="team-search-input" placeholder="Ex: Lakers, Montpellier, France..." autocomplete="off">
+                    <button id="team-search-btn" onclick="searchTeams()">Rechercher</button>
+                </div>
+                <div id="team-results" class="team-results"></div>
+                <div id="selected-teams" class="selected-teams"></div>
+            </div>
+        </section>
+
+        <!-- Step 2: Channels -->
+        <section class="step">
+            <h2><span class="step-num">2</span> Vos chaînes TV</h2>
+            <p class="step-desc">Cochez les chaînes auxquelles vous avez accès. La newsletter vous dira où regarder chaque match.</p>
+            <div id="channels-grid" class="channels-grid"></div>
+        </section>
+
+        <!-- Step 3: Export -->
+        <section class="step">
+            <h2><span class="step-num">3</span> Exporter votre configuration</h2>
+            <p class="step-desc">Copiez ce JSON dans votre <code>favorites.json</code> ou configurez-le comme secret GitHub.</p>
+            <div class="export-area">
+                <textarea id="config-output" readonly rows="20"></textarea>
+                <div class="export-buttons">
+                    <button onclick="copyConfig()">📋 Copier</button>
+                    <button onclick="downloadConfig()">💾 Télécharger favorites.json</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Setup guide -->
+        <section class="step">
+            <h2><span class="step-num">4</span> Déployer votre newsletter</h2>
+            <div class="guide">
+                <h3>🚀 Installation rapide</h3>
+                <ol>
+                    <li><strong>Forkez</strong> le repo <a href="https://github.com/justinmartin/tele7sport" target="_blank">tele7sport</a></li>
+                    <li>Collez votre <code>favorites.json</code> à la racine du projet</li>
+                    <li>Allez dans <strong>Settings → Secrets → Actions</strong> et ajoutez :
+                        <ul>
+                            <li><code>EMAIL_USER</code> — votre adresse Gmail</li>
+                            <li><code>EMAIL_PASSWORD</code> — votre <a href="https://myaccount.google.com/apppasswords" target="_blank">mot de passe d'application</a></li>
+                            <li><code>EMAIL_TO</code> — adresse destinataire</li>
+                            <li><code>FAVORITES_JSON</code> — (optionnel) le contenu JSON directement</li>
+                        </ul>
+                    </li>
+                    <li>Activez <strong>GitHub Actions</strong> dans l'onglet Actions</li>
+                    <li>La newsletter arrive chaque lundi matin ! 📬</li>
+                </ol>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>Fait avec ❤️ par <a href="https://github.com/justinmartin" target="_blank">Justin Martin</a></p>
+        <p class="small">Données fournies par ESPN, ProCyclingStats, UCI. Aucune API payante requise.</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

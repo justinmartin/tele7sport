@@ -1,0 +1,106 @@
+{
+  "favorites": [
+    {
+      "league": "nba",
+      "teams": ["Lakers", "Spurs"]
+    },
+    {
+      "league": "nfl",
+      "teams": ["Chiefs", "Bears", "Ravens"]
+    },
+    {
+      "league": "ligue-2",
+      "teams": ["Montpellier"]
+    },
+    {
+      "league": "champions-league",
+      "phases_only": ["QUARTERFINAL", "SEMIFINAL", "FINAL"]
+    },
+    {
+      "league": "nations-league",
+      "teams": ["France"]
+    },
+    {
+      "league": "world-cup-qual",
+      "teams": ["France"]
+    },
+    {
+      "league": "euro",
+      "teams": ["France"]
+    },
+    {
+      "league": "equipe-de-france-foot",
+      "teams": ["France"]
+    },
+    {
+      "league": "top-14",
+      "teams": ["Toulouse", "Montpellier"]
+    },
+    {
+      "league": "champions-cup-rugby",
+      "teams": ["Toulouse", "Montpellier"]
+    },
+    {
+      "league": "challenge-cup-rugby",
+      "teams": ["Toulouse", "Montpellier"]
+    },
+    {
+      "league": "six-nations",
+      "teams": ["France"]
+    },
+    {
+      "league": "australian-open",
+      "rounds_only": ["SEMIFINAL", "FINAL"]
+    },
+    {
+      "league": "roland-garros",
+      "rounds_only": ["SEMIFINAL", "FINAL"]
+    },
+    {
+      "league": "wimbledon",
+      "rounds_only": ["SEMIFINAL", "FINAL"]
+    },
+    {
+      "league": "us-open",
+      "rounds_only": ["SEMIFINAL", "FINAL"]
+    },
+    {
+      "league": "cycling-road"
+    },
+    {
+      "league": "cycling-mtb-dh"
+    },
+    {
+      "league": "cycling-mtb-enduro"
+    },
+    {
+      "league": "betclic-elite",
+      "teams": ["France"]
+    },
+    {
+      "league": "ncaaf",
+      "teams": "AP_RANKED"
+    },
+    {
+      "league": "ncaam",
+      "teams": "AP_RANKED"
+    }
+  ],
+  "channels": [
+    "TF1",
+    "France 2",
+    "France 3",
+    "France 4",
+    "M6",
+    "L'Équipe",
+    "Canal+",
+    "Canal+ Sport",
+    "Canal+ Foot",
+    "Canal+ Premier League",
+    "beIN Sports 1",
+    "beIN Sports 2",
+    "beIN Sports 3",
+    "Eurosport 1",
+    "Eurosport 2"
+  ]
+}
