@@ -11,11 +11,11 @@ logger = logging.getLogger("tele7sport")
 def send_mail(html_body: str, subject: str):
     """Send the newsletter via SMTP."""
     if not EMAIL_USER or not EMAIL_PASSWORD:
-        raise ValueError(
-            "SMTP not configured. Set EMAIL_USER and EMAIL_PASSWORD in .env or GitHub Secrets."
-        )
+        logger.warning("⚠️  SMTP not configured (EMAIL_USER/EMAIL_PASSWORD missing). Email not sent.")
+        return
     if not EMAIL_TO:
-        raise ValueError("EMAIL_TO not configured.")
+        logger.warning("⚠️  EMAIL_TO not configured. Email not sent.")
+        return
 
     recipients = [e.strip() for e in EMAIL_TO.split(",") if e.strip()]
 
