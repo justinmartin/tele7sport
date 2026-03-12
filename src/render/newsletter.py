@@ -167,9 +167,14 @@ def render_newsletter(
                         ch_key = f"{ev.league_id}:{ev.home_team}:{ev.away_team}"
                         channels = channels_map.get(ch_key, [])
                         html_parts.append(_render_schedule_event(ev, channels))
-                # Cycling for this day
+                # Cycling for this day — grouped by league
+                cycling_by_league: Dict[str, List[CyclingEvent]] = {}
                 for ce in day_cycling:
-                    html_parts.append(_render_cycling_event(ce, current))
+                    cycling_by_league.setdefault(f"{ce.emoji} {ce.league_label}", []).append(ce)
+                for league_hdr, ces in cycling_by_league.items():
+                    html_parts.append(_league_header(league_hdr, ""))
+                    for ce in ces:
+                        html_parts.append(_render_cycling_event(ce, current))
             current += timedelta(days=1)
     html_parts.append(_section_close())
 
@@ -353,16 +358,7 @@ body {{
     color: #f87171;
     background: #1f0a0a;
 }}
-.cycling-card {{
-    background: #141a14;
-    border-left: 3px solid #4ade80;
-    padding: 10px 14px;
-    margin: 6px 0;
-    border-radius: 0 6px 6px 0;
-    font-size: 13px;
-    color: #cccccc;
-}}
-.cycling-card strong {{ color: #4ade80; }}
+
 .footer {{
     background: #0d0d0d;
     padding: 20px 24px;
@@ -482,10 +478,12 @@ def _render_result_event(ev: SportEvent) -> str:
 def _render_cycling_event(ce: CyclingEvent, current_day: date) -> str:
     ch_html = " ".join(_channel_badge(ch) for ch in ce.channels_fr)
     loc = f" — {ce.location}" if ce.location else ""
+    label = f"{ce.name}{loc}"
     return (
-        f'<div class="cycling-card">'
-        f'<strong>{ce.emoji} {ce.name}</strong>{loc}<br>'
-        f'{ch_html}'
+        f'<div class="event-row">'
+        f'<span class="event-time">—</span>'
+        f'<span class="event-teams">{ce.emoji} {label}</span>'
+        f'<span class="event-channels">{ch_html}</span>'
         f'</div>'
     )
 
@@ -494,11 +492,13 @@ def _render_cycling_multi_day(ce: CyclingEvent) -> str:
     ch_html = " ".join(_channel_badge(ch) for ch in ce.channels_fr)
     loc = f" — {ce.location}" if ce.location else ""
     dates = f"{_fmt_date(ce.start_date)} → {_fmt_date(ce.end_date)}"
+    label = f"{ce.name}{loc}"
     return (
-        f'<div class="cycling-card">'
-        f'<strong>{ce.emoji} {ce.name}</strong>{loc}<br>'
-        f'<span style="font-size:12px;color:#555;">{dates}</span><br>'
-        f'{ch_html}'
+        f'<div class="event-row">'
+        f'<span class="event-time">—</span>'
+        f'<span class="event-teams">{ce.emoji} {label}'
+        f'<br><span style="font-size:11px;color:#555;">{dates}</span></span>'
+        f'<span class="event-channels">{ch_html}</span>'
         f'</div>'
     )
 
