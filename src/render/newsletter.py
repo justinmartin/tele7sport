@@ -392,7 +392,7 @@ def _html_footer(footer_text: str) -> str:
     <div class="footer">
         <p>{footer_text}</p>
         <p style="margin-top:6px;">
-            <a href="https://github.com/justinmartin/tele7sport">Télé7Sport</a> — open source
+            <a href="https://tele7sport.vercel.app">Modifier mes préférences</a> · <a href="https://github.com/justinmartin/tele7sport">GitHub</a>
         </p>
     </div>
 </div>
