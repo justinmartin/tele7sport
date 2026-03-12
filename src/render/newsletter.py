@@ -39,7 +39,7 @@ def _channel_badge(channel: str) -> str:
         "canal+": "#1A1A1A", "canal+ sport": "#1A1A1A", "canal+ foot": "#1A1A1A",
         "canal+ premier league": "#1A1A1A",
         "bein sports": "#6B2EAF", "bein sports 1": "#6B2EAF",
-        "bein sports 2": "#6B2EAF", "bein sports 3": "#6B2EAF",
+        "bein sports 2": "#6B2EAF", "bein sports 3": "#6B2EAF", "bein sports max": "#6B2EAF",
         "eurosport": "#003F87", "eurosport 1": "#003F87", "eurosport 2": "#003F87",
         "tf1": "#E4002B", "france 2": "#1E5AA8", "france 3": "#005BBB",
         "france 4": "#6B2D7B", "france tv": "#1E5AA8",

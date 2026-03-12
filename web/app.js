@@ -41,18 +41,22 @@ const LEAGUES = [
     { id: "cycling-mtb-enduro", emoji: "🚵", label: "VTT Enduro", detail: "Coupe du Monde", hasTeams: false },
 ];
 
-const CHANNELS = [
-    "TF1", "France 2", "France 3", "France 4", "M6", "L'Équipe",
-    "Canal+", "Canal+ Sport", "Canal+ Foot", "Canal+ Premier League",
-    "beIN Sports 1", "beIN Sports 2", "beIN Sports 3",
-    "Eurosport 1", "Eurosport 2",
-    "DAZN", "RMC Sport", "Prime Video", "Red Bull TV",
+const CHANNEL_BOUQUETS = [
+    { id: "free",      label: "Chaînes gratuites", detail: "TF1, France TV, M6, L'Équipe",            channels: ["TF1", "France 2", "France 3", "France 4", "M6", "L'Équipe"] },
+    { id: "canal",     label: "Canal+",            detail: "Canal+, Sport, Foot, Premier League",    channels: ["Canal+", "Canal+ Sport", "Canal+ Foot", "Canal+ Premier League"] },
+    { id: "bein",      label: "beIN Sports",        detail: "beIN Sports 1, 2, 3 & MAX",              channels: ["beIN Sports 1", "beIN Sports 2", "beIN Sports 3", "beIN Sports MAX"] },
+    { id: "eurosport", label: "Eurosport",          detail: "Eurosport 1 & 2",                       channels: ["Eurosport 1", "Eurosport 2"] },
+    { id: "dazn",      label: "DAZN",               detail: null,                                    channels: ["DAZN"] },
+    { id: "rmc",       label: "RMC Sport",          detail: null,                                    channels: ["RMC Sport"] },
+    { id: "prime",     label: "Prime Video",        detail: null,                                    channels: ["Prime Video"] },
+    { id: "redbull",   label: "Red Bull TV",        detail: null,                                    channels: ["Red Bull TV"] },
+    { id: "nba",       label: "NBA League Pass",    detail: null,                                    channels: ["NBA League Pass"] },
 ];
 
 // ── State ───────────────────────────────────────────────────
 const state = {
     selectedLeagues: new Map(), // leagueId → { teams: [...], phases_only?: [...], rounds_only?: [...] }
-    selectedChannels: new Set(),
+    selectedBouquets: new Set(),
     currentSearchLeague: null,
 };
 
@@ -245,18 +249,20 @@ function renderSelectedTeams() {
 // ── Channels ────────────────────────────────────────────────
 function renderChannels() {
     const grid = document.getElementById("channels-grid");
-    grid.innerHTML = CHANNELS.map(ch => `
-        <div class="channel-card" data-channel="${ch}" onclick="toggleChannel('${escapeHtml(ch)}')">${ch}</div>
+    grid.innerHTML = CHANNEL_BOUQUETS.map(b => `
+        <div class="channel-card" data-channel="${b.id}" onclick="toggleBouquet('${b.id}')">
+            <span class="blabel">${b.label}${b.detail ? `<small>${b.detail}</small>` : ""}</span>
+        </div>
     `).join("");
 }
 
-function toggleChannel(ch) {
-    const card = document.querySelector(`.channel-card[data-channel="${ch}"]`);
-    if (state.selectedChannels.has(ch)) {
-        state.selectedChannels.delete(ch);
+function toggleBouquet(id) {
+    const card = document.querySelector(`.channel-card[data-channel="${id}"]`);
+    if (state.selectedBouquets.has(id)) {
+        state.selectedBouquets.delete(id);
         card.classList.remove("selected");
     } else {
-        state.selectedChannels.add(ch);
+        state.selectedBouquets.add(id);
         card.classList.add("selected");
     }
     updateConfig();
@@ -265,9 +271,14 @@ function toggleChannel(ch) {
 
 // ── Config generation ───────────────────────────────────────
 function updateConfig() {
+    const channels = [];
+    for (const id of state.selectedBouquets) {
+        const b = CHANNEL_BOUQUETS.find(x => x.id === id);
+        if (b) channels.push(...b.channels);
+    }
     const config = {
         favorites: [],
-        channels: [...state.selectedChannels],
+        channels,
     };
 
     for (const [leagueId, entry] of state.selectedLeagues) {
@@ -310,7 +321,7 @@ function downloadConfig() {
 function saveToLocalStorage() {
     const data = {
         leagues: Object.fromEntries(state.selectedLeagues),
-        channels: [...state.selectedChannels],
+        bouquets: [...state.selectedBouquets],
     };
     localStorage.setItem("tele7sport_config", JSON.stringify(data));
 }
@@ -328,13 +339,17 @@ function loadFromLocalStorage() {
                 if (card) card.classList.add("selected");
             }
         }
-        // Restore channels
-        if (data.channels) {
-            for (const ch of data.channels) {
-                state.selectedChannels.add(ch);
-                const card = document.querySelector(`.channel-card[data-channel="${ch}"]`);
-                if (card) card.classList.add("selected");
-            }
+        // Restore bouquets (new format) or migrate from old channel format
+        const bouquetIds = data.bouquets || (
+            data.channels ? CHANNEL_BOUQUETS
+                .filter(b => b.channels.some(ch => data.channels.includes(ch)))
+                .map(b => b.id)
+            : []
+        );
+        for (const id of bouquetIds) {
+            state.selectedBouquets.add(id);
+            const card = document.querySelector(`.channel-card[data-channel="${id}"]`);
+            if (card) card.classList.add("selected");
         }
         renderSelectedTeams();
         updateConfig();

@@ -287,9 +287,7 @@ code {
     padding: 10px 14px;
     cursor: pointer;
     transition: all 0.15s;
-    font-size: 0.85em;
-    font-weight: 500;
-    text-align: center;
+    text-align: left;
     color: var(--text-secondary);
     user-select: none;
 }
@@ -299,6 +297,22 @@ code {
     border-color: var(--accent);
     color: var(--accent);
 }
+.channel-card .blabel {
+    display: block;
+    font-weight: 600;
+    font-size: 0.85em;
+    line-height: 1.35;
+    color: var(--text);
+}
+.channel-card .blabel small {
+    display: block;
+    font-weight: 400;
+    color: var(--text-muted);
+    font-size: 0.82em;
+    margin-top: 1px;
+}
+.channel-card.selected .blabel { color: var(--accent); }
+.channel-card.selected .blabel small { color: var(--accent); opacity: 0.6; }
 
 /* ── Export ────────────────────────────────────────────── */
 .export-area textarea {
