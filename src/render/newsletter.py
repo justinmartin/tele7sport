@@ -214,23 +214,24 @@ def _html_head(title: str, week_label: str) -> str:
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
 body {{
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: #f5f5f5;
-    color: #1a1a1a;
+    background: #0d0d0d;
+    color: #e0e0e0;
     line-height: 1.6;
 }}
 .container {{
     max-width: 640px;
     margin: 20px auto;
-    background: #ffffff;
+    background: #111111;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.6);
 }}
 .header {{
-    background: #1a1a2e;
-    color: white;
+    background: #0d0d0d;
+    color: #ffffff;
     padding: 32px 28px;
     text-align: center;
+    border-bottom: 3px solid #e74c3c;
 }}
 .header h1 {{
     font-size: 22px;
@@ -238,70 +239,72 @@ body {{
     letter-spacing: 1.5px;
     margin-bottom: 6px;
     text-transform: uppercase;
+    color: #ffffff;
 }}
 .header h1 .accent {{
     color: #e74c3c;
 }}
 .header .subtitle {{
     font-size: 13px;
-    opacity: 0.7;
+    color: #888;
     font-weight: 400;
     letter-spacing: 0.3px;
 }}
 .content {{
     padding: 0;
+    background: #111111;
 }}
 .section {{
     padding: 20px 24px;
+    background: #111111;
 }}
 .section + .section {{
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid #222222;
 }}
 .section-title {{
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     color: #e74c3c;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.2px;
     padding-bottom: 10px;
     margin-bottom: 14px;
-    border-bottom: 2px solid #e74c3c;
+    border-bottom: 1px solid #2a2a2a;
 }}
 .day-header {{
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
-    color: #1a1a2e;
+    color: #ffffff;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 1px;
     padding: 10px 0 6px 0;
-    margin-top: 16px;
-    border-bottom: 1px solid #eee;
+    margin-top: 18px;
+    border-bottom: 1px solid #222222;
 }}
 .day-header:first-child {{
     margin-top: 0;
 }}
 .league-header {{
     font-size: 12px;
-    font-weight: 700;
-    color: #666;
+    font-weight: 600;
+    color: #666666;
     padding: 8px 0 4px 0;
 }}
 .league-round {{
     font-weight: 400;
-    color: #999;
+    color: #444444;
     margin-left: 6px;
 }}
 .event-row {{
     display: flex;
     align-items: center;
-    padding: 8px 12px;
+    padding: 9px 12px;
     margin: 3px 0;
-    background: #fafafa;
-    border-radius: 8px;
+    background: #1a1a1a;
+    border-radius: 6px;
     font-size: 13px;
     border-left: 3px solid #e74c3c;
 }}
-.event-row:hover {{ background: #f5f5f5; }}
 .event-time {{
     min-width: 48px;
     font-weight: 700;
@@ -312,14 +315,14 @@ body {{
 .event-teams {{
     flex: 1;
     font-weight: 500;
-    color: #333;
+    color: #e0e0e0;
 }}
 .event-channels {{
     text-align: right;
 }}
 .highlight-card {{
-    background: #fff9e6;
-    border: 1px solid #ffd43b;
+    background: #1e1500;
+    border: 1px solid #463200;
     border-radius: 8px;
     padding: 12px 16px;
     margin: 6px 0;
@@ -327,43 +330,46 @@ body {{
 .highlight-card .hl-teams {{
     font-size: 14px;
     font-weight: 700;
-    color: #1a1a2e;
+    color: #ffffff;
 }}
 .highlight-card .hl-info {{
     font-size: 12px;
-    color: #888;
+    color: #777;
     margin-top: 4px;
 }}
 .result-row {{
-    padding: 5px 12px;
+    padding: 6px 12px;
     margin: 2px 0;
     font-size: 13px;
     border-radius: 6px;
+    background: #1a1a1a;
+    color: #aaaaaa;
 }}
 .result-win {{
-    color: #16a34a;
-    background: #f0fdf4;
+    color: #4ade80;
+    background: #0a1f0f;
 }}
 .result-lose {{
-    color: #dc2626;
-    background: #fef2f2;
+    color: #f87171;
+    background: #1f0a0a;
 }}
 .cycling-card {{
-    background: #f0fdf4;
-    border-left: 3px solid #16a34a;
+    background: #141a14;
+    border-left: 3px solid #4ade80;
     padding: 10px 14px;
     margin: 6px 0;
-    border-radius: 0 8px 8px 0;
+    border-radius: 0 6px 6px 0;
     font-size: 13px;
+    color: #cccccc;
 }}
-.cycling-card strong {{ color: #16a34a; }}
+.cycling-card strong {{ color: #4ade80; }}
 .footer {{
-    background: #fafafa;
+    background: #0d0d0d;
     padding: 20px 24px;
     text-align: center;
     font-size: 11px;
-    color: #aaa;
-    border-top: 1px solid #f0f0f0;
+    color: #444444;
+    border-top: 1px solid #1e1e1e;
 }}
 .footer a {{ color: #e74c3c; text-decoration: none; }}
 @media (max-width:600px) {{
@@ -376,7 +382,7 @@ body {{
 }}
 </style>
 </head>
-<body>
+<body style="background:#0d0d0d;">
 <div class="container">
     <div class="header">
         <h1>📺 <span class="accent">Télé7</span>Sport</h1>
