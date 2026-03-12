@@ -8,10 +8,10 @@ load_dotenv()
 logger = logging.getLogger("tele7sport")
 
 # ── Env vars ────────────────────────────────────────────────
-TIMEZONE = os.getenv("TIMEZONE", "Europe/Paris")
-LANGUAGE = os.getenv("LANGUAGE", "fr")
-NEWSLETTER_DAY = os.getenv("NEWSLETTER_DAY", "monday")
-NEWSLETTER_TIME = os.getenv("NEWSLETTER_TIME", "09:00")
+TIMEZONE = os.getenv("TIMEZONE") or "Europe/Paris"
+LANGUAGE = os.getenv("LANGUAGE") or "fr"
+NEWSLETTER_DAY = os.getenv("NEWSLETTER_DAY") or "monday"
+NEWSLETTER_TIME = os.getenv("NEWSLETTER_TIME") or "09:00"
 
 MAIL_SMTP_HOST = os.getenv("MAIL_SMTP_HOST", "smtp.gmail.com")
 MAIL_SMTP_PORT = int(os.getenv("MAIL_SMTP_PORT", 587))
