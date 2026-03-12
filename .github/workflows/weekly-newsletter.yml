@@ -23,10 +23,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: |
-          python3 --version
-          pip install --no-cache-dir -r requirements.txt
-          pip list
+        run: pip install --no-cache-dir -r requirements.txt
 
       - name: Create favorites.json from secret (if set)
         run: |
@@ -45,9 +42,7 @@ jobs:
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           TIMEZONE: ${{ secrets.TIMEZONE }}
           LANGUAGE: ${{ secrets.LANGUAGE }}
-        run: |
-          python3 -c "import requests; import bs4; import pytz; print('All imports OK')"
-          python3 run.py once
+        run: python3 run.py once
 
       - name: Upload newsletter artifact
         if: always()

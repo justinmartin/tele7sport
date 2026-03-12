@@ -48,10 +48,10 @@ def _channel_badge(channel: str) -> str:
         "red bull tv": "#DB0A40", "nba league pass": "#1D428A",
         "nfl game pass": "#013369", "prime video": "#00A8E1",
     }
-    color = colors.get(channel.lower(), "#555555")
+    color = colors.get(channel.lower(), "#6b7280")
     return (
         f'<span style="display:inline-block;background:{color};color:white;'
-        f'padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;'
+        f'padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;'
         f'margin-left:4px;vertical-align:middle;letter-spacing:0.3px;">'
         f'{channel}</span>'
     )
@@ -214,145 +214,163 @@ def _html_head(title: str, week_label: str) -> str:
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
 body {{
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: #f0f2f5;
-    color: #1a1a2e;
+    background: #f5f5f5;
+    color: #1a1a1a;
     line-height: 1.6;
 }}
 .container {{
-    max-width: 680px;
-    margin: 0 auto;
+    max-width: 640px;
+    margin: 20px auto;
     background: #ffffff;
-    border-radius: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
 }}
 .header {{
-    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    background: #1a1a2e;
     color: white;
-    padding: 35px 25px;
+    padding: 32px 28px;
     text-align: center;
 }}
 .header h1 {{
-    font-size: 26px;
+    font-size: 22px;
     font-weight: 800;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     margin-bottom: 6px;
     text-transform: uppercase;
 }}
+.header h1 .accent {{
+    color: #e74c3c;
+}}
 .header .subtitle {{
-    font-size: 14px;
-    opacity: 0.85;
+    font-size: 13px;
+    opacity: 0.7;
     font-weight: 400;
+    letter-spacing: 0.3px;
 }}
 .content {{
-    padding: 0 20px 20px 20px;
+    padding: 0;
 }}
 .section {{
-    margin: 25px 0;
+    padding: 20px 24px;
+}}
+.section + .section {{
+    border-top: 1px solid #f0f0f0;
 }}
 .section-title {{
-    font-size: 16px;
-    font-weight: 800;
-    color: #302b63;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 12px 0 8px 0;
-    border-bottom: 3px solid #302b63;
-    margin-bottom: 15px;
-}}
-.day-header {{
-    background: linear-gradient(90deg, #302b63, #24243e);
-    color: white;
-    padding: 10px 15px;
-    font-size: 14px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin: 18px 0 10px 0;
-    border-radius: 6px;
-}}
-.league-header {{
     font-size: 13px;
     font-weight: 700;
-    color: #444;
-    padding: 6px 0 4px 10px;
-    border-left: 3px solid #667eea;
-    margin: 10px 0 6px 0;
+    color: #e74c3c;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+    border-bottom: 2px solid #e74c3c;
+}}
+.day-header {{
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 10px 0 6px 0;
+    margin-top: 16px;
+    border-bottom: 1px solid #eee;
+}}
+.day-header:first-child {{
+    margin-top: 0;
+}}
+.league-header {{
+    font-size: 12px;
+    font-weight: 700;
+    color: #666;
+    padding: 8px 0 4px 0;
 }}
 .league-round {{
-    font-size: 11px;
     font-weight: 400;
-    color: #888;
-    margin-left: 8px;
+    color: #999;
+    margin-left: 6px;
 }}
 .event-row {{
     display: flex;
     align-items: center;
     padding: 8px 12px;
     margin: 3px 0;
-    background: #fafbff;
-    border-radius: 6px;
+    background: #fafafa;
+    border-radius: 8px;
     font-size: 13px;
+    border-left: 3px solid #e74c3c;
 }}
-.event-row:hover {{ background: #f0f4ff; }}
+.event-row:hover {{ background: #f5f5f5; }}
 .event-time {{
-    min-width: 50px;
+    min-width: 48px;
     font-weight: 700;
-    color: #302b63;
+    color: #e74c3c;
     font-size: 13px;
+    font-variant-numeric: tabular-nums;
 }}
 .event-teams {{
     flex: 1;
     font-weight: 500;
+    color: #333;
 }}
 .event-channels {{
     text-align: right;
 }}
 .highlight-card {{
-    background: linear-gradient(135deg, #fff8e1 0%, #fffde7 100%);
-    border: 1px solid #ffd54f;
+    background: #fff9e6;
+    border: 1px solid #ffd43b;
     border-radius: 8px;
     padding: 12px 16px;
-    margin: 8px 0;
+    margin: 6px 0;
 }}
 .highlight-card .hl-teams {{
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     color: #1a1a2e;
 }}
 .highlight-card .hl-info {{
     font-size: 12px;
-    color: #666;
+    color: #888;
     margin-top: 4px;
 }}
 .result-row {{
-    padding: 6px 12px;
+    padding: 5px 12px;
     margin: 2px 0;
     font-size: 13px;
-    border-radius: 4px;
+    border-radius: 6px;
 }}
-.result-win {{ color: #2e7d32; }}
-.result-lose {{ color: #c62828; }}
+.result-win {{
+    color: #16a34a;
+    background: #f0fdf4;
+}}
+.result-lose {{
+    color: #dc2626;
+    background: #fef2f2;
+}}
 .cycling-card {{
-    background: #f3f8f3;
-    border-left: 4px solid #43a047;
+    background: #f0fdf4;
+    border-left: 3px solid #16a34a;
     padding: 10px 14px;
     margin: 6px 0;
-    border-radius: 0 6px 6px 0;
+    border-radius: 0 8px 8px 0;
     font-size: 13px;
 }}
-.cycling-card strong {{ color: #2e7d32; }}
+.cycling-card strong {{ color: #16a34a; }}
 .footer {{
-    background: #f8f9fa;
-    padding: 18px 20px;
+    background: #fafafa;
+    padding: 20px 24px;
     text-align: center;
     font-size: 11px;
-    color: #999;
-    border-top: 1px solid #e8e8e8;
+    color: #aaa;
+    border-top: 1px solid #f0f0f0;
 }}
-.footer a {{ color: #667eea; text-decoration: none; }}
+.footer a {{ color: #e74c3c; text-decoration: none; }}
 @media (max-width:600px) {{
-    .header {{ padding: 25px 15px; }}
-    .header h1 {{ font-size: 20px; }}
-    .content {{ padding: 0 12px 12px 12px; }}
+    .container {{ margin: 0; border-radius: 0; }}
+    .header {{ padding: 24px 16px; }}
+    .header h1 {{ font-size: 18px; }}
+    .section {{ padding: 16px; }}
     .event-row {{ flex-wrap: wrap; }}
     .event-channels {{ width: 100%; text-align: left; margin-top: 4px; }}
 }}
@@ -361,7 +379,7 @@ body {{
 <body>
 <div class="container">
     <div class="header">
-        <h1>📺 {title}</h1>
+        <h1>📺 <span class="accent">Télé7</span>Sport</h1>
         <div class="subtitle">{week_label}</div>
     </div>
     <div class="content">
@@ -372,9 +390,9 @@ def _html_footer(footer_text: str) -> str:
     return f"""
     </div>
     <div class="footer">
-        <p>🤖 {footer_text}</p>
+        <p>{footer_text}</p>
         <p style="margin-top:6px;">
-            <a href="https://github.com/justinmartin/tele7sport">Télé7Sport sur GitHub</a>
+            <a href="https://github.com/justinmartin/tele7sport">Télé7Sport</a> — open source
         </p>
     </div>
 </div>
