@@ -15,7 +15,7 @@ Un bot qui envoie une newsletter hebdomadaire avec le programme de vos équipes 
 ## ✨ Fonctionnalités
 
 - 📅 **Programme jour par jour** — Vos matchs de la semaine, triés par jour et par sport
-- 📺 **Chaînes TV** — Où regarder chaque match (Canal+, beIN, Eurosport, TF1…)
+- 📺 **Chaînes TV** — Où regarder chaque match (Canal+, beIN, Eurosport, TF1, Prime Video…)
 - ⭐ **Grandes rencontres** — Détection automatique des finales, demi-finales, playoffs
 - 📊 **Résultats** — Récap des résultats de la semaine passée
 - 🚴 **Multi-sport** — NBA, NFL, NCAAF, NCAAM, Ligue 1/2, Champions League, Top 14, Six Nations, Tennis Grand Chelem, Cyclisme, VTT…
@@ -31,10 +31,10 @@ Un bot qui envoie une newsletter hebdomadaire avec le programme de vos équipes 
 | 🏈 Football US | NFL, NCAA Football (AP Top 25) |
 | 🏀 College | NCAA Basketball (AP Top 25) |
 | ⚽ Football | Ligue 1, Ligue 2, Champions League, Europa League, Conference League, Coupe de France, Ligue des Nations, Qualif. Coupe du Monde, **Coupe du Monde**, Euro, Amicaux |
-| 🏉 Rugby | Top 14, Champions Cup, Challenge Cup, Six Nations, **Coupe du Monde** |
+| 🏉 Rugby | Top 14 (demi-finales + finale), Champions Cup, Challenge Cup, Six Nations, **Coupe du Monde** |
 | 🎾 Tennis | Open d'Australie, Roland-Garros, Wimbledon, US Open (demi-finales + finales) |
 | 🏅 Jeux Olympiques | Basketball (H/F), Football (H) |
-| 🚴 Cyclisme | Grands Tours, Monuments, courses World Tour |
+| 🚴 Cyclisme | Grands Tours, Monuments, courses World Tour, Tour de France détaillé |
 | 🚵 VTT | Coupe du Monde DH, Coupe du Monde Enduro |
 
 ## 📬 Exemple de newsletter
@@ -124,7 +124,7 @@ Ce fichier définit vos sports, équipes et chaînes. Utilisez le [configurateur
   "favorites": [
     {
       "league": "nba",
-      "teams": ["Lakers", "Spurs"]
+      "teams": []
     },
     {
       "league": "ncaaf",
@@ -139,11 +139,22 @@ Ce fichier définit vos sports, équipes et chaînes. Utilisez le [configurateur
       "rounds_only": ["SEMIFINAL", "FINAL"]
     },
     {
+      "league": "top-14",
+      "teams": ["Toulouse", "Montpellier"],
+      "phases_only": ["SEMIFINAL", "FINAL"]
+    },
+    {
       "league": "cycling-road"
+    },
+    {
+      "league": "cycling-mtb-dh"
+    },
+    {
+      "league": "cycling-mtb-enduro"
     }
   ],
   "channels": [
-    "Canal+", "beIN Sports 1", "Eurosport 1", "TF1"
+    "Canal+", "Prime Video", "beIN Sports 1", "Eurosport 1", "TF1"
   ]
 }
 ```

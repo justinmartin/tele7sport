@@ -29,6 +29,8 @@ class CyclingEvent:
     category: str  # "road", "mtb-dh", "mtb-enduro"
     channels_fr: List[str] = field(default_factory=list)
     url: str = ""
+    details: str = ""
+    start_time: str = "09:00"
 
 
 # ── Major cycling calendar (static fallback) ────────────────
@@ -40,7 +42,18 @@ MAJOR_EVENTS_2025_2026 = [
     {"name": "Paris-Roubaix", "location": "France", "start": "2026-04-12", "end": "2026-04-12", "category": "road"},
     {"name": "Liège-Bastogne-Liège", "location": "Belgique", "start": "2026-04-26", "end": "2026-04-26", "category": "road"},
     {"name": "Giro d'Italia", "location": "Italie", "start": "2026-05-09", "end": "2026-05-31", "category": "road"},
-    {"name": "Tour de France", "location": "France", "start": "2026-07-04", "end": "2026-07-26", "category": "road"},
+    {
+        "name": "Tour de France",
+        "location": "France",
+        "start": "2026-07-04",
+        "end": "2026-07-26",
+        "category": "road",
+        "details": (
+            "Grand Départ à Barcelone. 21 étapes: 7 plates, 4 accidentées, 8 de montagne, "
+            "1 contre-la-montre par équipes, 1 contre-la-montre individuel et 2 jours de repos. "
+            "Arrivées au sommet à Gavarnie-Gèdre, Plateau de Solaison, Orcières-Merlette et Alpe d’Huez (2 fois)."
+        ),
+    },
     {"name": "Vuelta a España", "location": "Espagne", "start": "2026-08-22", "end": "2026-09-13", "category": "road"},
     {"name": "Championnats du Monde Route UCI", "location": "TBD", "start": "2026-09-20", "end": "2026-09-27", "category": "road"},
     {"name": "Il Lombardia", "location": "Italie", "start": "2026-10-10", "end": "2026-10-10", "category": "road"},
@@ -137,6 +150,8 @@ def get_cycling_events(
                 end_date=ev_end,
                 category=target_category,
                 channels_fr=cfg["channels_fr"],
+                details=ev.get("details", ""),
+                start_time=ev.get("start_time", "09:00"),
             ))
 
     # 2. For road cycling, try PCS scraping to catch races not in static calendar
@@ -155,6 +170,8 @@ def get_cycling_events(
                     end_date=race["date"],
                     category="road",
                     channels_fr=cfg["channels_fr"],
+                    details="",
+                    start_time="09:00",
                 ))
 
     return events

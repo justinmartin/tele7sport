@@ -2,7 +2,7 @@
   "favorites": [
     {
       "league": "nba",
-      "teams": ["Lakers", "Spurs"]
+      "teams": []
     },
     {
       "league": "nfl",
@@ -34,7 +34,8 @@
     },
     {
       "league": "top-14",
-      "teams": ["Toulouse", "Montpellier"]
+      "teams": ["Toulouse", "Montpellier"],
+      "phases_only": ["SEMIFINAL", "FINAL"]
     },
     {
       "league": "champions-cup-rugby",
@@ -66,6 +67,12 @@
     },
     {
       "league": "cycling-road"
+    },
+    {
+      "league": "cycling-mtb-dh"
+    },
+    {
+      "league": "cycling-mtb-enduro"
     },
     {
       "league": "cycling-mtb-dh"
@@ -119,6 +126,7 @@
     "Canal+ Sport",
     "Canal+ Foot",
     "Canal+ Premier League",
+    "Prime Video",
     "beIN Sports 1",
     "beIN Sports 2",
     "beIN Sports 3",

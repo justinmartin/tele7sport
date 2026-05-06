@@ -25,7 +25,7 @@ const LEAGUES = [
     { id: "jo-basket-w", emoji: "🏅", label: "JO Basketball", detail: "Femmes", sport: "basketball", espnLeague: "womens-olympics-basketball", hasTeams: true, hasPhases: true },
     { id: "jo-foot", emoji: "🏅", label: "JO Football", detail: "Hommes", sport: "soccer", espnLeague: "fifa.olympics", hasTeams: true, hasPhases: true },
     // Rugby
-    { id: "top-14", emoji: "🏉", label: "Top 14", detail: "France", sport: "rugby", espnLeague: "270559", hasTeams: true },
+    { id: "top-14", emoji: "🏉", label: "Top 14", detail: "France", sport: "rugby", espnLeague: "270559", hasTeams: true, hasPhases: true },
     { id: "champions-cup-rugby", emoji: "🏉", label: "Champions Cup", detail: "Rugby", sport: "rugby", espnLeague: "271937", hasTeams: true },
     { id: "challenge-cup-rugby", emoji: "🏉", label: "Challenge Cup", detail: "Rugby", sport: "rugby", espnLeague: "272073", hasTeams: true },
     { id: "six-nations", emoji: "🏉", label: "Six Nations", sport: "rugby", espnLeague: "180659", hasTeams: true },

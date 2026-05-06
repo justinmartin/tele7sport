@@ -479,10 +479,12 @@ def _render_cycling_event(ce: CyclingEvent, current_day: date) -> str:
     ch_html = " ".join(_channel_badge(ch) for ch in ce.channels_fr)
     loc = f" — {ce.location}" if ce.location else ""
     label = f"{ce.name}{loc}"
+    time_str = ce.start_time or "09:00"
+    details_html = f'<br><span style="font-size:11px;color:#555;">{ce.details}</span>' if ce.details else ""
     return (
         f'<div class="event-row">'
-        f'<span class="event-time">—</span>'
-        f'<span class="event-teams">{ce.emoji} {label}</span>'
+        f'<span class="event-time">{time_str}</span>'
+        f'<span class="event-teams">{ce.emoji} {label}{details_html}</span>'
         f'<span class="event-channels">{ch_html}</span>'
         f'</div>'
     )
@@ -493,11 +495,13 @@ def _render_cycling_multi_day(ce: CyclingEvent) -> str:
     loc = f" — {ce.location}" if ce.location else ""
     dates = f"{_fmt_date(ce.start_date)} → {_fmt_date(ce.end_date)}"
     label = f"{ce.name}{loc}"
+    time_str = ce.start_time or "09:00"
+    details_html = f'<br><span style="font-size:11px;color:#555;">{ce.details}</span>' if ce.details else ""
     return (
         f'<div class="event-row">'
-        f'<span class="event-time">—</span>'
+        f'<span class="event-time">{time_str}</span>'
         f'<span class="event-teams">{ce.emoji} {label}'
-        f'<br><span style="font-size:11px;color:#555;">{dates}</span></span>'
+        f'<br><span style="font-size:11px;color:#555;">{dates}</span>{details_html}</span>'
         f'<span class="event-channels">{ch_html}</span>'
         f'</div>'
     )
