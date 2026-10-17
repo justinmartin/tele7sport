@@ -1,5 +1,6 @@
 import logging
 import requests
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta
 from dataclasses import dataclass, field
 from typing import List, Optional
@@ -130,32 +131,41 @@ def _fetch_scoreboard(sport: str, league: str, target_date: date) -> list:
         return []
 
 
-def _fetch_scoreboard_range(sport: str, league: str, start: date, end: date) -> list:
-    """Fetch all events in a date range. Tries range query first, then single-date fallback."""
-    url = f"{BASE_URL}/{sport}/{league}/scoreboard"
-    # Try range query
-    date_str = f"{start.strftime('%Y%m%d')}-{end.strftime('%Y%m%d')}"
-    params = {"dates": date_str, "limit": 200}
+def _fetch_scoreboard_day(url: str, day: date) -> list:
     try:
-        resp = requests.get(url, params=params, timeout=10)
-        if resp.status_code == 200:
-            events = resp.json().get("events", [])
-            if events:
-                return events
-    except Exception as e:
-        logger.debug("ESPN range fetch failed %s/%s: %s", sport, league, e)
-
-    # Fallback: try just the current week's start date (today's scoreboard)
-    # This limits to 1 fallback request instead of day-by-day
-    try:
-        params = {"dates": start.strftime("%Y%m%d")}
-        resp = requests.get(url, params=params, timeout=8)
+        resp = requests.get(url, params={"dates": day.strftime("%Y%m%d"), "limit": 200}, timeout=10)
         if resp.status_code == 200:
             return resp.json().get("events", [])
     except Exception as e:
-        logger.warning("ESPN fallback fetch failed %s/%s: %s", sport, league, e)
-
+        logger.debug("ESPN day fetch failed %s %s: %s", url, day, e)
     return []
+
+
+def _fetch_scoreboard_range(sport: str, league: str, start: date, end: date) -> list:
+    """Fetch all events in a date range.
+
+    Tries ESPN's range query first (dates=YYYYMMDD-YYYYMMDD). Since autumn 2026 ESPN
+    answers it with 400 "Failed to get events endpoint", so we fall back to one request
+    per day, in parallel, deduplicated by event id."""
+    url = f"{BASE_URL}/{sport}/{league}/scoreboard"
+    params = {"dates": f"{start.strftime('%Y%m%d')}-{end.strftime('%Y%m%d')}", "limit": 200}
+    try:
+        resp = requests.get(url, params=params, timeout=10)
+        if resp.status_code == 200 and resp.json().get("events"):
+            return resp.json()["events"]
+    except Exception as e:
+        logger.debug("ESPN range fetch failed %s/%s: %s", sport, league, e)
+
+    days = [start + timedelta(days=i) for i in range((end - start).days + 1)]
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        per_day = list(pool.map(lambda d: _fetch_scoreboard_day(url, d), days))
+    seen, events = set(), []
+    for day_events in per_day:
+        for ev in day_events:
+            if ev.get("id") not in seen:
+                seen.add(ev.get("id"))
+                events.append(ev)
+    return events
 
 
 def _round_matches(round_info: str, allowed_rounds: List[str]) -> bool:
