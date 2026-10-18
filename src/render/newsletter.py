@@ -82,7 +82,7 @@ def _highlight_star() -> str:
 
 # ── Main render function ────────────────────────────────────
 
-APP_URL = "https://tele7sport.vercel.app/programme/"
+APP_URL = "https://tele7sport.vercel.app/"
 
 
 def _when_label(ev: SportEvent) -> str:
@@ -457,7 +457,7 @@ def _html_footer(footer_text: str) -> str:
     <div class="footer">
         <p>{footer_text}</p>
         <p style="margin-top:6px;">
-            <a href="https://tele7sport.vercel.app/programme/">📱 Ouvrir l'app</a> · <a href="https://tele7sport.vercel.app">Modifier mes préférences</a> · <a href="https://github.com/justinmartin/tele7sport">GitHub</a>
+            <a href="https://tele7sport.vercel.app/">📱 Ouvrir l'app</a> · <a href="https://tele7sport.vercel.app/">Modifier mes favoris</a> · <a href="https://github.com/justinmartin/tele7sport">GitHub</a>
         </p>
     </div>
 </div>

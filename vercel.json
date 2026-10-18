@@ -1,7 +1,8 @@
 {
   "buildCommand": null,
   "outputDirectory": "web",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+  "redirects": [
+    { "source": "/programme", "destination": "/", "permanent": true },
+    { "source": "/programme/(.*)", "destination": "/", "permanent": true }
   ]
 }

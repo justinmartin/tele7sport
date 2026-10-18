@@ -91,37 +91,75 @@ def _season_finished(season_label: str, today: date) -> bool:
     return end < today.year or (end == today.year and today.month >= 8)
 
 
+def _record(cfg: dict, e: dict) -> str:
+    wins, losses, ties = _stat(e, "wins", "gamesWon"), _stat(e, "losses", "gamesLost"), _stat(e, "ties", "gamesDrawn")
+    if cfg["sport"] in ("soccer", "rugby"):
+        return f"{wins or 0}V {ties or 0}N {losses or 0}D"
+    return f"{wins}-{losses}" + (f"-{ties}" if ties and ties != "0" else "")
+
+
+_table_cache: Dict[str, Optional[dict]] = {}
+
+
+def get_league_table(league_id: str, today: date) -> Optional[dict]:
+    """Table complète d'une compétition en cours :
+    {"season", "groups": [{"name", "entries": [{team_id, team, abbr, logo, rank, record, points, played}]}]}.
+    None si la saison est terminée, pas commencée ou sans classement."""
+    if league_id in _table_cache:
+        return _table_cache[league_id]
+    cfg = ESPN_LEAGUES.get(league_id)
+    data = _fetch_latest(cfg["sport"], cfg["league"], today) if cfg else None
+    table = None
+    if data:
+        groups = []
+        for group in _groups(data):
+            st = group["standings"]
+            season = str(st.get("seasonDisplayName") or "")
+            if _season_finished(season, today):
+                continue
+            entries = []
+            for e in st["entries"]:
+                team = e.get("team", {})
+                rank = _stat(e, "rank", "playoffSeed")
+                entries.append({
+                    "team_id": str(team.get("id", "")), "team": team.get("displayName", ""),
+                    "abbr": team.get("abbreviation", ""),
+                    "logo": ((team.get("logos") or [{}])[0].get("href", "")),
+                    "rank": int(rank) if rank and rank.isdigit() else None,
+                    "record": _record(cfg, e),
+                    "points": _stat(e, "points") if cfg["sport"] in ("soccer", "rugby") else None,
+                    # None = inconnu (la NFL ne fournit pas gamesPlayed), 0 = aucun match joué
+                    "played": int(_stat(e, "gamesPlayed")) if (_stat(e, "gamesPlayed") or "").isdigit() else None,
+                })
+            entries.sort(key=lambda x: (x["rank"] is None, x["rank"] or 0))
+            if entries and any(x["played"] != 0 for x in entries):
+                groups.append({"name": " ".join((group.get("name") or cfg["label"]).split()), "season": season, "entries": entries})
+        if groups:
+            table = {"season": groups[0]["season"], "groups": groups}
+    _table_cache[league_id] = table
+    return table
+
+
 def get_standings(favorites: List[dict], today: date) -> List[TeamStanding]:
     """Classement de chaque équipe favorite nommée (hors sélections nationales et Top 25),
-    pour les compétitions en cours où l'équipe a déjà joué."""
+    pour les compétitions en cours où l'équipe a déjà joué (newsletter)."""
     result: List[TeamStanding] = []
     for fav in favorites:
         league_id, teams = fav.get("league", ""), fav.get("teams") or []
         cfg = ESPN_LEAGUES.get(league_id)
         if not cfg or not isinstance(teams, list) or not teams or teams == ["AP_RANKED"] or teams == ["France"]:
             continue
-        data = _fetch_latest(cfg["sport"], cfg["league"], today)
-        if not data:
+        table = get_league_table(league_id, today)
+        if not table:
             continue
-        for group in _groups(data):
-            entries = group["standings"]["entries"]
-            season = str((group.get("standings") or {}).get("seasonDisplayName") or "")
-            for e in entries:
-                name = e.get("team", {}).get("displayName", "")
-                played = _stat(e, "gamesPlayed")
-                if not _team_matches(name, teams) or _season_finished(season, today) or played == "0":
+        for group in table["groups"]:
+            for e in group["entries"]:
+                if not _team_matches(e["team"], teams) or e["played"] == 0:
                     continue
-                wins, losses, ties = _stat(e, "wins", "gamesWon"), _stat(e, "losses", "gamesLost"), _stat(e, "ties", "gamesDrawn")
-                if cfg["sport"] in ("soccer", "rugby"):
-                    record = f"{wins or 0}V {ties or 0}N {losses or 0}D"
-                else:
-                    record = f"{wins}-{losses}" + (f"-{ties}" if ties and ties != "0" else "")
-                rank = _stat(e, "rank", "playoffSeed")
                 result.append(TeamStanding(
-                    league_id=league_id, league_label=cfg["label"], emoji=cfg["emoji"], team=name,
-                    group=" ".join((group.get("name") or cfg["label"]).split()), rank=int(rank) if rank and rank.isdigit() else None,
-                    group_size=len(entries), record=record,
-                    points=_stat(e, "points") if cfg["sport"] in ("soccer", "rugby") else None, season=season,
+                    league_id=league_id, league_label=cfg["label"], emoji=cfg["emoji"], team=e["team"],
+                    group=group["name"], rank=e["rank"], group_size=len(group["entries"]), record=e["record"],
+                    points=e["points"], season=group["season"],
                 ))
     # Une ligne par équipe (la même équipe peut apparaître dans deux compétitions favorites)
     seen, unique = set(), []

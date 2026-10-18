@@ -31,6 +31,17 @@ class SportEvent:
     matched_team: str = ""
     home_id: str = ""
     away_id: str = ""
+    # Habillage (app) : abréviation, logo, couleur, bilan (« 6-1 »), rang AP (None si non classé)
+    home_abbr: str = ""
+    away_abbr: str = ""
+    home_logo: str = ""
+    away_logo: str = ""
+    home_color: str = ""
+    away_color: str = ""
+    home_record: str = ""
+    away_record: str = ""
+    home_rank: Optional[int] = None
+    away_rank: Optional[int] = None
     # Diffuseurs français réels quand on les connaît (NBA : nba.com), sinon vide
     channels_fr: List[str] = field(default_factory=list)
 
@@ -72,16 +83,28 @@ def _parse_event(event_data: dict, league_id: str, league_cfg: dict) -> Optional
     home_team = away_team = "TBD"
     home_id = away_id = ""
     home_score = away_score = None
+    sides = {}
     for c in comp.get("competitors", []):
         team = c.get("team", {})
         name = team.get("displayName") or team.get("shortDisplayName") or "TBD"
         score = c.get("score")
+        rank = (c.get("curatedRank") or {}).get("current")
+        side = {
+            "abbr": team.get("abbreviation", ""),
+            "logo": team.get("logo") or ((team.get("logos") or [{}])[0].get("href", "")),
+            "color": team.get("color", ""),
+            "record": ((c.get("records") or [{}])[0].get("summary", "")),
+            "rank": rank if isinstance(rank, int) and 0 < rank <= 25 else None,
+        }
         if c.get("homeAway") == "home":
             home_team, home_id = name, str(team.get("id", ""))
             home_score = int(score) if score and str(score).isdigit() else None
+            sides["home"] = side
         else:
             away_team, away_id = name, str(team.get("id", ""))
             away_score = int(score) if score and str(score).isdigit() else None
+            sides["away"] = side
+    h, a = sides.get("home", {}), sides.get("away", {})
 
     status_data = comp.get("status", {}).get("type", {})
     if status_data.get("completed"):
@@ -123,6 +146,11 @@ def _parse_event(event_data: dict, league_id: str, league_cfg: dict) -> Optional
         is_highlight=is_highlight,
         home_id=home_id,
         away_id=away_id,
+        home_abbr=h.get("abbr", ""), away_abbr=a.get("abbr", ""),
+        home_logo=h.get("logo", ""), away_logo=a.get("logo", ""),
+        home_color=h.get("color", ""), away_color=a.get("color", ""),
+        home_record=h.get("record", ""), away_record=a.get("record", ""),
+        home_rank=h.get("rank"), away_rank=a.get("rank"),
     )
 
 

@@ -1,8 +1,6 @@
-import json
 import logging
-from collections import Counter
-from dataclasses import asdict, dataclass, field
-from datetime import date, datetime, timedelta, timezone
+from dataclasses import dataclass, field
+from datetime import date, timedelta
 from typing import Dict, List, Tuple
 
 from src.config import (
@@ -19,9 +17,6 @@ from src.send.mailer import send_mail
 from src.tvday import tv_day
 
 logger = logging.getLogger("tele7sport")
-
-APP_DATA = OUT_DIR.parent / "web" / "data" / "programme.json"
-
 
 @dataclass
 class WeekData:
@@ -135,45 +130,9 @@ def collect(today: date, days_ahead: int = 0) -> WeekData:
     return data
 
 
-def _event_json(ev: SportEvent, channels: List[str]) -> dict:
-    day, night = tv_day(ev.datetime_utc)
-    return {
-        "league": ev.league_id, "label": ev.league_label, "emoji": ev.emoji,
-        "home": ev.home_team, "away": ev.away_team,
-        "kickoff": ev.datetime_utc.astimezone(timezone.utc).isoformat(),
-        "tv_day": day.isoformat(), "night": night,
-        "status": ev.status, "home_score": ev.home_score, "away_score": ev.away_score,
-        "channels": channels, "highlight": ev.is_highlight, "round": ev.round_info,
-        "fav": ev.matched_team,
-    }
-
-
-def export_app_data(data: WeekData) -> dict:
-    """Données de l'app web (web/data/programme.json)."""
-    payload = {
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="minutes"),
-        "week": {"start": data.this_start.isoformat(), "end": data.this_end.isoformat()},
-        "prev_week": {"start": data.prev_start.isoformat(), "end": data.prev_end.isoformat()},
-        "events": [_event_json(ev, data.channels_map.get(channel_key(ev), [])) for ev in data.past + data.upcoming],
-        "nba_hidden": {d.isoformat(): n for d, n in sorted(data.nba_hidden.items())},
-        "standings": [asdict(s) for s in data.standings],
-        "cycling": [{
-            "name": c.name, "label": c.league_label, "emoji": c.emoji, "location": c.location,
-            "start": c.start_date.isoformat(), "end": c.end_date.isoformat(),
-            "time": c.start_time, "channels": c.channels_fr, "details": c.details,
-        } for c in data.cycling_upcoming + data.cycling_past],
-    }
-    APP_DATA.parent.mkdir(parents=True, exist_ok=True)
-    with open(APP_DATA, "w", encoding="utf-8") as f:
-        json.dump(payload, f, ensure_ascii=False, indent=1)
-    logger.info("📱 App data: %d events → %s", len(payload["events"]), APP_DATA)
-    return payload
-
-
 def run(dry_run: bool = False, target_date: date = None) -> Tuple[str, str]:
     """Newsletter : collecte → rendu → envoi (et données de l'app au passage)."""
     data = collect(target_date or date.today())
-    export_app_data(data)
     html, subject = render_newsletter(data)
 
     out_path = OUT_DIR / f"newsletter_{data.this_start.isoformat()}.html"
@@ -189,5 +148,6 @@ def run(dry_run: bool = False, target_date: date = None) -> Tuple[str, str]:
 
 
 def export(target_date: date = None) -> dict:
-    """Rafraîchit seulement les données de l'app (lancé chaque jour)."""
-    return export_app_data(collect(target_date or date.today(), days_ahead=7))
+    """Rafraîchit le catalogue de l'app (web/data/catalog.json), lancé deux fois par jour."""
+    from src.catalog import build_catalog
+    return build_catalog(target_date or date.today())
