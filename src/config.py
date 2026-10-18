@@ -320,6 +320,11 @@ ESPN_LEAGUES = {
         "label": "Tests internationaux (rugby)", "emoji": "🏉",
         "channels_fr": [],
     },
+    "nhl": {
+        "sport": "hockey", "league": "nhl",
+        "label": "NHL", "emoji": "🏒",
+        "channels_fr": [],
+    },
 }
 
 # Cycling (non-ESPN, separate fetcher)
@@ -354,6 +359,32 @@ CYCLING_LEAGUES = {
         "label": "Rallye Dakar", "emoji": "🏜️",
         "channels_fr": [],
         "uci_category": "dakar", "sport": "moto",
+    },
+    # Sports d'hiver : pages de saison Wikipédia « 2026–27 … World Cup »
+    "ski-alpin": {
+        "label": "Ski alpin", "emoji": "⛷️",
+        "channels_fr": ["Eurosport"],
+        "uci_category": "ski-alpin", "sport": "hiver",
+    },
+    "biathlon": {
+        "label": "Biathlon", "emoji": "🎯",
+        "channels_fr": ["L'Équipe"],
+        "uci_category": "biathlon", "sport": "hiver",
+    },
+    "ski-fond": {
+        "label": "Ski de fond", "emoji": "🎿",
+        "channels_fr": ["Eurosport"],
+        "uci_category": "ski-fond", "sport": "hiver",
+    },
+    "saut-ski": {
+        "label": "Saut à ski", "emoji": "🎿",
+        "channels_fr": ["Eurosport"],
+        "uci_category": "saut-ski", "sport": "hiver",
+    },
+    "patinage": {
+        "label": "Patinage artistique (Grand Prix)", "emoji": "⛸️",
+        "channels_fr": [],
+        "uci_category": "patinage", "sport": "hiver",
     },
 }
 

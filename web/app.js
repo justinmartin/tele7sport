@@ -10,8 +10,8 @@ const KEYS = { catalog: 't7s_catalog', favs: 't7s_favs', tab: 't7s_tab' };
 const NIGHT_END_HOUR = 7;      // avant 7h : rattaché à la soirée de la veille
 const MATCH_DURATION_H = 3;
 const LEAGUE_PASS = 'NBA League Pass';
-const US_SPORTS = new Set(['football', 'basketball']); // à l'américaine : extérieur en haut
-const SPORT_LABELS = { soccer: 'Football', basketball: 'Basket', football: 'Football américain', rugby: 'Rugby', tennis: 'Tennis' };
+const US_SPORTS = new Set(['football', 'basketball', 'hockey']); // à l'américaine : extérieur en haut
+const SPORT_LABELS = { soccer: 'Football', basketball: 'Basket', football: 'Football américain', rugby: 'Rugby', hockey: 'Hockey sur glace', tennis: 'Tennis' };
 const DAYS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 // Couleurs des chaînes (comme dans la newsletter) : plus facile à repérer d'un coup d'œil.
 const CHANNEL_COLORS = {
@@ -349,15 +349,17 @@ function renderFavs() {
       html += '</div>';
     });
   });
-  const SOLO_SECTIONS = { cycling: 'Cyclisme', moto: 'Sports mécaniques' };
+  const SOLO_SECTIONS = { cycling: 'Cyclisme', moto: 'Sports mécaniques', hiver: "Sports d'hiver" };
   Object.entries(SOLO_SECTIONS).forEach(([sport, title]) => {
     const list = Object.entries(cat.cycling_leagues || {}).filter(([, C]) => (C.sport || 'cycling') === sport);
     if (!list.length) return;
     html += `<div class="sport">${title}</div>`;
     list.forEach(([id, C]) => {
       const on = favs.cycling.includes(id);
-      const running = (cat.cycling || []).some(c => c.lg === id);
-      const next = !running && C.next ? `Prochain : ${C.next.name} · ${dayLabel(C.next.start)}` : running ? 'En cours' : 'Calendrier pas encore publié';
+      const today = tvToday();
+      const soon = (cat.cycling || []).filter(c => c.lg === id && c.end >= today).sort((a, b) => a.start.localeCompare(b.start))[0];
+      const next = soon ? (soon.start <= today ? `En cours : ${soon.name}` : `Prochain : ${soon.name} · ${dayLabel(soon.start)}`)
+        : C.next ? `Prochain : ${C.next.name} · ${dayLabel(C.next.start)}` : 'Calendrier pas encore publié';
       html += `<div class="fav-league"><div class="fav-row">
         <span class="lg-tile m emoji"><span class="em">${esc(C.emoji)}</span></span>
         <span class="label">${esc(C.label)}<small>${esc(next)}</small></span>

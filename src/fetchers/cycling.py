@@ -8,7 +8,7 @@ from typing import List, Optional
 from bs4 import BeautifulSoup
 
 from src.config import CYCLING_LEAGUES
-from src.fetchers.wiki_calendars import SOURCES as WIKI_SOURCES, get_calendar
+from src.fetchers.wiki_calendars import SOURCES as WIKI_SOURCES, _page as wiki_page, get_calendar
 
 logger = logging.getLogger("tele7sport")
 
@@ -86,7 +86,6 @@ MAJOR_EVENTS_2025_2026 = [
 
 # Calendrier route : pages « <année> UCI World Tour » de Wikipédia (API ouverte aux scripts).
 # ProCyclingStats bloque les clients automatisés : on ne le contourne pas.
-WIKI_API = "https://en.wikipedia.org/w/api.php"
 MONTHS_EN = {m: i for i, m in enumerate(["January", "February", "March", "April", "May", "June", "July",
                                          "August", "September", "October", "November", "December"], 1)}
 COUNTRIES_FR = {
@@ -114,10 +113,8 @@ def _worldtour(year: int) -> List[dict]:
         return _wt_cache[year]
     races = []
     try:
-        resp = requests.get(WIKI_API, timeout=15, headers={"User-Agent": "tele7sport (github.com/justinmartin/tele7sport)"},
-                            params={"action": "parse", "page": f"{year}_UCI_World_Tour", "prop": "text", "format": "json", "formatversion": 2})
-        html = resp.json().get("parse", {}).get("text", "")
-        table = BeautifulSoup(html, "html.parser").find("table", class_="wikitable")
+        soup = wiki_page("en", f"{year}_UCI_World_Tour")
+        table = soup.find("table", class_="wikitable") if soup else None
         for row in (table.find_all("tr")[1:] if table else []):
             cells = row.find_all(["th", "td"])
             if len(cells) < 3:

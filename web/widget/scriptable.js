@@ -128,7 +128,7 @@ async function main() {
   list.slice(0, maxRows).forEach((e, i) => {
     if (i) w.addSpacer(compact ? 4 : 6);
     const sport = (cat.leagues[e.lg] || {}).sport;
-    addRow(w, cat, helpers, e, compact, sport === 'football' || sport === 'basketball');
+    addRow(w, cat, helpers, e, compact, sport === 'football' || sport === 'basketball' || sport === 'hockey');
   });
   if (list.length > maxRows) {
     w.addSpacer(4);

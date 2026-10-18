@@ -1,7 +1,7 @@
 // Relais ESPN pour l'app (même domaine → pas de souci CORS : le CDN d'ESPN ne renvoie pas
 // toujours l'en-tête Access-Control-Allow-Origin). Limité au scoreboard et au calendrier
 // d'une équipe. Cache 60 s côté Vercel.
-const ALLOWED = /^(football|basketball|soccer|rugby)\/[\w.-]+\/(scoreboard|teams\/\d+\/schedule)$/;
+const ALLOWED = /^(football|basketball|soccer|rugby|hockey)\/[\w.-]+\/(scoreboard|teams\/\d+\/schedule)$/;
 
 module.exports = async (req, res) => {
   const path = String(req.query.path || '');
