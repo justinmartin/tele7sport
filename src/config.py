@@ -229,3 +229,9 @@ DAYS_FR = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanch
 DAYS_EN = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 MONTHS_FR = ["", "janvier", "février", "mars", "avril", "mai", "juin",
              "juillet", "août", "septembre", "octobre", "novembre", "décembre"]
+
+
+# Noms ESPN qui ne contiennent pas le nom usuel de l'équipe.
+TEAM_ALIASES = {
+    "toulouse": ["Stade Toulousain"],
+}

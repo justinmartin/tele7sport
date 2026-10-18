@@ -1,0 +1,2070 @@
+{
+ "generated_at": "2026-10-18T06:56+00:00",
+ "week": {
+  "start": "2026-10-12",
+  "end": "2026-10-25"
+ },
+ "prev_week": {
+  "start": "2026-10-05",
+  "end": "2026-10-11"
+ },
+ "events": [
+  {
+   "league": "nations-league",
+   "label": "Ligue des Nations UEFA",
+   "emoji": "⚽",
+   "home": "France",
+   "away": "Belgium",
+   "kickoff": "2026-10-05T18:45:00+00:00",
+   "tv_day": "2026-10-05",
+   "night": false,
+   "status": "completed",
+   "home_score": 4,
+   "away_score": 1,
+   "channels": [
+    "TF1",
+    "M6",
+    "France 2"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "France"
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Philadelphia 76ers",
+   "away": "New York Knicks",
+   "kickoff": "2026-10-05T23:00:00+00:00",
+   "tv_day": "2026-10-05",
+   "night": true,
+   "status": "completed",
+   "home_score": 120,
+   "away_score": 97,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Sacramento Kings",
+   "away": "Los Angeles Lakers",
+   "kickoff": "2026-10-06T02:00:00+00:00",
+   "tv_day": "2026-10-05",
+   "night": true,
+   "status": "completed",
+   "home_score": 103,
+   "away_score": 127,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Charlotte Hornets",
+   "away": "Brooklyn Nets",
+   "kickoff": "2026-10-06T23:00:00+00:00",
+   "tv_day": "2026-10-06",
+   "night": true,
+   "status": "completed",
+   "home_score": 90,
+   "away_score": 124,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Golden State Warriors",
+   "away": "Los Angeles Lakers",
+   "kickoff": "2026-10-07T02:00:00+00:00",
+   "tv_day": "2026-10-06",
+   "night": true,
+   "status": "completed",
+   "home_score": 124,
+   "away_score": 98,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Indiana Pacers",
+   "away": "Minnesota Timberwolves",
+   "kickoff": "2026-10-07T23:00:00+00:00",
+   "tv_day": "2026-10-07",
+   "night": true,
+   "status": "completed",
+   "home_score": 123,
+   "away_score": 112,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Portland Trail Blazers",
+   "away": "Golden State Warriors",
+   "kickoff": "2026-10-08T02:00:00+00:00",
+   "tv_day": "2026-10-07",
+   "night": true,
+   "status": "completed",
+   "home_score": 123,
+   "away_score": 118,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "New York Knicks",
+   "away": "Washington Wizards",
+   "kickoff": "2026-10-08T23:30:00+00:00",
+   "tv_day": "2026-10-08",
+   "night": true,
+   "status": "completed",
+   "home_score": 109,
+   "away_score": 111,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Los Angeles Lakers",
+   "away": "Sacramento Kings",
+   "kickoff": "2026-10-09T02:45:00+00:00",
+   "tv_day": "2026-10-08",
+   "night": true,
+   "status": "completed",
+   "home_score": 114,
+   "away_score": 110,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Dallas Mavericks",
+   "away": "Houston Rockets",
+   "kickoff": "2026-10-09T12:00:00+00:00",
+   "tv_day": "2026-10-09",
+   "night": false,
+   "status": "completed",
+   "home_score": 117,
+   "away_score": 135,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "NBA China Game",
+   "fav": ""
+  },
+  {
+   "league": "ligue-2",
+   "label": "Ligue 2",
+   "emoji": "⚽",
+   "home": "Montpellier",
+   "away": "Grenoble",
+   "kickoff": "2026-10-09T18:00:00+00:00",
+   "tv_day": "2026-10-09",
+   "night": false,
+   "status": "completed",
+   "home_score": 2,
+   "away_score": 0,
+   "channels": [
+    "beIN Sports 1"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Montpellier"
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Chicago Bulls",
+   "away": "Memphis Grizzlies",
+   "kickoff": "2026-10-10T00:00:00+00:00",
+   "tv_day": "2026-10-09",
+   "night": true,
+   "status": "completed",
+   "home_score": 100,
+   "away_score": 104,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Washington Huskies",
+   "away": "Iowa Hawkeyes",
+   "kickoff": "2026-10-10T01:00:00+00:00",
+   "tv_day": "2026-10-09",
+   "night": true,
+   "status": "completed",
+   "home_score": 24,
+   "away_score": 41,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Iowa"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "BYU Cougars",
+   "away": "Iowa State Cyclones",
+   "kickoff": "2026-10-10T02:30:00+00:00",
+   "tv_day": "2026-10-09",
+   "night": true,
+   "status": "completed",
+   "home_score": 24,
+   "away_score": 10,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "BYU"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Nebraska Cornhuskers",
+   "away": "Indiana Hoosiers",
+   "kickoff": "2026-10-10T16:00:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": false,
+   "status": "completed",
+   "home_score": 17,
+   "away_score": 20,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Indiana"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Missouri Tigers",
+   "away": "Texas A&M Aggies",
+   "kickoff": "2026-10-10T16:00:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": false,
+   "status": "completed",
+   "home_score": 27,
+   "away_score": 6,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Missouri"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Oklahoma State Cowboys",
+   "away": "UCF Knights",
+   "kickoff": "2026-10-10T16:00:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": false,
+   "status": "completed",
+   "home_score": 42,
+   "away_score": 28,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Oklahoma State"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "NC State Wolfpack",
+   "away": "Wake Forest Demon Deacons",
+   "kickoff": "2026-10-10T16:00:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": false,
+   "status": "completed",
+   "home_score": 14,
+   "away_score": 38,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Wake Forest"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Northwestern Wildcats",
+   "away": "Ball State Cardinals",
+   "kickoff": "2026-10-10T16:30:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": false,
+   "status": "completed",
+   "home_score": 45,
+   "away_score": 14,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Northwestern"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Oklahoma Sooners",
+   "away": "Texas Longhorns",
+   "kickoff": "2026-10-10T19:30:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": false,
+   "status": "completed",
+   "home_score": 27,
+   "away_score": 24,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Texas"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Notre Dame Fighting Irish",
+   "away": "Stanford Cardinal",
+   "kickoff": "2026-10-10T19:30:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": false,
+   "status": "completed",
+   "home_score": 58,
+   "away_score": 7,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Notre Dame"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Vanderbilt Commodores",
+   "away": "Ole Miss Rebels",
+   "kickoff": "2026-10-10T19:30:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": false,
+   "status": "completed",
+   "home_score": 17,
+   "away_score": 52,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Ole Miss"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Oregon Ducks",
+   "away": "UCLA Bruins",
+   "kickoff": "2026-10-10T19:30:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": false,
+   "status": "completed",
+   "home_score": 15,
+   "away_score": 17,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "UCLA"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Kansas State Wildcats",
+   "away": "Houston Cougars",
+   "kickoff": "2026-10-10T19:30:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": false,
+   "status": "completed",
+   "home_score": 16,
+   "away_score": 35,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Houston"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Ohio State Buckeyes",
+   "away": "Maryland Terrapins",
+   "kickoff": "2026-10-10T20:15:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": false,
+   "status": "completed",
+   "home_score": 45,
+   "away_score": 16,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Ohio State"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Arkansas Razorbacks",
+   "away": "Tennessee Volunteers",
+   "kickoff": "2026-10-10T20:15:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": false,
+   "status": "completed",
+   "home_score": 17,
+   "away_score": 24,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Tennessee"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Kentucky Wildcats",
+   "away": "LSU Tigers",
+   "kickoff": "2026-10-10T23:00:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": true,
+   "status": "completed",
+   "home_score": 35,
+   "away_score": 34,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Kentucky"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Alabama Crimson Tide",
+   "away": "Georgia Bulldogs",
+   "kickoff": "2026-10-10T23:30:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": true,
+   "status": "completed",
+   "home_score": 17,
+   "away_score": 20,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Alabama"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Penn State Nittany Lions",
+   "away": "USC Trojans",
+   "kickoff": "2026-10-10T23:30:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": true,
+   "status": "completed",
+   "home_score": 23,
+   "away_score": 31,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "USC"
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Boston Celtics",
+   "away": "Philadelphia 76ers",
+   "kickoff": "2026-10-11T00:00:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": true,
+   "status": "completed",
+   "home_score": 144,
+   "away_score": 106,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Utah Utes",
+   "away": "Kansas Jayhawks",
+   "kickoff": "2026-10-11T00:00:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": true,
+   "status": "completed",
+   "home_score": 41,
+   "away_score": 24,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Utah"
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Phoenix Suns",
+   "away": "San Antonio Spurs",
+   "kickoff": "2026-10-11T02:30:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": true,
+   "status": "completed",
+   "home_score": 102,
+   "away_score": 98,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Fresno State Bulldogs",
+   "away": "Boise State Broncos",
+   "kickoff": "2026-10-11T02:30:00+00:00",
+   "tv_day": "2026-10-10",
+   "night": true,
+   "status": "completed",
+   "home_score": 31,
+   "away_score": 38,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Boise State"
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Houston Rockets",
+   "away": "Dallas Mavericks",
+   "kickoff": "2026-10-11T10:00:00+00:00",
+   "tv_day": "2026-10-11",
+   "night": false,
+   "status": "completed",
+   "home_score": 115,
+   "away_score": 132,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "NBA China Game",
+   "fav": ""
+  },
+  {
+   "league": "nfl",
+   "label": "NFL",
+   "emoji": "🏈",
+   "home": "Green Bay Packers",
+   "away": "Chicago Bears",
+   "kickoff": "2026-10-11T17:00:00+00:00",
+   "tv_day": "2026-10-11",
+   "night": false,
+   "status": "completed",
+   "home_score": 31,
+   "away_score": 7,
+   "channels": [
+    "L'Équipe",
+    "beIN Sports 1"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Bears"
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Cleveland Cavaliers",
+   "away": "Orlando Magic",
+   "kickoff": "2026-10-11T22:30:00+00:00",
+   "tv_day": "2026-10-11",
+   "night": true,
+   "status": "completed",
+   "home_score": 119,
+   "away_score": 105,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nfl",
+   "label": "NFL",
+   "emoji": "🏈",
+   "home": "Atlanta Falcons",
+   "away": "Baltimore Ravens",
+   "kickoff": "2026-10-12T00:20:00+00:00",
+   "tv_day": "2026-10-11",
+   "night": true,
+   "status": "completed",
+   "home_score": 23,
+   "away_score": 30,
+   "channels": [
+    "L'Équipe",
+    "beIN Sports 1"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Ravens"
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Denver Nuggets",
+   "away": "Chicago Bulls",
+   "kickoff": "2026-10-12T01:00:00+00:00",
+   "tv_day": "2026-10-11",
+   "night": true,
+   "status": "completed",
+   "home_score": 133,
+   "away_score": 128,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "New York Knicks",
+   "away": "Minnesota Timberwolves",
+   "kickoff": "2026-10-12T23:30:00+00:00",
+   "tv_day": "2026-10-12",
+   "night": true,
+   "status": "completed",
+   "home_score": 104,
+   "away_score": 122,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Orlando Magic",
+   "away": "Cleveland Cavaliers",
+   "kickoff": "2026-10-13T23:00:00+00:00",
+   "tv_day": "2026-10-13",
+   "night": true,
+   "status": "completed",
+   "home_score": 132,
+   "away_score": 116,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Los Angeles Lakers",
+   "away": "Golden State Warriors",
+   "kickoff": "2026-10-14T02:00:00+00:00",
+   "tv_day": "2026-10-13",
+   "night": true,
+   "status": "completed",
+   "home_score": 89,
+   "away_score": 101,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Dallas Mavericks",
+   "away": "New Orleans Pelicans",
+   "kickoff": "2026-10-15T00:00:00+00:00",
+   "tv_day": "2026-10-14",
+   "night": true,
+   "status": "completed",
+   "home_score": 97,
+   "away_score": 101,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "LA Clippers",
+   "away": "Denver Nuggets",
+   "kickoff": "2026-10-15T02:30:00+00:00",
+   "tv_day": "2026-10-14",
+   "night": true,
+   "status": "completed",
+   "home_score": 122,
+   "away_score": 110,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Houston Rockets",
+   "away": "Oklahoma City Thunder",
+   "kickoff": "2026-10-16T00:30:00+00:00",
+   "tv_day": "2026-10-15",
+   "night": true,
+   "status": "completed",
+   "home_score": 116,
+   "away_score": 89,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Philadelphia 76ers",
+   "away": "Boston Celtics",
+   "kickoff": "2026-10-16T23:00:00+00:00",
+   "tv_day": "2026-10-16",
+   "night": true,
+   "status": "completed",
+   "home_score": 120,
+   "away_score": 125,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Los Angeles Lakers",
+   "away": "Denver Nuggets",
+   "kickoff": "2026-10-17T02:30:00+00:00",
+   "tv_day": "2026-10-16",
+   "night": true,
+   "status": "completed",
+   "home_score": 106,
+   "away_score": 121,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Indiana Hoosiers",
+   "away": "Ohio State Buckeyes",
+   "kickoff": "2026-10-17T16:00:00+00:00",
+   "tv_day": "2026-10-17",
+   "night": false,
+   "status": "completed",
+   "home_score": 15,
+   "away_score": 19,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Indiana"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Texas Longhorns",
+   "away": "Florida Gators",
+   "kickoff": "2026-10-17T16:00:00+00:00",
+   "tv_day": "2026-10-17",
+   "night": false,
+   "status": "completed",
+   "home_score": 24,
+   "away_score": 27,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Texas"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "LSU Tigers",
+   "away": "Mississippi State Bulldogs",
+   "kickoff": "2026-10-17T16:00:00+00:00",
+   "tv_day": "2026-10-17",
+   "night": false,
+   "status": "completed",
+   "home_score": 31,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "LSU"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "SMU Mustangs",
+   "away": "Virginia Cavaliers",
+   "kickoff": "2026-10-17T16:00:00+00:00",
+   "tv_day": "2026-10-17",
+   "night": false,
+   "status": "completed",
+   "home_score": 23,
+   "away_score": 13,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "SMU"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Michigan State Spartans",
+   "away": "Northwestern Wildcats",
+   "kickoff": "2026-10-17T16:00:00+00:00",
+   "tv_day": "2026-10-17",
+   "night": false,
+   "status": "completed",
+   "home_score": 21,
+   "away_score": 24,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Northwestern"
+  },
+  {
+   "league": "champions-cup-rugby",
+   "label": "Champions Cup",
+   "emoji": "🏉",
+   "home": "Bath Rugby",
+   "away": "Montpellier Herault",
+   "kickoff": "2026-10-17T19:00:00+00:00",
+   "tv_day": "2026-10-17",
+   "night": false,
+   "status": "completed",
+   "home_score": 14,
+   "away_score": 32,
+   "channels": [
+    "beIN Sports 1",
+    "France 2"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Montpellier"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Georgia Bulldogs",
+   "away": "Auburn Tigers",
+   "kickoff": "2026-10-17T19:30:00+00:00",
+   "tv_day": "2026-10-17",
+   "night": false,
+   "status": "completed",
+   "home_score": 24,
+   "away_score": 27,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Georgia"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Tennessee Volunteers",
+   "away": "Alabama Crimson Tide",
+   "kickoff": "2026-10-17T19:30:00+00:00",
+   "tv_day": "2026-10-17",
+   "night": false,
+   "status": "completed",
+   "home_score": 26,
+   "away_score": 10,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Tennessee"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Ole Miss Rebels",
+   "away": "Missouri Tigers",
+   "kickoff": "2026-10-17T19:30:00+00:00",
+   "tv_day": "2026-10-17",
+   "night": false,
+   "status": "completed",
+   "home_score": 31,
+   "away_score": 3,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Ole Miss"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Texas Tech Red Raiders",
+   "away": "Arizona State Sun Devils",
+   "kickoff": "2026-10-17T19:30:00+00:00",
+   "tv_day": "2026-10-17",
+   "night": false,
+   "status": "completed",
+   "home_score": 53,
+   "away_score": 25,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Texas Tech"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Miami Hurricanes",
+   "away": "Florida State Seminoles",
+   "kickoff": "2026-10-17T23:00:00+00:00",
+   "tv_day": "2026-10-17",
+   "night": true,
+   "status": "completed",
+   "home_score": 43,
+   "away_score": 35,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Miami"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "BYU Cougars",
+   "away": "Notre Dame Fighting Irish",
+   "kickoff": "2026-10-17T23:30:00+00:00",
+   "tv_day": "2026-10-17",
+   "night": true,
+   "status": "completed",
+   "home_score": 28,
+   "away_score": 24,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "BYU"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "UCLA Bruins",
+   "away": "Wisconsin Badgers",
+   "kickoff": "2026-10-17T23:30:00+00:00",
+   "tv_day": "2026-10-17",
+   "night": true,
+   "status": "completed",
+   "home_score": 17,
+   "away_score": 7,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "UCLA"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Oklahoma Sooners",
+   "away": "Kentucky Wildcats",
+   "kickoff": "2026-10-17T23:30:00+00:00",
+   "tv_day": "2026-10-17",
+   "night": true,
+   "status": "completed",
+   "home_score": 13,
+   "away_score": 21,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Kentucky"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Houston Cougars",
+   "away": "Oklahoma State Cowboys",
+   "kickoff": "2026-10-17T23:30:00+00:00",
+   "tv_day": "2026-10-17",
+   "night": true,
+   "status": "completed",
+   "home_score": 35,
+   "away_score": 32,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Houston"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Colorado Buffaloes",
+   "away": "Utah Utes",
+   "kickoff": "2026-10-18T02:15:00+00:00",
+   "tv_day": "2026-10-17",
+   "night": true,
+   "status": "completed",
+   "home_score": 24,
+   "away_score": 27,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Utah"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "California Golden Bears",
+   "away": "Wake Forest Demon Deacons",
+   "kickoff": "2026-10-18T02:30:00+00:00",
+   "tv_day": "2026-10-17",
+   "night": true,
+   "status": "completed",
+   "home_score": 7,
+   "away_score": 41,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Wake Forest"
+  },
+  {
+   "league": "champions-cup-rugby",
+   "label": "Champions Cup",
+   "emoji": "🏉",
+   "home": "Stade Toulousain",
+   "away": "Exeter Chiefs",
+   "kickoff": "2026-10-18T14:15:00+00:00",
+   "tv_day": "2026-10-18",
+   "night": false,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "beIN Sports 1",
+    "France 2"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Toulouse"
+  },
+  {
+   "league": "nfl",
+   "label": "NFL",
+   "emoji": "🏈",
+   "home": "Atlanta Falcons",
+   "away": "Chicago Bears",
+   "kickoff": "2026-10-18T17:00:00+00:00",
+   "tv_day": "2026-10-18",
+   "night": false,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "L'Équipe",
+    "beIN Sports 1"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Bears"
+  },
+  {
+   "league": "nfl",
+   "label": "NFL",
+   "emoji": "🏈",
+   "home": "Cleveland Browns",
+   "away": "Baltimore Ravens",
+   "kickoff": "2026-10-18T17:00:00+00:00",
+   "tv_day": "2026-10-18",
+   "night": false,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "L'Équipe",
+    "beIN Sports 1"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Ravens"
+  },
+  {
+   "league": "nfl",
+   "label": "NFL",
+   "emoji": "🏈",
+   "home": "Kansas City Chiefs",
+   "away": "Los Angeles Chargers",
+   "kickoff": "2026-10-18T20:25:00+00:00",
+   "tv_day": "2026-10-18",
+   "night": false,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "L'Équipe",
+    "beIN Sports 1"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Chiefs"
+  },
+  {
+   "league": "ligue-2",
+   "label": "Ligue 2",
+   "emoji": "⚽",
+   "home": "Rodez Aveyron",
+   "away": "Montpellier",
+   "kickoff": "2026-10-19T18:45:00+00:00",
+   "tv_day": "2026-10-19",
+   "night": false,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "beIN Sports 1"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Montpellier"
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Detroit Pistons",
+   "away": "Boston Celtics",
+   "kickoff": "2026-10-20T19:00:00+00:00",
+   "tv_day": "2026-10-20",
+   "night": false,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "New York Knicks",
+   "away": "Philadelphia 76ers",
+   "kickoff": "2026-10-20T23:00:00+00:00",
+   "tv_day": "2026-10-20",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "San Antonio Spurs",
+   "away": "Oklahoma City Thunder",
+   "kickoff": "2026-10-21T01:30:00+00:00",
+   "tv_day": "2026-10-20",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Miami Heat",
+   "away": "Minnesota Timberwolves",
+   "kickoff": "2026-10-21T23:30:00+00:00",
+   "tv_day": "2026-10-21",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Los Angeles Lakers",
+   "away": "Golden State Warriors",
+   "kickoff": "2026-10-22T02:00:00+00:00",
+   "tv_day": "2026-10-21",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Philadelphia 76ers",
+   "away": "Cleveland Cavaliers",
+   "kickoff": "2026-10-22T23:00:00+00:00",
+   "tv_day": "2026-10-22",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nfl",
+   "label": "NFL",
+   "emoji": "🏈",
+   "home": "Chicago Bears",
+   "away": "New England Patriots",
+   "kickoff": "2026-10-23T00:15:00+00:00",
+   "tv_day": "2026-10-22",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "Prime Video"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Bears"
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Oklahoma City Thunder",
+   "away": "Denver Nuggets",
+   "kickoff": "2026-10-23T01:30:00+00:00",
+   "tv_day": "2026-10-22",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Boston Celtics",
+   "away": "New York Knicks",
+   "kickoff": "2026-10-23T23:00:00+00:00",
+   "tv_day": "2026-10-23",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "San Antonio Spurs",
+   "away": "Houston Rockets",
+   "kickoff": "2026-10-24T01:30:00+00:00",
+   "tv_day": "2026-10-23",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "UCF Knights",
+   "away": "BYU Cougars",
+   "kickoff": "2026-10-24T04:00:00+00:00",
+   "tv_day": "2026-10-23",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "BYU"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Cincinnati Bearcats",
+   "away": "Texas Tech Red Raiders",
+   "kickoff": "2026-10-24T04:00:00+00:00",
+   "tv_day": "2026-10-23",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Texas Tech"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Utah Utes",
+   "away": "Houston Cougars",
+   "kickoff": "2026-10-24T04:00:00+00:00",
+   "tv_day": "2026-10-23",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Utah"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "UCLA Bruins",
+   "away": "Michigan State Spartans",
+   "kickoff": "2026-10-24T04:00:00+00:00",
+   "tv_day": "2026-10-23",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "UCLA"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Minnesota Golden Gophers",
+   "away": "Iowa Hawkeyes",
+   "kickoff": "2026-10-24T04:00:00+00:00",
+   "tv_day": "2026-10-23",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Iowa"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Oklahoma State Cowboys",
+   "away": "Colorado Buffaloes",
+   "kickoff": "2026-10-24T04:00:00+00:00",
+   "tv_day": "2026-10-23",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Oklahoma State"
+  },
+  {
+   "league": "ligue-2",
+   "label": "Ligue 2",
+   "emoji": "⚽",
+   "home": "Montpellier",
+   "away": "Red Star FC 93",
+   "kickoff": "2026-10-24T12:00:00+00:00",
+   "tv_day": "2026-10-24",
+   "night": false,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "beIN Sports 1"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Montpellier"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Miami Hurricanes",
+   "away": "Pittsburgh Panthers",
+   "kickoff": "2026-10-24T16:00:00+00:00",
+   "tv_day": "2026-10-24",
+   "night": false,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Miami"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Michigan Wolverines",
+   "away": "Indiana Hoosiers",
+   "kickoff": "2026-10-24T16:00:00+00:00",
+   "tv_day": "2026-10-24",
+   "night": false,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Indiana"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Auburn Tigers",
+   "away": "LSU Tigers",
+   "kickoff": "2026-10-24T16:00:00+00:00",
+   "tv_day": "2026-10-24",
+   "night": false,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "LSU"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "SMU Mustangs",
+   "away": "California Golden Bears",
+   "kickoff": "2026-10-24T16:00:00+00:00",
+   "tv_day": "2026-10-24",
+   "night": false,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "SMU"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Northwestern Wildcats",
+   "away": "Rutgers Scarlet Knights",
+   "kickoff": "2026-10-24T16:00:00+00:00",
+   "tv_day": "2026-10-24",
+   "night": false,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Northwestern"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Alabama Crimson Tide",
+   "away": "Texas A&M Aggies",
+   "kickoff": "2026-10-24T19:30:00+00:00",
+   "tv_day": "2026-10-24",
+   "night": false,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "FLEX: 3:30 - 4:30pm OR 6 - 8pm ET start",
+   "fav": "Alabama"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "South Carolina Gamecocks",
+   "away": "Tennessee Volunteers",
+   "kickoff": "2026-10-24T19:30:00+00:00",
+   "tv_day": "2026-10-24",
+   "night": false,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "AFTERNOON: 3:30 - 4:30pm ET start",
+   "fav": "Tennessee"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Mississippi State Bulldogs",
+   "away": "Oklahoma Sooners",
+   "kickoff": "2026-10-24T19:30:00+00:00",
+   "tv_day": "2026-10-24",
+   "night": false,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "FLEX: 3:30 - 4:30pm OR 6 - 8pm ET start",
+   "fav": "Mississippi State"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Washington State Cougars",
+   "away": "Boise State Broncos",
+   "kickoff": "2026-10-24T22:00:00+00:00",
+   "tv_day": "2026-10-24",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Boise State"
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Philadelphia 76ers",
+   "away": "Milwaukee Bucks",
+   "kickoff": "2026-10-24T23:30:00+00:00",
+   "tv_day": "2026-10-24",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Texas Longhorns",
+   "away": "Ole Miss Rebels",
+   "kickoff": "2026-10-24T23:30:00+00:00",
+   "tv_day": "2026-10-24",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "FLEX: 3:30 - 4:30pm OR 6 - 8pm ET start",
+   "fav": "Texas"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Kentucky Wildcats",
+   "away": "Vanderbilt Commodores",
+   "kickoff": "2026-10-24T23:30:00+00:00",
+   "tv_day": "2026-10-24",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "NIGHT: 6 - 8pm ET start",
+   "fav": "Kentucky"
+  },
+  {
+   "league": "ncaaf",
+   "label": "NCAA Football",
+   "emoji": "🏈",
+   "home": "Wisconsin Badgers",
+   "away": "USC Trojans",
+   "kickoff": "2026-10-24T23:30:00+00:00",
+   "tv_day": "2026-10-24",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "ESPN"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "USC"
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Phoenix Suns",
+   "away": "Golden State Warriors",
+   "kickoff": "2026-10-25T02:00:00+00:00",
+   "tv_day": "2026-10-24",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nfl",
+   "label": "NFL",
+   "emoji": "🏈",
+   "home": "Baltimore Ravens",
+   "away": "Cincinnati Bengals",
+   "kickoff": "2026-10-25T17:00:00+00:00",
+   "tv_day": "2026-10-25",
+   "night": false,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "L'Équipe",
+    "beIN Sports 1"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Ravens"
+  },
+  {
+   "league": "nba",
+   "label": "NBA",
+   "emoji": "🏀",
+   "home": "Minnesota Timberwolves",
+   "away": "Toronto Raptors",
+   "kickoff": "2026-10-25T23:00:00+00:00",
+   "tv_day": "2026-10-25",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "beIN Sports"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": ""
+  },
+  {
+   "league": "nfl",
+   "label": "NFL",
+   "emoji": "🏈",
+   "home": "Seattle Seahawks",
+   "away": "Kansas City Chiefs",
+   "kickoff": "2026-10-26T00:20:00+00:00",
+   "tv_day": "2026-10-25",
+   "night": true,
+   "status": "scheduled",
+   "home_score": 0,
+   "away_score": 0,
+   "channels": [
+    "L'Équipe",
+    "beIN Sports 1"
+   ],
+   "highlight": false,
+   "round": "",
+   "fav": "Chiefs"
+  }
+ ],
+ "nba_hidden": {
+  "2026-10-21": 9,
+  "2026-10-23": 10,
+  "2026-10-24": 6,
+  "2026-10-25": 6
+ },
+ "standings": [
+  {
+   "league_id": "nfl",
+   "league_label": "NFL",
+   "emoji": "🏈",
+   "team": "Chicago Bears",
+   "group": "National Football Conference",
+   "rank": 7,
+   "group_size": 16,
+   "record": "3-2",
+   "points": null,
+   "season": "2026"
+  },
+  {
+   "league_id": "nfl",
+   "league_label": "NFL",
+   "emoji": "🏈",
+   "team": "Kansas City Chiefs",
+   "group": "American Football Conference",
+   "rank": 1,
+   "group_size": 16,
+   "record": "4-0",
+   "points": null,
+   "season": "2026"
+  },
+  {
+   "league_id": "nfl",
+   "league_label": "NFL",
+   "emoji": "🏈",
+   "team": "Baltimore Ravens",
+   "group": "American Football Conference",
+   "rank": 2,
+   "group_size": 16,
+   "record": "4-1",
+   "points": null,
+   "season": "2026"
+  },
+  {
+   "league_id": "ligue-2",
+   "league_label": "Ligue 2",
+   "emoji": "⚽",
+   "team": "Montpellier",
+   "group": "2026/2027 French Ligue 2",
+   "rank": 5,
+   "group_size": 18,
+   "record": "4V 3N 1D",
+   "points": "15",
+   "season": "2026-27 French Ligue 2"
+  },
+  {
+   "league_id": "top-14",
+   "league_label": "Top 14",
+   "emoji": "🏉",
+   "team": "Stade Toulousain",
+   "group": "Top 14",
+   "rank": 1,
+   "group_size": 14,
+   "record": "5V 0N 1D",
+   "points": "24",
+   "season": "2027"
+  },
+  {
+   "league_id": "top-14",
+   "league_label": "Top 14",
+   "emoji": "🏉",
+   "team": "Montpellier Herault",
+   "group": "Top 14",
+   "rank": 7,
+   "group_size": 14,
+   "record": "3V 0N 3D",
+   "points": "14",
+   "season": "2027"
+  },
+  {
+   "league_id": "champions-cup-rugby",
+   "league_label": "Champions Cup",
+   "emoji": "🏉",
+   "team": "Montpellier Herault",
+   "group": "Pool 4",
+   "rank": 2,
+   "group_size": 6,
+   "record": "1V 0N 0D",
+   "points": "4",
+   "season": "2026-27"
+  }
+ ],
+ "cycling": [
+  {
+   "name": "Il Lombardia",
+   "label": "Cyclisme Route",
+   "emoji": "🚴",
+   "location": "Italie",
+   "start": "2026-10-10",
+   "end": "2026-10-10",
+   "time": "09:00",
+   "channels": [
+    "Eurosport",
+    "France TV"
+   ],
+   "details": ""
+  }
+ ]
+}

@@ -1,11 +1,12 @@
 import logging
+import re
 import requests
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Dict, List, Optional
 
-from src.config import ESPN_LEAGUES, HIGHLIGHT_PHASES
+from src.config import ESPN_LEAGUES, HIGHLIGHT_PHASES, TEAM_ALIASES
 
 logger = logging.getLogger("tele7sport")
 
@@ -28,6 +29,10 @@ class SportEvent:
     round_info: str = ""
     is_highlight: bool = False
     matched_team: str = ""
+    home_id: str = ""
+    away_id: str = ""
+    # Diffuseurs français réels quand on les connaît (NBA : nba.com), sinon vide
+    channels_fr: List[str] = field(default_factory=list)
 
 
 def _is_in_season(league_id: str, check_date: date) -> bool:
@@ -44,12 +49,12 @@ def _is_in_season(league_id: str, check_date: date) -> bool:
 
 
 def _team_matches(team_name: str, filters: List[str]) -> str:
-    """Return the matching filter string if *team_name* matches any filter, else ''."""
-    name_lower = team_name.lower()
+    """Return the matching filter string if *team_name* matches any filter, else ''.
+    Whole-word match: "Nets" matches "Brooklyn Nets" but not "Charlotte Hornets"."""
     for f in filters:
-        f_lower = f.lower()
-        if f_lower in name_lower or name_lower in f_lower:
-            return f
+        for candidate in [f, *TEAM_ALIASES.get(f.lower(), [])]:
+            if re.search(rf"(?<!\w){re.escape(candidate)}(?!\w)", team_name, re.I):
+                return f
     return ""
 
 
@@ -65,16 +70,17 @@ def _parse_event(event_data: dict, league_id: str, league_cfg: dict) -> Optional
     comp = comps[0]
 
     home_team = away_team = "TBD"
+    home_id = away_id = ""
     home_score = away_score = None
     for c in comp.get("competitors", []):
         team = c.get("team", {})
         name = team.get("displayName") or team.get("shortDisplayName") or "TBD"
         score = c.get("score")
         if c.get("homeAway") == "home":
-            home_team = name
+            home_team, home_id = name, str(team.get("id", ""))
             home_score = int(score) if score and str(score).isdigit() else None
         else:
-            away_team = name
+            away_team, away_id = name, str(team.get("id", ""))
             away_score = int(score) if score and str(score).isdigit() else None
 
     status_data = comp.get("status", {}).get("type", {})
@@ -115,6 +121,8 @@ def _parse_event(event_data: dict, league_id: str, league_cfg: dict) -> Optional
         venue=venue,
         round_info=round_info,
         is_highlight=is_highlight,
+        home_id=home_id,
+        away_id=away_id,
     )
 
 
@@ -190,10 +198,12 @@ def fetch_espn_events(
     team_filters: Optional[List[str]] = None,
     phases_only: Optional[List[str]] = None,
     rounds_only: Optional[List[str]] = None,
+    team_ids: Optional[Dict[str, str]] = None,
 ) -> List[SportEvent]:
     """
     Fetch events from ESPN for a league between start_date and end_date.
-    Optionally filter by team names and/or tournament phases.
+    Optionally filter by team names, by exact ESPN team ids ({id: name}, used for the
+    AP Top 25) and/or tournament phases.
     """
     cfg = ESPN_LEAGUES.get(league_id)
     if not cfg:
@@ -219,7 +229,12 @@ def fetch_espn_events(
             continue
 
         # Team filter
-        if team_filters:
+        if team_ids:
+            fav_id = ev.home_id if ev.home_id in team_ids else ev.away_id if ev.away_id in team_ids else ""
+            if not fav_id:
+                continue
+            ev.matched_team = team_ids[fav_id]
+        elif team_filters:
             match_home = _team_matches(ev.home_team, team_filters)
             match_away = _team_matches(ev.away_team, team_filters)
             if not match_home and not match_away:

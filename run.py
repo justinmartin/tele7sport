@@ -5,6 +5,7 @@ Télé7Sport — CLI entry point.
 Usage:
     python run.py test           # Dry run (no email sent), saves HTML to out/
     python run.py once           # Run once and send email
+    python run.py export         # Refresh the web app data only (web/data/programme.json)
     python run.py search <sport> <league> [query]  # Search ESPN teams
 """
 import sys
@@ -32,6 +33,10 @@ def main():
     elif command == "once":
         from src.main import run
         run(dry_run=False)
+
+    elif command == "export":
+        from src.main import export
+        export()
 
     elif command == "search":
         if len(sys.argv) < 4:

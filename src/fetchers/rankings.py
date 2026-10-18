@@ -56,6 +56,33 @@ def get_ap_ranked_teams(sport: str, league: str) -> List[str]:
         return []
 
 
+_id_cache: Dict[str, Dict[str, str]] = {}
+
+
+def get_ap_ranked_team_ids(sport: str, league: str) -> Dict[str, str]:
+    """AP Top 25 as {espn_team_id: display name}, for exact matching (a name filter
+    like "Houston" would also catch "Sam Houston")."""
+    cache_key = f"{sport}/{league}"
+    if cache_key in _id_cache:
+        return _id_cache[cache_key]
+    teams: Dict[str, str] = {}
+    try:
+        resp = requests.get(RANKINGS_URL.format(sport=sport, league=league), timeout=10)
+        resp.raise_for_status()
+        for ranking in resp.json().get("rankings", []):
+            if "AP" in ranking.get("name", "").upper():
+                for rk in ranking.get("ranks", []):
+                    team = rk.get("team", {})
+                    if team.get("id"):
+                        teams[str(team["id"])] = team.get("location") or team.get("nickname") or team.get("name", "")
+                break
+        logger.info("🏆 AP Top 25 %s: %d teams loaded", cache_key, len(teams))
+    except Exception as e:
+        logger.warning("Rankings fetch error %s: %s", cache_key, e)
+    _id_cache[cache_key] = teams
+    return teams
+
+
 def clear_cache():
     """Clear the rankings cache (useful between runs in scheduler mode)."""
     _cache.clear()
