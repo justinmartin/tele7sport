@@ -13,6 +13,24 @@ const LEAGUE_PASS = 'NBA League Pass';
 const US_SPORTS = new Set(['football', 'basketball']); // à l'américaine : extérieur en haut
 const SPORT_LABELS = { soccer: 'Football', basketball: 'Basket', football: 'Football américain', rugby: 'Rugby', tennis: 'Tennis' };
 const DAYS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+// Couleurs des chaînes (comme dans la newsletter) : plus facile à repérer d'un coup d'œil.
+const CHANNEL_COLORS = {
+  'canal+': '#1a1a1a', 'canal+ sport': '#1a1a1a', 'canal+ foot': '#1a1a1a', 'canal+ premier league': '#1a1a1a',
+  'bein sports': '#6b2eaf', 'bein sports 1': '#6b2eaf', 'bein sports 2': '#6b2eaf', 'bein sports 3': '#6b2eaf', 'bein sports max': '#6b2eaf',
+  'eurosport': '#003f87', 'eurosport 1': '#003f87', 'eurosport 2': '#003f87', 'max': '#002be7',
+  'tf1': '#e4002b', 'france 2': '#1e5aa8', 'france 3': '#005bbb', 'france 4': '#6b2d7b', 'france tv': '#1e5aa8', 'france.tv': '#1e5aa8',
+  'm6': '#d97c00', "l'équipe": '#d4880f', "l'equipe": '#d4880f', 'dazn': '#262626', 'rmc sport': '#e10600', 'ligue 1+': '#0b1f8f',
+  'nba league pass': '#1d428a', 'league pass': '#1d428a', 'prime video': '#00a8e1', 'red bull tv': '#db0a40', 'espn': '#5a5a64',
+};
+const chColor = c => CHANNEL_COLORS[c.toLowerCase()] || '#3a3a40';
+
+// Bilan « 4V 3N 1D » ou forme « WLLWL » : V/W en vert, D/L en rouge.
+function recordHtml(r) {
+  if (!r) return '';
+  if (/^[WLDT]+$/.test(r)) return [...r].map(c => c === 'W' ? '<span class="w">W</span>' : c === 'L' ? '<span class="l">L</span>' : c).join('');
+  return esc(r).replace(/(\d+)V/g, '<span class="w">$1V</span>').replace(/(\d+)D/g, '<span class="l">$1D</span>');
+}
+
 const MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 
 let cat = null;          // catalogue
@@ -35,7 +53,10 @@ const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const hhmm = iso => { const d = new Date(iso); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 const read = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
 const write = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const wordMatch = (name, needle) => new RegExp(`(^|[^\\p{L}])${needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^\\p{L}]|$)`, 'iu').test(name);
+// Sélections nationales : ESPN les nomme en anglais (« Écosse » → « Scotland »)
+const NATIONS_EN = {"écosse": "Scotland", "angleterre": "England", "irlande": "Ireland", "pays de galles": "Wales", "italie": "Italy", "espagne": "Spain", "allemagne": "Germany", "belgique": "Belgium", "pays-bas": "Netherlands", "argentine": "Argentina", "brésil": "Brazil", "nouvelle-zélande": "New Zealand", "afrique du sud": "South Africa", "australie": "Australia", "japon": "Japan", "états-unis": "United States", "suisse": "Switzerland", "croatie": "Croatia", "maroc": "Morocco", "sénégal": "Senegal", "géorgie": "Georgia", "fidji": "Fiji", "danemark": "Denmark", "suède": "Sweden", "norvège": "Norway", "autriche": "Austria", "pologne": "Poland", "mexique": "Mexico", "colombie": "Colombia", "uruguay": "Uruguay", "algérie": "Algeria", "tunisie": "Tunisia", "côte d'ivoire": "Ivory Coast", "cameroun": "Cameroon", "turquie": "Turkey", "grèce": "Greece", "tchéquie": "Czechia", "roumanie": "Romania", "samoa": "Samoa", "tonga": "Tonga", "canada": "Canada"};
+const wordMatchRaw = (name, needle) => new RegExp(`(^|[^\\p{L}])${needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^\\p{L}]|$)`, 'iu').test(name);
+const wordMatch = (name, needle) => wordMatchRaw(name, needle) || (!!NATIONS_EN[needle.toLowerCase()] && wordMatchRaw(name, NATIONS_EN[needle.toLowerCase()]));
 
 function tvToday() {
   const now = new Date();
@@ -99,7 +120,8 @@ const myEvents = () => cat.events.filter(e => visible(e) && (filter === 'all' ||
 // ---------------------------------------------------------------- composants
 function lgTile(lg, size = 's') {
   const L = league(lg) || cat.cycling_leagues?.[lg] || {};
-  return `<span class="lg-tile ${size}">${L.logo ? `<img src="${esc(L.logo)}" alt="" loading="lazy">` : `<span class="em">${esc(L.emoji || '')}</span>`}</span>`;
+  return L.logo ? `<span class="lg-tile ${size}"><img src="${esc(L.logo)}" alt="" loading="lazy"></span>`
+    : `<span class="lg-tile ${size} emoji"><span class="em">${esc(L.emoji || '')}</span></span>`;
 }
 
 function liveState(e) {
@@ -118,7 +140,7 @@ function teamLine(e, side) {
   if (done && mine < theirs) cls.push('loser');
   return `<div class="${cls.join(' ')}">
     ${t.l ? `<img src="${esc(t.l)}" alt="" loading="lazy">` : '<span class="noimg"></span>'}
-    <span class="name">${s.rk ? `<span class="rk">${s.rk}</span>` : ''}${esc(t.n)}${s.r ? `<span class="rec">${esc(s.r)}</span>` : ''}</span>
+    <span class="name">${s.rk ? `<span class="rk">${s.rk}</span>` : ''}${esc(t.n)}${s.r ? `<span class="rec">${recordHtml(s.r)}</span>` : ''}</span>
     ${done ? `<span class="score">${mine}</span>` : ''}
   </div>`;
 }
@@ -133,7 +155,7 @@ function matchRow(e) {
   else if (state === 'upcoming') side = `<span class="time">${hhmm(e.ko)}</span>`;
   const extras = [];
   if (e.hl && state !== 'done') extras.push('<span class="tag">À ne pas rater</span>');
-  if (state !== 'done') extras.push(...e.ch.map(c => `<span class="ch">${esc(c)}</span>`));
+  if (state !== 'done') extras.push(...e.ch.map(c => `<span class="ch" style="background:${chColor(c)}">${esc(c)}</span>`));
   if (e.rd) extras.push(`<span class="round">${esc(e.rd)}</span>`);
   return `<article class="match${e.nt ? ' night' : ''}${side ? '' : ' no-side'}">
     <div class="teams">${teamLine(e, top)}${teamLine(e, bottom)}</div>
@@ -161,7 +183,7 @@ function cyclingRows(list) {
   return [...groups].map(([lg, cs]) => `<div class="league">${lgTile(lg)}${esc(cs[0].label)}</div>` + cs.map(c => `
     <article class="event-solo">
       <div><div class="name">${esc(c.name)}</div><div class="sub">${esc(c.loc || '')}${c.details ? ` · ${esc(c.details)}` : ''}</div></div>
-      <div class="side">${c.time ? `<span class="time">${esc(c.time)}</span>` : ''}<div class="channels">${(c.ch || []).map(x => `<span class="ch">${esc(x)}</span>`).join('')}</div></div>
+      <div class="side">${c.time ? `<span class="time">${esc(c.time)}</span>` : ''}<div class="channels">${(c.ch || []).map(x => `<span class="ch" style="background:${chColor(x)}">${esc(x)}</span>`).join('')}</div></div>
     </article>`).join('')).join('');
 }
 
@@ -267,7 +289,7 @@ function renderStandings() {
         <tbody>${rows.map(r => r === 'gap' ? `<tr class="gap"><td colspan="${cols}">···</td></tr>` : `<tr class="${isFav(r) ? 'fav' : ''}">
           <td>${r.rank ?? '–'}</td>
           <td class="team-cell"><span class="tc">${r.logo ? `<img src="${esc(r.logo)}" alt="" loading="lazy">` : ''}<span>${esc(r.team)}</span></span></td>
-          <td>${esc(r.record)}</td>${points ? `<td class="pts">${esc(r.points ?? '')}</td>` : ''}
+          <td class="rec-cell">${recordHtml(r.record)}</td>${points ? `<td class="pts">${esc(r.points ?? '')}</td>` : ''}
         </tr>`).join('')}</tbody></table>${hidden ? `<button class="table-more" type="button" data-expand="${esc(key)}">Voir les ${g.entries.length} équipes</button>` : ''}`;
       }).join(''));
   });
@@ -301,6 +323,8 @@ function favSummary(f) {
 function renderFavs() {
   const bySport = {};
   Object.entries(cat.leagues).forEach(([id, L]) => { (bySport[L.sport] ||= []).push([id, L]); });
+  // Dans chaque sport : compétitions en cours d'abord, celles à l'arrêt ensuite
+  Object.values(bySport).forEach(list => list.sort((a, b) => (b[1].active !== false) - (a[1].active !== false)));
   let html = '';
   Object.entries(bySport).forEach(([sport, list]) => {
     html += `<div class="sport">${esc(SPORT_LABELS[sport] || sport)}</div>`;
@@ -310,7 +334,7 @@ function renderFavs() {
       html += `<div class="fav-league">
         <div class="fav-row">
           ${lgTile(id, 'm')}
-          <button class="label" type="button" data-action="expand" data-league="${id}">${esc(L.label)}<small>${esc(f ? favSummary(f) : 'Non suivie')}</small></button>
+          <button class="label" type="button" data-action="expand" data-league="${id}">${esc(L.label)}<small>${esc(f ? favSummary(f) : 'Non suivie')}${L.active === false ? ' · pas de match en ce moment' : ''}</small></button>
           <button class="switch" role="switch" aria-checked="${!!f}" aria-label="Suivre ${esc(L.label)}" data-action="toggle" data-league="${id}" type="button"></button>
         </div>`;
       if (f && openLeague === id) {
@@ -324,17 +348,22 @@ function renderFavs() {
       html += '</div>';
     });
   });
-  if (cat.cycling_leagues) {
-    html += '<div class="sport">Cyclisme</div>';
-    Object.entries(cat.cycling_leagues).forEach(([id, C]) => {
+  const SOLO_SECTIONS = { cycling: 'Cyclisme', moto: 'Sports mécaniques' };
+  Object.entries(SOLO_SECTIONS).forEach(([sport, title]) => {
+    const list = Object.entries(cat.cycling_leagues || {}).filter(([, C]) => (C.sport || 'cycling') === sport);
+    if (!list.length) return;
+    html += `<div class="sport">${title}</div>`;
+    list.forEach(([id, C]) => {
       const on = favs.cycling.includes(id);
+      const running = (cat.cycling || []).some(c => c.lg === id);
+      const next = !running && C.next ? `Prochain : ${C.next.name} · ${dayLabel(C.next.start)}` : running ? 'En cours' : 'Calendrier pas encore publié';
       html += `<div class="fav-league"><div class="fav-row">
-        <span class="lg-tile m"><span class="em">${esc(C.emoji)}</span></span>
-        <span class="label">${esc(C.label)}</span>
+        <span class="lg-tile m emoji"><span class="em">${esc(C.emoji)}</span></span>
+        <span class="label">${esc(C.label)}<small>${esc(next)}</small></span>
         <button class="switch" role="switch" aria-checked="${on}" aria-label="Suivre ${esc(C.label)}" data-action="toggle-cycling" data-league="${id}" type="button"></button>
       </div></div>`;
     });
-  }
+  });
   html += `<div class="sheet-actions">
     <button class="btn primary" type="button" data-action="copy">Copier pour la newsletter</button>
     <button class="btn" type="button" data-action="reset">Revenir aux favoris de la newsletter</button>
@@ -353,7 +382,12 @@ function teamGrid(lg, f) {
   const list = all.filter(([, t]) => !q || t.n.toLowerCase().includes(q))
     .sort((a, b) => (f.teams.includes(b[0]) - f.teams.includes(a[0])) || a[1].n.localeCompare(b[1].n));
   const names = (f.names || []).map(n => `<button class="team-chip on" type="button" data-action="drop-name" data-league="${lg}" data-name="${esc(n)}">${esc(n)}</button>`).join('');
-  return `<div class="team-grid">${names}${list.map(([id, t]) => `<button class="team-chip${f.teams.includes(id) ? ' on' : ''}" type="button" data-action="team" data-league="${lg}" data-team="${id}">
+  // Équipe pas (encore) connue — ex. « France » pour une Coupe du monde pas commencée : on suit le nom.
+  const typed = teamQuery.trim();
+  const addName = typed && !list.some(([, t]) => t.n.toLowerCase() === typed.toLowerCase()) && !(f.names || []).includes(typed)
+    ? `<button class="team-chip" type="button" data-action="add-name" data-league="${lg}" data-name="${esc(typed)}">+ Suivre « ${esc(typed)} »</button>` : '';
+  if (!all.length && !names && !addName) return '<p class="note">Les équipes apparaîtront dès les premiers matchs. Tape un nom pour le suivre dès maintenant.</p>';
+  return `<div class="team-grid">${names}${addName}${list.map(([id, t]) => `<button class="team-chip${f.teams.includes(id) ? ' on' : ''}" type="button" data-action="team" data-league="${lg}" data-team="${id}">
       ${t.l ? `<img src="${esc(t.l)}" alt="" loading="lazy">` : ''}${esc(t.n)}</button>`).join('')}</div>`;
 }
 
@@ -387,6 +421,8 @@ function onFavAction(el) {
   } else if (action === 'team' && f) {
     const id = el.dataset.team;
     f.teams = f.teams.includes(id) ? f.teams.filter(x => x !== id) : [...f.teams, id];
+  } else if (action === 'add-name' && f) {
+    f.names = [...(f.names || []), el.dataset.name]; teamQuery = '';
   } else if (action === 'drop-name' && f) {
     f.names = (f.names || []).filter(n => n !== el.dataset.name);
   } else if (action === 'reset') {
@@ -418,13 +454,11 @@ function closeFavs() {
 // ---------------------------------------------------------------- données
 async function load({ manual = false } = {}) {
   $('#refresh').classList.add('spin');
-  let fresh = null;
-  for (const url of SOURCES) {
-    try {
-      const r = await fetch(`${url}?t=${Date.now()}`, { cache: 'no-store' });
-      if (r.ok) { fresh = await r.json(); break; }
-    } catch (e) { /* source suivante */ }
-  }
+  // GitHub (mis à jour 2×/jour) et copie déployée : on garde la plus récente des deux.
+  const results = await Promise.allSettled(SOURCES.map(url =>
+    fetch(`${url}?t=${Date.now()}`, { cache: 'no-store' }).then(r => r.ok ? r.json() : Promise.reject(r.status))));
+  const fresh = results.filter(r => r.status === 'fulfilled').map(r => r.value)
+    .sort((a, b) => b.generated_at.localeCompare(a.generated_at))[0] || null;
   $('#refresh').classList.remove('spin');
   if (fresh && (!cat || fresh.generated_at >= cat.generated_at)) {
     cat = fresh;

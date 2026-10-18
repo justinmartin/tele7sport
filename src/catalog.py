@@ -22,7 +22,14 @@ logger = logging.getLogger("tele7sport")
 
 CATALOG = OUT_DIR.parent / "web" / "data" / "catalog.json"
 PHASES = ["QUARTERFINAL", "SEMIFINAL", "FINAL"]
-AP_LEAGUES = {"ncaaf", "ncaam"}  # trop de matchs : on ne garde que ceux d'une équipe du Top 25 AP
+AP_LEAGUES = {"ncaaf", "ncaam"}
+# Compétitions à élimination directe : « seulement les phases finales » a un sens
+FINALS_LEAGUES = {
+    "top-14", "champions-league", "europa-league", "conference-league", "coupe-de-france", "world-cup", "euro",
+    "rugby-world-cup", "fa-cup", "league-cup", "copa-del-rey", "coppa-italia", "dfb-pokal", "coupe-du-monde-clubs",
+    "copa-america", "can", "libertadores", "coupe-du-monde-f", "euro-f", "ligue-des-champions-f",
+    "champions-cup-rugby", "challenge-cup-rugby",
+}  # trop de matchs : on ne garde que ceux d'une équipe du Top 25 AP
 
 
 # ESPN n'a qu'une icône générique pour le rugby (et rien pour certaines compétitions) :
@@ -117,6 +124,14 @@ def _default_favorites(leagues: Dict[str, dict]) -> List[dict]:
     return out
 
 
+def _next_event(league_id: str, after: date):
+    """Prochain événement d'un calendrier hors fenêtre (ex. la manche MXGP de février),
+    affiché dans les favoris pour les sports à l'arrêt."""
+    events = get_cycling_events(league_id, after + timedelta(days=1), after + timedelta(days=365))
+    ev = min(events, key=lambda e: e.start_date, default=None)
+    return {"name": ev.name, "start": ev.start_date.isoformat(), "loc": ev.location} if ev else None
+
+
 def build_catalog(today: date) -> dict:
     start = today - timedelta(days=today.weekday() + 7)            # lundi de la semaine passée
     end = max(start + timedelta(days=13), today + timedelta(days=7))  # au moins 7 jours devant
@@ -126,18 +141,16 @@ def build_catalog(today: date) -> dict:
     events: List[dict] = []
     tables: Dict[str, dict] = {}
     for league_id, cfg in ESPN_LEAGUES.items():
-        if not _is_in_season(league_id, today):
-            continue
-        evs = fetch_espn_events(league_id, start, end)
+        evs = fetch_espn_events(league_id, start, end) if _is_in_season(league_id, today) else []
         if league_id in AP_LEAGUES:
             evs = [e for e in evs if e.home_rank or e.away_rank]
         if league_id == "nba" and evs:
             games = get_nba_french_tv(start, end)
             for e in evs:
                 e.channels_fr = match_french_tv(games, e.datetime_utc, e.home_team)
-        if not evs:  # compétition sans match sur la période (ex. Coupe du Monde terminée)
-            continue
-        table = None if league_id in AP_LEAGUES else get_league_table(league_id, today)
+        # Compétition à l'arrêt (Six Nations en octobre, Coupe du monde entre deux éditions) :
+        # on la garde quand même pour qu'on puisse la suivre à l'avance, sans classement.
+        table = None if league_id in AP_LEAGUES or not evs else get_league_table(league_id, today)
 
         teams: Dict[str, dict] = {}
         for e in evs:
@@ -153,12 +166,14 @@ def build_catalog(today: date) -> dict:
         leagues[league_id] = {
             "label": cfg["label"], "emoji": cfg["emoji"], "sport": cfg["sport"], "logo": _league_logo(league_id, cfg),
             "teams": dict(sorted(teams.items(), key=lambda kv: kv[1]["n"])),
-            "has_finals": any(_round_matches(e.round_info, PHASES) for e in evs) or league_id in ("top-14", "champions-league", "europa-league", "conference-league"),
+            "has_finals": any(_round_matches(e.round_info, PHASES) for e in evs) or league_id in FINALS_LEAGUES,
+            "active": bool(evs),
         }
         for e in evs:
             channels = e.channels_fr or resolve_channels(league_id, e.broadcasts, [])
             events.append(_event(e, channels, len(events)))
-        logger.info("   %s : %d matchs, %d équipes%s", cfg["label"], len(evs), len(teams), ", classement" if table else "")
+        if evs:
+            logger.info("   %s : %d matchs, %d équipes%s", cfg["label"], len(evs), len(teams), ", classement" if table else "")
 
     cycling = []
     for league_id in CYCLING_LEAGUES:
@@ -174,7 +189,8 @@ def build_catalog(today: date) -> dict:
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="minutes"),
         "range": {"start": start.isoformat(), "end": end.isoformat()},
         "leagues": leagues, "events": events, "tables": tables, "cycling": cycling,
-        "cycling_leagues": {k: {"label": v["label"], "emoji": v["emoji"]} for k, v in CYCLING_LEAGUES.items()},
+        "cycling_leagues": {k: {"label": v["label"], "emoji": v["emoji"], "sport": v.get("sport", "cycling"),
+                                "next": _next_event(k, end)} for k, v in CYCLING_LEAGUES.items()},
         "default_favorites": _default_favorites(leagues),
         "default_cycling": [f["league"] for f in load_favorites().get("favorites", []) if f.get("league") in CYCLING_LEAGUES],
         "channels": load_favorites().get("channels", []),

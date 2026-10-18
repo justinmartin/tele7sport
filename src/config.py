@@ -184,6 +184,142 @@ ESPN_LEAGUES = {
         "channels_fr": ["Eurosport"],
         "season_window": (8, 20, 9, 12),
     },
+    # ── Ajouts 10/2026 : grands championnats, coupes, international, féminines, rugby ──
+    "premier-league": {
+        "sport": "soccer", "league": "eng.1",
+        "label": "Premier League", "emoji": "⚽",
+        "channels_fr": ["Canal+"],
+    },
+    "laliga": {
+        "sport": "soccer", "league": "esp.1",
+        "label": "LaLiga", "emoji": "⚽",
+        "channels_fr": ["beIN Sports"],
+    },
+    "serie-a": {
+        "sport": "soccer", "league": "ita.1",
+        "label": "Serie A", "emoji": "⚽",
+        "channels_fr": ["beIN Sports"],
+    },
+    "bundesliga": {
+        "sport": "soccer", "league": "ger.1",
+        "label": "Bundesliga", "emoji": "⚽",
+        "channels_fr": ["beIN Sports"],
+    },
+    "liga-portugal": {
+        "sport": "soccer", "league": "por.1",
+        "label": "Liga Portugal", "emoji": "⚽",
+        "channels_fr": [],
+    },
+    "eredivisie": {
+        "sport": "soccer", "league": "ned.1",
+        "label": "Eredivisie", "emoji": "⚽",
+        "channels_fr": [],
+    },
+    "mls": {
+        "sport": "soccer", "league": "usa.1",
+        "label": "MLS", "emoji": "⚽",
+        "channels_fr": [],
+    },
+    "fa-cup": {
+        "sport": "soccer", "league": "eng.fa",
+        "label": "FA Cup", "emoji": "🏆",
+        "channels_fr": [],
+    },
+    "league-cup": {
+        "sport": "soccer", "league": "eng.league_cup",
+        "label": "Carabao Cup", "emoji": "🏆",
+        "channels_fr": [],
+    },
+    "copa-del-rey": {
+        "sport": "soccer", "league": "esp.copa_del_rey",
+        "label": "Copa del Rey", "emoji": "🏆",
+        "channels_fr": [],
+    },
+    "coppa-italia": {
+        "sport": "soccer", "league": "ita.coppa_italia",
+        "label": "Coppa Italia", "emoji": "🏆",
+        "channels_fr": [],
+    },
+    "dfb-pokal": {
+        "sport": "soccer", "league": "ger.dfb_pokal",
+        "label": "Coupe d'Allemagne", "emoji": "🏆",
+        "channels_fr": [],
+    },
+    "trophee-des-champions": {
+        "sport": "soccer", "league": "fra.super_cup",
+        "label": "Trophée des Champions", "emoji": "🏆",
+        "channels_fr": [],
+    },
+    "supercoupe-uefa": {
+        "sport": "soccer", "league": "uefa.super_cup",
+        "label": "Supercoupe de l'UEFA", "emoji": "🏆",
+        "channels_fr": [],
+    },
+    "coupe-du-monde-clubs": {
+        "sport": "soccer", "league": "fifa.cwc",
+        "label": "Coupe du monde des clubs", "emoji": "🌍",
+        "channels_fr": [],
+    },
+    "euro-qual": {
+        "sport": "soccer", "league": "uefa.euroq",
+        "label": "Qualif. Euro", "emoji": "🇪🇺",
+        "channels_fr": ["TF1"],
+    },
+    "copa-america": {
+        "sport": "soccer", "league": "conmebol.america",
+        "label": "Copa América", "emoji": "🌎",
+        "channels_fr": [],
+    },
+    "can": {
+        "sport": "soccer", "league": "caf.nations",
+        "label": "Coupe d'Afrique des Nations", "emoji": "🌍",
+        "channels_fr": ["beIN Sports"],
+    },
+    "libertadores": {
+        "sport": "soccer", "league": "conmebol.libertadores",
+        "label": "Copa Libertadores", "emoji": "🌎",
+        "channels_fr": [],
+    },
+    "coupe-du-monde-f": {
+        "sport": "soccer", "league": "fifa.wwc",
+        "label": "Coupe du Monde féminine", "emoji": "🌍",
+        "channels_fr": [],
+    },
+    "euro-f": {
+        "sport": "soccer", "league": "uefa.weuro",
+        "label": "Euro féminin", "emoji": "🇪🇺",
+        "channels_fr": [],
+    },
+    "ligue-des-champions-f": {
+        "sport": "soccer", "league": "uefa.wchampions",
+        "label": "Ligue des Champions féminine", "emoji": "⭐",
+        "channels_fr": [],
+    },
+    "premiere-ligue-f": {
+        "sport": "soccer", "league": "fra.w.1",
+        "label": "Première Ligue (D1 féminine)", "emoji": "⚽",
+        "channels_fr": [],
+    },
+    "rugby-championship": {
+        "sport": "rugby", "league": "244293",
+        "label": "Rugby Championship", "emoji": "🏉",
+        "channels_fr": [],
+    },
+    "premiership-rugby": {
+        "sport": "rugby", "league": "267979",
+        "label": "Premiership", "emoji": "🏉",
+        "channels_fr": [],
+    },
+    "urc": {
+        "sport": "rugby", "league": "270557",
+        "label": "United Rugby Championship", "emoji": "🏉",
+        "channels_fr": [],
+    },
+    "tests-rugby": {
+        "sport": "rugby", "league": "289234",
+        "label": "Tests internationaux (rugby)", "emoji": "🏉",
+        "channels_fr": [],
+    },
 }
 
 # Cycling (non-ESPN, separate fetcher)
@@ -202,6 +338,22 @@ CYCLING_LEAGUES = {
         "label": "VTT Enduro", "emoji": "🚵",
         "channels_fr": ["Red Bull TV", "Eurosport"],
         "uci_category": "mtb-enduro",
+    },
+    # Sports mécaniques : calendriers Wikipédia (src/fetchers/wiki_calendars.py)
+    "mxgp": {
+        "label": "Motocross MXGP", "emoji": "🏍️",
+        "channels_fr": [],
+        "uci_category": "mxgp", "sport": "moto",
+    },
+    "supercross": {
+        "label": "Supercross US", "emoji": "🏍️",
+        "channels_fr": [],
+        "uci_category": "supercross", "sport": "moto",
+    },
+    "dakar": {
+        "label": "Rallye Dakar", "emoji": "🏜️",
+        "channels_fr": [],
+        "uci_category": "dakar", "sport": "moto",
     },
 }
 
@@ -234,4 +386,46 @@ MONTHS_FR = ["", "janvier", "février", "mars", "avril", "mai", "juin",
 # Noms ESPN qui ne contiennent pas le nom usuel de l'équipe.
 TEAM_ALIASES = {
     "toulouse": ["Stade Toulousain"],
+    # Sélections nationales : ESPN les nomme en anglais
+    "écosse": ["Scotland"],
+    "angleterre": ["England"],
+    "irlande": ["Ireland"],
+    "pays de galles": ["Wales"],
+    "italie": ["Italy"],
+    "espagne": ["Spain"],
+    "allemagne": ["Germany"],
+    "belgique": ["Belgium"],
+    "pays-bas": ["Netherlands"],
+    "argentine": ["Argentina"],
+    "brésil": ["Brazil"],
+    "nouvelle-zélande": ["New Zealand"],
+    "afrique du sud": ["South Africa"],
+    "australie": ["Australia"],
+    "japon": ["Japan"],
+    "états-unis": ["United States"],
+    "suisse": ["Switzerland"],
+    "croatie": ["Croatia"],
+    "maroc": ["Morocco"],
+    "sénégal": ["Senegal"],
+    "géorgie": ["Georgia"],
+    "fidji": ["Fiji"],
+    "danemark": ["Denmark"],
+    "suède": ["Sweden"],
+    "norvège": ["Norway"],
+    "autriche": ["Austria"],
+    "pologne": ["Poland"],
+    "mexique": ["Mexico"],
+    "colombie": ["Colombia"],
+    "uruguay": ["Uruguay"],
+    "algérie": ["Algeria"],
+    "tunisie": ["Tunisia"],
+    "côte d'ivoire": ["Ivory Coast"],
+    "cameroun": ["Cameroon"],
+    "turquie": ["Turkey"],
+    "grèce": ["Greece"],
+    "tchéquie": ["Czechia"],
+    "roumanie": ["Romania"],
+    "samoa": ["Samoa"],
+    "tonga": ["Tonga"],
+    "canada": ["Canada"],
 }

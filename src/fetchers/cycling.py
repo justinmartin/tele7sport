@@ -1,4 +1,5 @@
 import logging
+import re
 import requests
 from datetime import date, datetime
 from dataclasses import dataclass, field
@@ -7,11 +8,10 @@ from typing import List, Optional
 from bs4 import BeautifulSoup
 
 from src.config import CYCLING_LEAGUES
+from src.fetchers.wiki_calendars import SOURCES as WIKI_SOURCES, get_calendar
 
 logger = logging.getLogger("tele7sport")
 
-# ── ProCyclingStats scraper for road races ──────────────────
-PCS_CALENDAR_URL = "https://www.procyclingstats.com/races.php"
 
 # ── UCI Calendar for MTB events ─────────────────────────────
 UCI_MTB_URL = "https://www.uci.org/api/calendar"
@@ -84,39 +84,60 @@ MAJOR_EVENTS_2025_2026 = [
 ]
 
 
-def _scrape_pcs_races(week_start: date, week_end: date) -> List[dict]:
-    """Scrape ProCyclingStats for road races happening this week."""
+# Calendrier route : pages « <année> UCI World Tour » de Wikipédia (API ouverte aux scripts).
+# ProCyclingStats bloque les clients automatisés : on ne le contourne pas.
+WIKI_API = "https://en.wikipedia.org/w/api.php"
+MONTHS_EN = {m: i for i, m in enumerate(["January", "February", "March", "April", "May", "June", "July",
+                                         "August", "September", "October", "November", "December"], 1)}
+COUNTRIES_FR = {
+    "France": "France", "Italy": "Italie", "Spain": "Espagne", "Belgium": "Belgique", "Netherlands": "Pays-Bas",
+    "Switzerland": "Suisse", "Germany": "Allemagne", "Australia": "Australie", "United Arab Emirates": "Émirats arabes unis",
+    "Canada": "Canada", "United Kingdom": "Royaume-Uni", "Poland": "Pologne", "China": "Chine", "Saudi Arabia": "Arabie saoudite",
+    "Portugal": "Portugal", "Denmark": "Danemark", "Norway": "Norvège", "Slovenia": "Slovénie", "United States": "États-Unis",
+    "Japan": "Japon", "Rwanda": "Rwanda", "Austria": "Autriche", "Monaco": "Monaco",
+}
+_wt_cache: dict = {}
+
+
+def _parse_wiki_dates(text: str, year: int):
+    """« 20–25 January », « 1 February », « 28 April – 3 May » → (début, fin)."""
+    parts = [p.strip() for p in re.split(r"[–-]", text) if p.strip()]
+    end_day, end_month = parts[-1].split()[0], parts[-1].split()[-1]
+    end = date(year, MONTHS_EN[end_month], int(end_day))
+    first = parts[0].split()
+    start = date(year, MONTHS_EN[first[1]] if len(first) > 1 else end.month, int(first[0]))
+    return start, end
+
+
+def _worldtour(year: int) -> List[dict]:
+    if year in _wt_cache:
+        return _wt_cache[year]
+    races = []
     try:
-        params = {
-            "year": week_start.year,
-            "circuit": 1,  # UCI WorldTour
-            "class": "1.UWT,2.UWT,1.Pro,2.Pro",
-        }
-        resp = requests.get(PCS_CALENDAR_URL, params=params, timeout=15)
-        if resp.status_code != 200:
-            return []
-        soup = BeautifulSoup(resp.text, "html.parser")
-        races = []
-        for row in soup.select("table.basic tbody tr"):
-            cols = row.find_all("td")
-            if len(cols) < 4:
+        resp = requests.get(WIKI_API, timeout=15, headers={"User-Agent": "tele7sport (github.com/justinmartin/tele7sport)"},
+                            params={"action": "parse", "page": f"{year}_UCI_World_Tour", "prop": "text", "format": "json", "formatversion": 2})
+        html = resp.json().get("parse", {}).get("text", "")
+        table = BeautifulSoup(html, "html.parser").find("table", class_="wikitable")
+        for row in (table.find_all("tr")[1:] if table else []):
+            cells = row.find_all(["th", "td"])
+            if len(cells) < 3:
                 continue
-            date_text = cols[0].get_text(strip=True)
-            race_name = cols[2].get_text(strip=True)
             try:
-                parts = date_text.split(".")
-                if len(parts) >= 2:
-                    d = int(parts[0])
-                    m = int(parts[1])
-                    race_date = date(week_start.year, m, d)
-                    if week_start <= race_date <= week_end:
-                        races.append({"name": race_name, "date": race_date})
-            except (ValueError, IndexError):
+                start, end = _parse_wiki_dates(cells[1].get_text(" ", strip=True), year)
+            except (ValueError, KeyError, IndexError):
                 continue
-        return races
+            flag = cells[0].find("img")
+            winner = re.sub(r"\s*\(.*?\)\s*", "", cells[2].get_text(" ", strip=True)).strip()
+            races.append({
+                "name": re.sub(r"^[\s/]+", "", cells[0].get_text(" ", strip=True)), "start": start, "end": end,
+                "location": COUNTRIES_FR.get(flag.get("alt", ""), flag.get("alt", "")) if flag else "",
+                "winner": winner, "stage_race": end > start,
+            })
+        logger.info("🚴 WorldTour %d (Wikipédia) : %d courses", year, len(races))
     except Exception as e:
-        logger.warning("PCS scrape failed: %s", e)
-        return []
+        logger.warning("Calendrier WorldTour %d indisponible : %s", year, e)
+    _wt_cache[year] = races
+    return races
 
 
 def get_cycling_events(
@@ -132,46 +153,39 @@ def get_cycling_events(
     target_category = cfg["uci_category"]
     events: List[CyclingEvent] = []
 
-    # 1. Check static calendar
+    # Sports mécaniques (MXGP, Supercross, Dakar) : calendriers Wikipédia
+    if target_category in WIKI_SOURCES:
+        return [CyclingEvent(
+            league_id=league_id, league_label=cfg["label"], emoji=cfg["emoji"], name=e["name"],
+            location=e["location"], start_date=e["start"], end_date=e["end"], category=target_category,
+            channels_fr=cfg["channels_fr"], details=e["details"], start_time="",
+        ) for e in get_calendar(target_category, week_start, week_end)]
+
+    # Route : calendrier WorldTour réel (Wikipédia)
+    if target_category == "road":
+        for year in sorted({week_start.year, week_end.year}):
+            for race in _worldtour(year):
+                if race["end"] >= week_start and race["start"] <= week_end:
+                    kind = "Course par étapes" if race["stage_race"] else "Classique"
+                    details = f"{kind} · vainqueur : {race['winner']}" if race["winner"] and race["end"] < date.today() else kind
+                    events.append(CyclingEvent(
+                        league_id=league_id, league_label=cfg["label"], emoji=cfg["emoji"], name=race["name"],
+                        location=race["location"], start_date=race["start"], end_date=race["end"], category="road",
+                        channels_fr=cfg["channels_fr"], details=details, start_time="",
+                    ))
+        return events
+
+    # VTT : calendrier saisi à la main (pas de source officielle exploitable)
     for ev in MAJOR_EVENTS_2025_2026:
         if ev["category"] != target_category:
             continue
         ev_start = date.fromisoformat(ev["start"])
         ev_end = date.fromisoformat(ev["end"])
-        # Event overlaps with our week?
         if ev_end >= week_start and ev_start <= week_end:
             events.append(CyclingEvent(
-                league_id=league_id,
-                league_label=cfg["label"],
-                emoji=cfg["emoji"],
-                name=ev["name"],
-                location=ev.get("location", ""),
-                start_date=ev_start,
-                end_date=ev_end,
-                category=target_category,
-                channels_fr=cfg["channels_fr"],
-                details=ev.get("details", ""),
-                start_time=ev.get("start_time", "09:00"),
+                league_id=league_id, league_label=cfg["label"], emoji=cfg["emoji"], name=ev["name"],
+                location="" if ev.get("location") == "TBD" else ev.get("location", ""),
+                start_date=ev_start, end_date=ev_end, category=target_category,
+                channels_fr=cfg["channels_fr"], details=ev.get("details", ""), start_time="",
             ))
-
-    # 2. For road cycling, try PCS scraping to catch races not in static calendar
-    if target_category == "road":
-        pcs_races = _scrape_pcs_races(week_start, week_end)
-        existing_names = {e.name.lower() for e in events}
-        for race in pcs_races:
-            if race["name"].lower() not in existing_names:
-                events.append(CyclingEvent(
-                    league_id=league_id,
-                    league_label=cfg["label"],
-                    emoji=cfg["emoji"],
-                    name=race["name"],
-                    location="",
-                    start_date=race["date"],
-                    end_date=race["date"],
-                    category="road",
-                    channels_fr=cfg["channels_fr"],
-                    details="",
-                    start_time="09:00",
-                ))
-
     return events
