@@ -83,7 +83,7 @@ def _team(ev: SportEvent, side: str) -> dict:
 def _event(ev: SportEvent, channels: List[str], idx: int) -> dict:
     day, night = tv_day(ev.datetime_utc)
     out = {
-        "id": idx, "lg": ev.league_id,
+        "id": idx, "eid": ev.espn_id, "lg": ev.league_id,
         "ko": ev.datetime_utc.astimezone(timezone.utc).isoformat(timespec="minutes"),
         "day": day.isoformat(), "st": ev.status[0],  # s(cheduled) / i(n progress) / c(ompleted)
         "h": _team(ev, "home"), "a": _team(ev, "away"), "ch": channels,
@@ -165,6 +165,7 @@ def build_catalog(today: date) -> dict:
             tables[league_id] = table
         leagues[league_id] = {
             "label": cfg["label"], "emoji": cfg["emoji"], "sport": cfg["sport"], "logo": _league_logo(league_id, cfg),
+            "espn": f"{cfg['sport']}/{cfg['league']}",  # pour les scores en direct et les fiches équipe
             "teams": dict(sorted(teams.items(), key=lambda kv: kv[1]["n"])),
             "has_finals": any(_round_matches(e.round_info, PHASES) for e in evs) or league_id in FINALS_LEAGUES,
             "active": bool(evs),

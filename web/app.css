@@ -206,3 +206,36 @@ main { max-width: 600px; margin: 0 auto; padding: 18px 18px 0; }
 .lg-tile.emoji { background: var(--raised-2); }
 .lg-tile.emoji .em { font-size: 62%; line-height: 1; }
 .lg-tile.m.emoji .em { font-size: 19px; }
+
+/* ----- Scores en direct ----- */
+.live-detail { font-size: 11px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+.team { cursor: pointer; }
+
+/* ----- Fiche équipe ----- */
+.text-btn.back { display: inline-flex; align-items: center; gap: 2px; padding-left: 4px; }
+.team-hero { display: flex; align-items: center; gap: 16px; padding: 22px 0 18px; border-bottom: 1px solid var(--line-strong); }
+.team-hero > img { width: 64px; height: 64px; object-fit: contain; }
+.team-hero h2 { font-family: var(--serif); font-weight: 800; font-size: 26px; letter-spacing: -0.03em; line-height: 1.1; }
+.team-hero .meta { display: flex; align-items: center; gap: 7px; margin-top: 6px; font-size: 13px; color: var(--text-2); }
+.team-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1px solid var(--line); }
+.team-stats div { padding: 14px 0; text-align: center; }
+.team-stats div + div { border-left: 1px solid var(--line); }
+.team-stats b { display: block; font-family: var(--serif); font-weight: 800; font-size: 22px; letter-spacing: -0.02em; }
+.team-stats span { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
+.section-title { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); margin: 24px 0 4px; }
+.form { display: flex; gap: 6px; margin-top: 10px; }
+.form span { width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; font-size: 12px; font-weight: 800; color: #fff; }
+.form .w { background: var(--win); } .form .l { background: var(--lose); } .form .d { background: #6e6e78; }
+.fixture { display: grid; grid-template-columns: 74px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.fixture .when { font-size: 12px; color: var(--text-3); line-height: 1.35; }
+.fixture .when b { display: block; color: var(--text); font-size: 15px; font-variant-numeric: tabular-nums; }
+.fixture .opp { display: flex; align-items: center; gap: 9px; min-width: 0; font-size: 15px; font-weight: 600; }
+.fixture .opp img { width: 22px; height: 22px; object-fit: contain; flex: none; }
+.fixture .opp span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fixture .opp small { color: var(--text-3); font-weight: 600; font-size: 12px; flex: none; }
+.fixture .res { display: flex; align-items: center; gap: 8px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.fixture .res i { font-style: normal; width: 22px; height: 22px; border-radius: 5px; display: grid; place-items: center; font-size: 11px; color: #fff; }
+.fixture .res i.w { background: var(--win); } .fixture .res i.l { background: var(--lose); } .fixture .res i.d { background: #6e6e78; }
+.fixture .chs { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 4px; }
+.follow-btn { width: 100%; margin-top: 22px; }
+.table tr[data-team] { cursor: pointer; }

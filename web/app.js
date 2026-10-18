@@ -126,6 +126,7 @@ function lgTile(lg, size = 's') {
 
 function liveState(e) {
   if (e.st === 'c') return 'done';
+  if (e.st === 'i') return 'live';
   const start = new Date(e.ko).getTime(), now = Date.now();
   if (now >= start && now < start + MATCH_DURATION_H * 3600e3) return 'live';
   return now >= start ? 'done' : 'upcoming';
@@ -133,12 +134,12 @@ function liveState(e) {
 
 function teamLine(e, side) {
   const s = e[side], t = team(e.lg, s.id);
-  const done = e.st === 'c' && e.hs != null;
+  const done = (e.st === 'c' || e.st === 'i') && e.hs != null;
   const mine = side === 'h' ? e.hs : e.as, theirs = side === 'h' ? e.as : e.hs;
   const cls = ['team'];
   if (isFavTeam(e.lg, s.id)) cls.push('fav');
-  if (done && mine < theirs) cls.push('loser');
-  return `<div class="${cls.join(' ')}">
+  if (e.st === 'c' && done && mine < theirs) cls.push('loser');
+  return `<div class="${cls.join(' ')}" data-team="${esc(s.id)}" data-league="${e.lg}" role="button" tabindex="0">
     ${t.l ? `<img src="${esc(t.l)}" alt="" loading="lazy">` : '<span class="noimg"></span>'}
     <span class="name">${s.rk ? `<span class="rk">${s.rk}</span>` : ''}${esc(t.n)}${s.r ? `<span class="rec">${recordHtml(s.r)}</span>` : ''}</span>
     ${done ? `<span class="score">${mine}</span>` : ''}
@@ -151,7 +152,7 @@ function matchRow(e) {
   const [top, bottom] = US_SPORTS.has(sport) ? ['a', 'h'] : ['h', 'a'];
   let side = '';
   if (state === 'done' && e.st !== 'c') side = '<span class="status">Score à venir</span>';
-  else if (state === 'live') side = '<span class="live">EN DIRECT</span>';
+  else if (state === 'live') side = `<span class="live">EN DIRECT</span>${e.det ? `<span class="live-detail">${esc(e.det)}</span>` : ''}`;
   else if (state === 'upcoming') side = `<span class="time">${hhmm(e.ko)}</span>`;
   const extras = [];
   if (e.hl && state !== 'done') extras.push('<span class="tag">À ne pas rater</span>');
@@ -286,7 +287,7 @@ function renderStandings() {
         return `<table class="table">
         ${groups.length > 1 || g.name !== L.label ? `<caption>${esc(g.name)}</caption>` : ''}
         <thead><tr><th>#</th><th>Équipe</th><th>Bilan</th>${points ? '<th>Pts</th>' : ''}</tr></thead>
-        <tbody>${rows.map(r => r === 'gap' ? `<tr class="gap"><td colspan="${cols}">···</td></tr>` : `<tr class="${isFav(r) ? 'fav' : ''}">
+        <tbody>${rows.map(r => r === 'gap' ? `<tr class="gap"><td colspan="${cols}">···</td></tr>` : `<tr class="${isFav(r) ? 'fav' : ''}" data-team="${esc(r.team_id)}" data-league="${f.league}">
           <td>${r.rank ?? '–'}</td>
           <td class="team-cell"><span class="tc">${r.logo ? `<img src="${esc(r.logo)}" alt="" loading="lazy">` : ''}<span>${esc(r.team)}</span></span></td>
           <td class="rec-cell">${recordHtml(r.record)}</td>${points ? `<td class="pts">${esc(r.points ?? '')}</td>` : ''}
@@ -367,6 +368,14 @@ function renderFavs() {
   html += `<div class="sheet-actions">
     <button class="btn primary" type="button" data-action="copy">Copier pour la newsletter</button>
     <button class="btn" type="button" data-action="reset">Revenir aux favoris de la newsletter</button>
+  </div>
+  <div class="sport">Widget iPhone</div>
+  <div class="sheet-actions" style="margin-top:10px">
+    <button class="btn primary" type="button" data-action="widget">Copier le script du widget</button>
+    <p class="note">1. Installe l'app gratuite <strong>Scriptable</strong> (App Store).<br>
+      2. Dans Scriptable : <strong>+</strong>, colle le script, nomme-le « Télé7Sport ».<br>
+      3. Sur l'écran d'accueil : appui long → <strong>+</strong> → Scriptable → widget petit, moyen ou grand → touche-le → Script : <strong>Télé7Sport</strong>.<br>
+      Le widget suit tes favoris du moment où tu copies le script : recopie-le si tu les changes.</p>
     <p class="note">Tes favoris sont enregistrés sur ce téléphone. La newsletter du lundi garde sa propre liste : pour l'aligner, copie la configuration et colle-la dans le secret GitHub <strong>FAVORITES_JSON</strong>.</p>
   </div>`;
   $('#favs-body').innerHTML = html;
@@ -428,6 +437,14 @@ function onFavAction(el) {
   } else if (action === 'reset') {
     if (!confirm('Revenir aux favoris de la newsletter ?')) return;
     favs = defaultFavs();
+  } else if (action === 'widget') {
+    if (!widgetTemplate) { toast('Script pas encore chargé, réessaie'); loadWidgetTemplate(); return; }
+    const script = widgetTemplate
+      .replace('__FAVS__', JSON.stringify(favs))
+      .replace('__NATIONS__', JSON.stringify(NATIONS_EN))
+      .replace('__CHANNELS__', JSON.stringify(CHANNEL_COLORS));
+    navigator.clipboard?.writeText(script).then(() => toast('Script copié : colle-le dans Scriptable'), () => toast('Copie impossible'));
+    return;
   } else if (action === 'copy') {
     navigator.clipboard?.writeText(newsletterConfig()).then(() => toast('Configuration copiée'), () => toast('Copie impossible'));
     return;
@@ -439,6 +456,7 @@ function onFavAction(el) {
 }
 
 function openFavs() {
+  if (!widgetTemplate) loadWidgetTemplate();
   $('#favs').hidden = false;
   document.body.classList.add('sheet-open');
   renderFavs();
@@ -449,6 +467,170 @@ function closeFavs() {
   document.body.classList.remove('sheet-open');
   if (filter !== 'all' && !favFor(filter)) filter = 'all';
   render();
+}
+
+// ---------------------------------------------------------------- scores en direct
+// Toutes les minutes, s'il y a un match de mes favoris en cours ou sur le point de commencer,
+// on lit le scoreboard ESPN de sa compétition (autorisé depuis le navigateur).
+// Relais Vercel (/api/espn) : le CDN d'ESPN ne renvoie pas toujours l'en-tête CORS.
+const espnUrl = (path, dates) => `/api/espn?path=${encodeURIComponent(path)}${dates ? `&dates=${dates}` : ''}`;
+const ymd = d => d.toISOString().slice(0, 10).replace(/-/g, '');
+const ymdNY = d => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(d).replace(/-/g, '');
+
+async function pollLive() {
+  if (!cat || document.visibilityState !== 'visible') return;
+  const now = Date.now();
+  const watch = cat.events.filter(e => e.st !== 'c' && e.eid && visible(e)
+    && now >= new Date(e.ko) - 15 * 60e3 && now < new Date(e.ko).getTime() + 5 * 3600e3);
+  if (!watch.length) return;
+  const byLeague = new Map();
+  watch.forEach(e => {
+    const d = new Date(e.ko);
+    if (!byLeague.has(e.lg)) byLeague.set(e.lg, new Set());
+    byLeague.get(e.lg).add(ymd(d)).add(ymdNY(d));
+  });
+  let changed = false;
+  await Promise.all([...byLeague].flatMap(([lg, dates]) => [...dates].map(async date => {
+    try {
+      const data = await fetch(espnUrl(`${league(lg).espn}/scoreboard`, date)).then(r => r.json());
+      (data.events || []).forEach(raw => {
+        const e = cat.events.find(x => x.eid === raw.id);
+        if (!e) return;
+        const comp = raw.competitions?.[0] || {}, type = comp.status?.type || {};
+        const score = side => { const c = (comp.competitors || []).find(x => x.homeAway === side); const v = parseInt(c?.score, 10); return Number.isNaN(v) ? null : v; };
+        const st = type.completed ? 'c' : type.state === 'in' ? 'i' : e.st;
+        const det = type.state === 'in' ? (type.shortDetail || comp.status?.displayClock || '') : '';
+        const hs = score('home'), as = score('away');
+        if (st !== e.st || hs !== e.hs || as !== e.as || det !== e.det) {
+          Object.assign(e, { st, det }, hs != null ? { hs, as } : {});
+          changed = true;
+        }
+      });
+    } catch (err) { /* hors-ligne : on garde l'état connu */ }
+  })));
+  if (changed && $('#favs').hidden && $('#team').hidden) render();
+}
+
+// ---------------------------------------------------------------- fiche équipe
+const SHORT_DAYS = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'];
+const shortDate = iso => { const d = new Date(iso); return `${SHORT_DAYS[d.getDay()]} ${d.getDate()}/${pad(d.getMonth() + 1)}`; };
+
+// Matchs d'une équipe : catalogue (3 semaines, fiable) + calendrier ESPN de la saison quand
+// il est à jour (NFL, NBA…), dédoublonnés par identifiant de match.
+function teamGamesFromCatalog(lg, id) {
+  return cat.events.filter(e => e.lg === lg && (e.h.id === id || e.a.id === id)).map(e => {
+    const home = e.h.id === id, opp = home ? e.a : e.h;
+    return { eid: e.eid, ko: e.ko, home, oppId: opp.id, oppName: team(lg, opp.id).n, oppLogo: team(lg, opp.id).l,
+             done: e.st === 'c' && e.hs != null, us: home ? e.hs : e.as, them: home ? e.as : e.hs, ch: e.ch, live: e.st === 'i' };
+  });
+}
+
+async function teamGamesFromEspn(lg, id) {
+  try {
+    const data = await fetch(espnUrl(`${league(lg).espn}/teams/${id}/schedule`)).then(r => r.ok ? r.json() : {});
+    return (data.events || []).map(raw => {
+      const comp = raw.competitions?.[0] || {};
+      const me = (comp.competitors || []).find(c => String(c.team?.id) === String(id));
+      const opp = (comp.competitors || []).find(c => String(c.team?.id) !== String(id));
+      if (!me || !opp) return null;
+      const val = c => { const v = typeof c.score === 'object' ? c.score?.displayValue : c.score; const n = parseInt(v, 10); return Number.isNaN(n) ? null : n; };
+      const done = !!comp.status?.type?.completed;
+      return { eid: raw.id, ko: raw.date, home: me.homeAway === 'home', oppId: String(opp.team?.id || ''),
+               oppName: opp.team?.displayName || '?', oppLogo: opp.team?.logos?.[0]?.href || opp.team?.logo || '',
+               done, us: done ? val(me) : null, them: done ? val(opp) : null, ch: [] };
+    }).filter(Boolean);
+  } catch (e) {
+    return [];
+  }
+}
+
+function outcome(g) {
+  if (!g.done || g.us == null) return '';
+  return g.us > g.them ? 'w' : g.us < g.them ? 'l' : 'd';
+}
+const OUTCOME_FR = { w: 'V', l: 'D', d: 'N' };
+
+function standingOf(lg, id) {
+  for (const g of cat.tables[lg]?.groups || []) {
+    const row = g.entries.find(r => r.team_id === id);
+    if (row) return { ...row, group: g.name, size: g.entries.length };
+  }
+  return null;
+}
+
+function renderTeam(lg, id, games) {
+  const t = team(lg, id), L = league(lg), st = standingOf(lg, id);
+  const now = Date.now();
+  const past = games.filter(g => g.done).sort((a, b) => b.ko.localeCompare(a.ko));
+  const next = games.filter(g => !g.done && new Date(g.ko).getTime() > now - 3 * 3600e3).sort((a, b) => a.ko.localeCompare(b.ko));
+  const followed = isFavTeam(lg, id);
+  const fixture = g => {
+    const o = outcome(g);
+    const right = g.done ? `<span class="res"><i class="${o}">${OUTCOME_FR[o] || ''}</i>${g.us} - ${g.them}</span>`
+      : g.live ? '<span class="live">EN DIRECT</span>' : '';
+    return `<div class="fixture">
+      <div class="when"><b>${g.done ? shortDate(g.ko) : hhmm(g.ko)}</b>${g.done ? '' : shortDate(g.ko)}</div>
+      <div class="opp">${g.oppLogo ? `<img src="${esc(g.oppLogo)}" alt="" loading="lazy">` : ''}<small>${g.home ? 'vs' : '@'}</small><span>${esc(g.oppName)}</span></div>
+      ${right}
+      ${!g.done && g.ch?.length ? `<div class="chs">${g.ch.map(c => `<span class="ch" style="background:${chColor(c)}">${esc(c)}</span>`).join('')}</div>` : ''}
+    </div>`;
+  };
+  const form = past.slice(0, 5).map(outcome).filter(Boolean);
+  const ordinal = n => n === 1 ? '1er' : `${n}e`;
+  return `
+    <div class="team-hero">
+      ${t.l ? `<img src="${esc(t.l)}" alt="">` : ''}
+      <div><h2 id="team-name">${esc(t.n)}</h2><div class="meta">${lgTile(lg)}${esc(L.label)}</div></div>
+    </div>
+    ${st ? `<div class="team-stats" style="grid-template-columns:repeat(${st.points != null || st.played != null ? 3 : 2},minmax(0,1fr))">
+      <div><b>${st.rank ? ordinal(st.rank) : '–'}</b><span>sur ${st.size}</span></div>
+      <div><b class="rec-cell">${recordHtml(st.record)}</b><span>Bilan</span></div>
+      ${st.points != null || st.played != null ? `<div><b>${esc(st.points ?? st.played)}</b><span>${st.points != null ? 'Points' : 'Matchs'}</span></div>` : ''}
+    </div>` : ''}
+    ${form.length ? `<div class="section-title">Forme</div><div class="form">${form.map(o => `<span class="${o}">${OUTCOME_FR[o]}</span>`).join('')}</div>` : ''}
+    <div class="section-title">Prochains matchs</div>
+    ${next.slice(0, 4).map(fixture).join('') || '<p class="empty">Pas de match programmé pour l\'instant.</p>'}
+    <div class="section-title">Derniers résultats</div>
+    ${past.slice(0, 5).map(fixture).join('') || '<p class="empty">Pas encore de résultat.</p>'}
+    <button class="btn ${followed ? '' : 'primary'} follow-btn" type="button" data-follow="${esc(id)}" data-league="${lg}">${followed ? 'Ne plus suivre' : 'Suivre cette équipe'}</button>`;
+}
+
+let teamToken = 0;
+async function openTeam(lg, id) {
+  if (!league(lg) || !id) return;
+  const token = ++teamToken;
+  $('#team').hidden = false;
+  document.body.classList.add('sheet-open');
+  const fromCatalog = teamGamesFromCatalog(lg, id);
+  $('#team-body').innerHTML = renderTeam(lg, id, fromCatalog);
+  $('#team-body').scrollTop = 0;
+  const fromEspn = await teamGamesFromEspn(lg, id);
+  if (token !== teamToken || $('#team').hidden) return;
+  const known = new Set(fromCatalog.map(g => g.eid));
+  $('#team-body').innerHTML = renderTeam(lg, id, [...fromCatalog, ...fromEspn.filter(g => !known.has(g.eid))]);
+}
+
+function closeTeam() {
+  $('#team').hidden = true;
+  if ($('#favs').hidden) document.body.classList.remove('sheet-open');
+  render();
+}
+
+function toggleFollow(lg, id) {
+  let f = favFor(lg);
+  if (!f) { f = { league: lg, mode: 'teams', teams: [], names: [], finals: false }; favs.leagues.push(f); }
+  if (f.mode !== 'teams') { f.mode = 'teams'; f.teams = []; }
+  f.teams = f.teams.includes(id) ? f.teams.filter(x => x !== id) : [...f.teams, id];
+  if (!f.teams.length && !(f.names || []).length) favs.leagues = favs.leagues.filter(x => x !== f);
+  saveFavs();
+  toast(f.teams.includes(id) ? 'Équipe ajoutée à tes favoris' : 'Équipe retirée de tes favoris');
+  openTeam(lg, id);
+}
+
+// Modèle du script Scriptable, chargé d'avance : Safari n'autorise la copie que pendant le tap.
+let widgetTemplate = null;
+function loadWidgetTemplate() {
+  fetch('/widget/scriptable.js').then(r => r.ok ? r.text() : null).then(t => { widgetTemplate = t; }).catch(() => {});
 }
 
 // ---------------------------------------------------------------- données
@@ -468,6 +650,7 @@ async function load({ manual = false } = {}) {
     toast('Hors-ligne : programme gardé en mémoire');
   }
   render();
+  pollLive();
 }
 
 // ---------------------------------------------------------------- démarrage
@@ -483,6 +666,8 @@ $('.tabs').addEventListener('click', ev => {
   render(); window.scrollTo(0, 0);
 });
 $('#view').addEventListener('click', ev => {
+  const teamEl = ev.target.closest('[data-team]');
+  if (teamEl) { openTeam(teamEl.dataset.league, teamEl.dataset.team); return; }
   const more = ev.target.closest('[data-expand]');
   if (more) { expandedTables.add(more.dataset.expand); render(); return; }
   const story = ev.target.closest('[data-filter]');
@@ -492,6 +677,11 @@ $('#view').addEventListener('click', ev => {
 $('#refresh').addEventListener('click', () => load({ manual: true }));
 $('#open-favs').addEventListener('click', openFavs);
 $('#close-favs').addEventListener('click', closeFavs);
+$('#close-team').addEventListener('click', closeTeam);
+$('#team-body').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-follow]');
+  if (b) toggleFollow(b.dataset.league, b.dataset.follow);
+});
 $('#favs-body').addEventListener('click', ev => {
   const el = ev.target.closest('[data-action]');
   if (el && el.dataset.action !== 'finals' && el.dataset.action !== 'search') onFavAction(el);
@@ -504,7 +694,8 @@ $('#favs-body').addEventListener('input', ev => {
   grid.outerHTML = teamGrid(ev.target.dataset.league, f);
 });
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') load(); });
-setInterval(() => { if ($('#favs').hidden) render(); }, 60000);
+setInterval(() => { if ($('#favs').hidden && $('#team').hidden) render(); }, 60000);
+setInterval(pollLive, 60000);
 
 render();
 load();

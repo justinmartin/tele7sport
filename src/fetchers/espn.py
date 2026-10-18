@@ -42,6 +42,7 @@ class SportEvent:
     away_record: str = ""
     home_rank: Optional[int] = None
     away_rank: Optional[int] = None
+    espn_id: str = ""  # identifiant ESPN du match (scores en direct dans l'app)
     # Diffuseurs français réels quand on les connaît (NBA : nba.com), sinon vide
     channels_fr: List[str] = field(default_factory=list)
 
@@ -151,6 +152,7 @@ def _parse_event(event_data: dict, league_id: str, league_cfg: dict) -> Optional
         home_color=h.get("color", ""), away_color=a.get("color", ""),
         home_record=h.get("record", ""), away_record=a.get("record", ""),
         home_rank=h.get("rank"), away_rank=a.get("rank"),
+        espn_id=str(event_data.get("id", "")),
     )
 
 
