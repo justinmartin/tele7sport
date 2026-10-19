@@ -6,7 +6,7 @@ const SOURCES = [
   'https://raw.githubusercontent.com/justinmartin/tele7sport/main/web/data/catalog.json',
   '/data/catalog.json',
 ];
-const KEYS = { catalog: 't7s_catalog', favs: 't7s_favs', tab: 't7s_tab' };
+const KEYS = { catalog: 't7s_catalog', favs: 't7s_favs', tab: 't7s_tab', sub: 't7s_newsletter' };
 const NIGHT_END_HOUR = 7;      // avant 7h : rattaché à la soirée de la veille
 const MATCH_DURATION_H = 3;
 const LEAGUE_PASS = 'NBA League Pass';
@@ -39,6 +39,7 @@ let tab = 'today';
 let filter = 'all';
 let openLeague = null;   // compétition dépliée dans « Mes favoris »
 let teamQuery = '';
+let selDay = null;       // jour choisi dans le calendrier
 
 // ---------------------------------------------------------------- utilitaires
 const $ = sel => document.querySelector(sel);
@@ -158,6 +159,7 @@ function matchRow(e) {
   if (e.hl && state !== 'done') extras.push('<span class="tag">À ne pas rater</span>');
   if (state !== 'done') extras.push(...e.ch.map(c => `<span class="ch" style="background:${chColor(c)}">${esc(c)}</span>`));
   if (e.rd) extras.push(`<span class="round">${esc(e.rd)}</span>`);
+  if (state === 'upcoming') extras.push(`<button class="cal-add" type="button" data-cal="${e.lg}:${esc(e.eid)}" aria-label="Ajouter à mon agenda">${CAL_ICON}</button>`);
   return `<article class="match${e.nt ? ' night' : ''}${side ? '' : ' no-side'}">
     <div class="teams">${teamLine(e, top)}${teamLine(e, bottom)}</div>
     ${side ? `<div class="side">${side}</div>` : ''}
@@ -188,6 +190,7 @@ function cyclingRows(list) {
     </article>`).join('')).join('');
 }
 
+const CAL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg>';
 const MOON = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>';
 
 // Une journée : soirée par compétition, puis la nuit, puis le résumé League Pass.
@@ -225,11 +228,47 @@ function renderToday() {
   return html + next.map(d => dayBlock(d, myEvents().filter(e => e.day === d))).join('');
 }
 
-function renderWeek() {
-  const first = tvToday(), last = addDays(first, 6);
-  const leaguesWithEvents = [...new Set(cat.events.filter(visible).filter(e => e.day >= first && e.day <= last).map(e => e.lg))];
-  const short = s => { const d = parseDay(s); return `${d.getDate()} ${MONTHS[d.getMonth()]}`; };
-  let html = pageHead(`${short(first)} → ${short(last)}`, 'Cette semaine');
+const WEEKDAYS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+const MONTHS_SHORT = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+
+// Grille du mois : de ce lundi jusqu'au bout du programme connu (4 à 5 semaines).
+function calendarGrid(today) {
+  const t = parseDay(today);
+  const first = addDays(today, -((t.getDay() + 6) % 7));
+  const last = cat.range?.end && cat.range.end > today ? cat.range.end : addDays(today, 27);
+  const mine = myEvents();
+  const cells = [];
+  for (let d = first; d <= last || (cells.length % 7); d = addDays(d, 1)) {
+    const evs = mine.filter(e => e.day === d);
+    const lgs = [...new Set(evs.map(e => e.lg))];
+    const solo = cyclingFor(d);
+    const marks = [...lgs.map(lg => league(lg)?.logo ? `<span class="mk"><img src="${esc(league(lg).logo)}" alt=""></span>` : `<span class="mk em">${esc(league(lg)?.emoji || '•')}</span>`),
+      ...[...new Set(solo.map(c => c.emoji))].map(em => `<span class="mk em">${esc(em)}</span>`)];
+    const n = parseDay(d).getDate();
+    const cls = ['cal-day'];
+    if (d === today) cls.push('today');
+    if (d === selDay) cls.push('sel');
+    if (d < today) cls.push('past');
+    if (d > last) cls.push('out');
+    cells.push(`<button class="${cls.join(' ')}" type="button" data-day="${d}"${d > last ? ' disabled' : ''} aria-label="${esc(dayLabel(d))}${evs.length ? `, ${evs.length} match${evs.length > 1 ? 's' : ''}` : ''}">
+      <span class="num">${n === 1 ? `1 ${MONTHS_SHORT[parseDay(d).getMonth()]}` : n}</span>
+      <span class="marks">${marks.slice(0, 3).join('')}${marks.length > 3 ? `<span class="mk more">+${marks.length - 3}</span>` : ''}</span>
+    </button>`);
+  }
+  return `<div class="cal" role="group" aria-label="Calendrier">
+    <div class="cal-head">${WEEKDAYS.map(w => `<span>${w}</span>`).join('')}</div>
+    <div class="cal-grid">${cells.join('')}</div>
+  </div>`;
+}
+
+function renderCalendar() {
+  const today = tvToday();
+  if (!selDay || selDay < cat.range.start || selDay > cat.range.end) selDay = today;
+  const leaguesWithEvents = [...new Set(cat.events.filter(visible).filter(e => e.day >= today).map(e => e.lg))];
+  const sel = parseDay(selDay);
+  let html = pageHead(`${cap(MONTHS[sel.getMonth()])} ${sel.getFullYear()}`, 'Calendrier');
+  if (!favs.leagues.length && !favs.cycling.length) return html + noFavs();
+  html += `<button class="sub-btn" type="button" data-action="subscribe">${CAL_ICON}<span>Mettre mes matchs dans mon agenda</span></button>`;
   if (leaguesWithEvents.length > 1) {
     html += `<div class="stories" role="group" aria-label="Filtrer par compétition">
       <button class="story${filter === 'all' ? ' active' : ''}" data-filter="all" type="button"><span class="ring"><span class="disc all">Tout</span></span><span class="lbl">Tout</span></button>
@@ -238,10 +277,13 @@ function renderWeek() {
         <span class="lbl">${esc(league(lg).label)}</span></button>`).join('')}
     </div>`;
   }
-  if (!favs.leagues.length) return html + noFavs();
+  html += calendarGrid(today);
+  // Le jour choisi, puis la suite de la semaine
   const blocks = [];
-  for (let d = first; d <= last; d = addDays(d, 1)) blocks.push(dayBlock(d, myEvents().filter(e => e.day === d)));
-  return html + (blocks.join('') || '<p class="empty">Rien cette semaine pour ce filtre.</p>');
+  const chosen = dayBlock(selDay, myEvents().filter(e => e.day === selDay));
+  blocks.push(chosen || `<section class="day"><h2 class="day-title"><span>${cap(dayLabel(selDay))}</span></h2><p class="empty small">Rien ce jour-là pour tes équipes.</p></section>`);
+  for (let d = addDays(selDay, 1); d <= addDays(selDay, 6) && d <= cat.range.end; d = addDays(d, 1)) blocks.push(dayBlock(d, myEvents().filter(e => e.day === d)));
+  return html + `<div id="cal-list">${blocks.join('')}</div>`;
 }
 
 function renderResults() {
@@ -307,7 +349,7 @@ function render() {
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   const view = $('#view');
   if (!cat) { view.innerHTML = '<p class="empty">Chargement du programme…</p>'; return; }
-  view.innerHTML = { today: renderToday, week: renderWeek, results: renderResults, standings: renderStandings }[tab]();
+  view.innerHTML = { today: renderToday, week: renderCalendar, results: renderResults, standings: renderStandings }[tab]();
   $('#updated').textContent = ago(cat.generated_at);
 }
 
@@ -367,19 +409,15 @@ function renderFavs() {
       </div></div>`;
     });
   });
-  html += `<div class="sheet-actions">
-    <button class="btn primary" type="button" data-action="copy">Copier pour la newsletter</button>
-    <button class="btn" type="button" data-action="reset">Revenir aux favoris de la newsletter</button>
-  </div>
-  <div class="sport">Widget iPhone</div>
+  html += newsletterBlock() + `<div class="sport">Widget iPhone</div>
   <div class="sheet-actions" style="margin-top:10px">
     <button class="btn primary" type="button" data-action="widget">Copier le script du widget</button>
     <p class="note">1. Installe l'app gratuite <strong>Scriptable</strong> (App Store).<br>
       2. Dans Scriptable : <strong>+</strong>, colle le script, nomme-le « Télé7Sport ».<br>
       3. Sur l'écran d'accueil : appui long → <strong>+</strong> → Scriptable → widget petit, moyen ou grand → touche-le → Script : <strong>Télé7Sport</strong>.<br>
       Le widget suit tes favoris du moment où tu copies le script : recopie-le si tu les changes.</p>
-    <p class="note">Tes favoris sont enregistrés sur ce téléphone. La newsletter du lundi garde sa propre liste : pour l'aligner, copie la configuration et colle-la dans le secret GitHub <strong>FAVORITES_JSON</strong>.</p>
-  </div>`;
+  </div>
+  <div class="sheet-actions"><button class="btn" type="button" data-action="reset">Revenir aux favoris par défaut</button></div>`;
   $('#favs-body').innerHTML = html;
 }
 
@@ -402,17 +440,101 @@ function teamGrid(lg, f) {
       ${t.l ? `<img src="${esc(t.l)}" alt="" loading="lazy">` : ''}${esc(t.n)}</button>`).join('')}</div>`;
 }
 
-function newsletterConfig() {
-  const favorites = favs.leagues.map(f => {
-    const item = { league: f.league };
-    if (f.mode === 'ap') item.teams = ['AP_RANKED'];
-    else if (f.mode === 'teams') item.teams = [...f.teams.map(id => team(f.league, id).n), ...(f.names || [])];
-    else item.teams = [];
-    if (f.finals) item.phases_only = ['SEMIFINAL', 'FINAL'];
-    return item;
-  });
-  favs.cycling.forEach(lg => favorites.push({ league: lg }));
-  return JSON.stringify({ favorites, channels: cat.channels || [] }, null, 2);
+// ---------------------------------------------------------------- newsletter par e-mail
+// On s'inscrit avec son adresse : le serveur garde l'adresse et les favoris, et envoie le
+// programme chaque lundi matin. Les favoris changés ici sont renvoyés automatiquement.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+let sub = null;          // { email, id, token }
+
+function newsletterBlock() {
+  const head = '<div class="sport">Newsletter du lundi</div>';
+  if (sub) return `${head}<div class="newsletter">
+    <p class="note">Le programme de la semaine arrive chaque lundi matin à <strong>${esc(sub.email)}</strong>, avec tes favoris ci-dessus.</p>
+    <button class="btn" type="button" data-action="unsubscribe">Me désinscrire</button></div>`;
+  return `${head}<form class="newsletter" data-action="subscribe-form">
+    <p class="note">Reçois le programme de tes équipes chaque lundi matin.</p>
+    <div class="nl-row"><input class="search" type="email" name="email" placeholder="ton@email.fr" autocomplete="email" inputmode="email" required>
+    <button class="btn primary" type="submit">S'inscrire</button></div></form>`;
+}
+
+async function subscribe(email) {
+  const r = await fetch('/api/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, favs, ...(sub && sub.email === email ? { id: sub.id, token: sub.token } : {}) }) });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || 'Inscription impossible');
+  if (data.token) { sub = { email, id: data.id, token: data.token }; write(KEYS.sub, sub); }
+  return data;
+}
+
+// Favoris modifiés : on met la newsletter à jour (une seule fois, après la dernière modif)
+let syncTimer = null;
+function syncNewsletter() {
+  if (!sub) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => subscribe(sub.email).catch(() => {}), 1500);
+}
+
+async function unsubscribe() {
+  if (!sub || !confirm('Ne plus recevoir la newsletter ?')) return;
+  await fetch(`/api/unsubscribe?id=${encodeURIComponent(sub.id)}&t=${encodeURIComponent(sub.token)}`, { headers: { Accept: 'application/json' } }).catch(() => {});
+  sub = null;
+  try { localStorage.removeItem(KEYS.sub); } catch (e) {}
+  toast('Désinscrit');
+  renderFavs();
+}
+
+// ---------------------------------------------------------------- agenda
+// Un match : fichier .ics (Apple), ou lien d'ajout Google / Outlook.
+// Mes favoris : abonnement (webcal) que l'app d'agenda relit toute seule.
+const CAL_DURATION_H = { soccer: 2, rugby: 2, basketball: 2.5, hockey: 3, football: 3.5 };
+const icsStamp = d => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+const b64url = str => btoa(unescape(encodeURIComponent(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+function compactFavs() {
+  return { leagues: favs.leagues.map(f => {
+    const o = { league: f.league, mode: f.mode };
+    if (f.teams?.length) o.teams = f.teams;
+    if (f.names?.length) o.names = f.names;
+    if (f.finals) o.finals = true;
+    return o;
+  }), cycling: favs.cycling };
+}
+
+function openCalSheet(title, sub2, options) {
+  $('#cal-title').textContent = title;
+  $('#cal-sub').textContent = sub2;
+  $('#cal-options').innerHTML = options.map(([label, href, note]) =>
+    `<a class="as-option" href="${esc(href)}"${href.startsWith('http') && !href.startsWith(location.origin) ? ' target="_blank" rel="noopener"' : ''}>
+      <span>${esc(label)}</span>${note ? `<small>${esc(note)}</small>` : ''}</a>`).join('');
+  $('#cal').hidden = false;
+}
+
+function closeCalSheet() { $('#cal').hidden = true; }
+
+function addMatchToCalendar(key) {
+  const [lg, eid] = key.split(':');
+  const e = cat.events.find(x => x.lg === lg && String(x.eid) === eid);
+  if (!e) return;
+  const L = league(lg), us = US_SPORTS.has(L.sport);
+  const [a, b] = us ? [e.a, e.h] : [e.h, e.a];
+  const title = `${team(lg, a.id).n} ${us ? '@' : '–'} ${team(lg, b.id).n}`;
+  const start = new Date(e.ko), end = new Date(start.getTime() + (CAL_DURATION_H[L.sport] || 2) * 3600e3);
+  const details = [L.label + (e.rd ? ` · ${e.rd}` : ''), e.ch.length ? `📺 ${e.ch.join(', ')}` : '', location.origin].filter(Boolean).join('\n');
+  const q = o => Object.entries(o).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+  openCalSheet(title, `${cap(dayLabel(e.day))} · ${hhmm(e.ko)}${e.ch.length ? ` · ${e.ch.join(', ')}` : ''}`, [
+    ['Calendrier Apple', `/api/ics?e=${encodeURIComponent(key)}`],
+    ['Google Agenda', `https://calendar.google.com/calendar/render?${q({ action: 'TEMPLATE', text: title, dates: `${icsStamp(start)}/${icsStamp(end)}`, details, location: e.ch.join(', ') })}`],
+    ['Outlook', `https://outlook.live.com/calendar/0/deeplink/compose?${q({ path: '/calendar/action/compose', rru: 'addevent', subject: title, startdt: start.toISOString(), enddt: end.toISOString(), body: details, location: e.ch.join(', ') })}`],
+  ]);
+}
+
+function subscribeCalendar() {
+  const feed = `${location.host}/api/ics?f=${b64url(JSON.stringify(compactFavs()))}`;
+  openCalSheet('Mes matchs dans mon agenda', 'Un agenda « Télé7Sport » avec les matchs de tes favoris actuels, mis à jour tout seul.', [
+    ['Calendrier Apple', `webcal://${feed}`],
+    ['Google Agenda', `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(`webcal://${feed}`)}`, 'Sur ordinateur, puis visible sur le téléphone'],
+    ['Outlook', `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(`https://${feed}`)}&name=${encodeURIComponent('Télé7Sport')}`],
+  ]);
 }
 
 function onFavAction(el) {
@@ -436,8 +558,11 @@ function onFavAction(el) {
     f.names = [...(f.names || []), el.dataset.name]; teamQuery = '';
   } else if (action === 'drop-name' && f) {
     f.names = (f.names || []).filter(n => n !== el.dataset.name);
+  } else if (action === 'unsubscribe') {
+    unsubscribe();
+    return;
   } else if (action === 'reset') {
-    if (!confirm('Revenir aux favoris de la newsletter ?')) return;
+    if (!confirm('Revenir aux favoris par défaut ?')) return;
     favs = defaultFavs();
   } else if (action === 'widget') {
     if (!widgetTemplate) { toast('Script pas encore chargé, réessaie'); loadWidgetTemplate(); return; }
@@ -447,13 +572,11 @@ function onFavAction(el) {
       .replace('__CHANNELS__', JSON.stringify(CHANNEL_COLORS));
     navigator.clipboard?.writeText(script).then(() => toast('Script copié : colle-le dans Scriptable'), () => toast('Copie impossible'));
     return;
-  } else if (action === 'copy') {
-    navigator.clipboard?.writeText(newsletterConfig()).then(() => toast('Configuration copiée'), () => toast('Copie impossible'));
-    return;
   } else {
     return;
   }
   saveFavs();
+  syncNewsletter();
   renderFavs();
 }
 
@@ -625,6 +748,7 @@ function toggleFollow(lg, id) {
   f.teams = f.teams.includes(id) ? f.teams.filter(x => x !== id) : [...f.teams, id];
   if (!f.teams.length && !(f.names || []).length) favs.leagues = favs.leagues.filter(x => x !== f);
   saveFavs();
+  syncNewsletter();
   toast(f.teams.includes(id) ? 'Équipe ajoutée à tes favoris' : 'Équipe retirée de tes favoris');
   openTeam(lg, id);
 }
@@ -660,6 +784,7 @@ cat = read(KEYS.catalog);
 favs = read(KEYS.favs);
 if (cat && !favs) favs = defaultFavs();
 tab = read(KEYS.tab) || 'today';
+sub = read(KEYS.sub);
 
 $('.tabs').addEventListener('click', ev => {
   const b = ev.target.closest('.tab');
@@ -668,6 +793,16 @@ $('.tabs').addEventListener('click', ev => {
   render(); window.scrollTo(0, 0);
 });
 $('#view').addEventListener('click', ev => {
+  const calBtn = ev.target.closest('[data-cal]');
+  if (calBtn) { addMatchToCalendar(calBtn.dataset.cal); return; }
+  const dayBtn = ev.target.closest('[data-day]');
+  if (dayBtn) {
+    selDay = dayBtn.dataset.day; render();
+    const list = $('#cal-list');
+    if (list && list.getBoundingClientRect().top > window.innerHeight * 0.75) list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+  if (ev.target.closest('[data-action="subscribe"]')) { subscribeCalendar(); return; }
   const teamEl = ev.target.closest('[data-team]');
   if (teamEl) { openTeam(teamEl.dataset.league, teamEl.dataset.team); return; }
   const more = ev.target.closest('[data-expand]');
@@ -688,6 +823,21 @@ $('#favs-body').addEventListener('click', ev => {
   const el = ev.target.closest('[data-action]');
   if (el && el.dataset.action !== 'finals' && el.dataset.action !== 'search') onFavAction(el);
 });
+$('#favs-body').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const form = ev.target, email = form.email.value.trim().toLowerCase();
+  if (!EMAIL_RE.test(email)) { toast('Adresse e-mail invalide'); return; }
+  const btn = form.querySelector('button');
+  btn.disabled = true; btn.textContent = 'Envoi…';
+  try {
+    const r = await subscribe(email);
+    toast(r.welcome ? 'Inscrit : le programme de la semaine arrive par mail' : 'Inscrit');
+    renderFavs();
+  } catch (err) {
+    toast(err.message); btn.disabled = false; btn.textContent = "S'inscrire";
+  }
+});
+$('#cal').addEventListener('click', ev => { if (ev.target.closest('[data-close]') || ev.target.closest('.as-option')) setTimeout(closeCalSheet, 0); });
 $('#favs-body').addEventListener('change', ev => { if (ev.target.dataset.action === 'finals') onFavAction(ev.target); });
 $('#favs-body').addEventListener('input', ev => {
   if (ev.target.dataset.action !== 'search') return;

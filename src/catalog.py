@@ -10,6 +10,7 @@ from typing import Dict, List
 
 import requests
 
+from src.abbr import official_abbr
 from src.config import ESPN_LEAGUES, CYCLING_LEAGUES, OUT_DIR, load_favorites
 from src.fetchers.cycling import get_cycling_events
 from src.fetchers.espn import BASE_URL, SportEvent, _is_in_season, _round_matches, _team_matches, fetch_espn_events
@@ -134,7 +135,7 @@ def _next_event(league_id: str, after: date):
 
 def build_catalog(today: date) -> dict:
     start = today - timedelta(days=today.weekday() + 7)            # lundi de la semaine passée
-    end = max(start + timedelta(days=13), today + timedelta(days=7))  # au moins 7 jours devant
+    end = today + timedelta(days=27)                               # 4 semaines devant (vue calendrier)
     logger.info("🗂️  Catalogue : %s → %s", start, end)
 
     leagues: Dict[str, dict] = {}
@@ -157,11 +158,11 @@ def build_catalog(today: date) -> dict:
             for side in ("home", "away"):
                 tid = getattr(e, f"{side}_id")
                 if tid:
-                    teams[tid] = {"n": getattr(e, f"{side}_team"), "a": getattr(e, f"{side}_abbr"), "l": getattr(e, f"{side}_logo")}
+                    teams[tid] = {"n": getattr(e, f"{side}_team"), "a": official_abbr(cfg["sport"], getattr(e, f"{side}_team"), getattr(e, f"{side}_abbr")), "l": getattr(e, f"{side}_logo")}
         if table:
             for g in table["groups"]:
                 for row in g["entries"]:
-                    teams.setdefault(row["team_id"], {"n": row["team"], "a": row["abbr"], "l": row["logo"]})
+                    teams.setdefault(row["team_id"], {"n": row["team"], "a": official_abbr(cfg["sport"], row["team"], row["abbr"]), "l": row["logo"]})
             tables[league_id] = table
         leagues[league_id] = {
             "label": cfg["label"], "emoji": cfg["emoji"], "sport": cfg["sport"], "logo": _league_logo(league_id, cfg),

@@ -4,5 +4,8 @@
   "redirects": [
     { "source": "/programme", "destination": "/", "permanent": true },
     { "source": "/programme/(.*)", "destination": "/", "permanent": true }
+  ],
+  "crons": [
+    { "path": "/api/newsletter", "schedule": "0 6 * * 1" }
   ]
 }

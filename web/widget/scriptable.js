@@ -53,23 +53,83 @@ function makeVisible(cat) {
   };
 }
 
+// ---------- logos (petites vignettes en cache, pour ne pas les retélécharger à chaque rafraîchissement) ----------
+const LOGO_PX = 64;
+function smallLogo(url) {
+  const m = url && url.match(/^https:\/\/a\.espncdn\.com(\/i\/.+\.png)$/);
+  return m ? `https://a.espncdn.com/combiner/i?img=${m[1]}&w=${LOGO_PX}&h=${LOGO_PX}` : url;
+}
+async function loadLogo(url) {
+  if (!url) return null;
+  const fm = FileManager.local();
+  const dir = fm.joinPath(fm.cacheDirectory(), 't7s-logos');
+  if (!fm.fileExists(dir)) fm.createDirectory(dir, true);
+  const path = fm.joinPath(dir, url.replace(/[^a-z0-9]/gi, '_').slice(-120) + '.png');
+  if (fm.fileExists(path)) return fm.readImage(path);
+  try {
+    const req = new Request(smallLogo(url));
+    req.timeoutInterval = 10;
+    const img = await req.loadImage();
+    fm.writeImage(path, img);
+    return img;
+  } catch (e) { return null; }
+}
+
 // ---------- widget ----------
-function addRow(w, cat, helpers, e, compact, us) {
+function addChip(s, logo, size) {
+  // Pastille blanche comme dans l'app : les logos sombres restent lisibles sur fond noir
+  const chip = s.addStack();
+  chip.size = new Size(size, size);
+  chip.cornerRadius = size / 2;
+  chip.backgroundColor = logo ? WHITE : new Color('#2a2a2e');
+  chip.centerAlignContent();
+  if (logo) { const img = chip.addImage(logo); img.imageSize = new Size(size - 4, size - 4); }
+}
+
+function addName(s, text, size) {
+  const t = s.addText(text);
+  t.font = Font.semiboldSystemFont(size);
+  t.textColor = WHITE;
+  t.lineLimit = 1;
+  t.minimumScaleFactor = 0.7;
+}
+
+// Petit / grand : une équipe par ligne. Moyen : « [logo] Équipe – Équipe [logo] » sur une ligne.
+function addTeam(stack, team, logo, compact) {
+  const s = stack.addStack();
+  s.centerAlignContent();
+  addChip(s, logo, compact ? 15 : 17);
+  s.addSpacer(4);
+  addName(s, compact ? (team.a || team.n) : team.n, compact ? 12 : 13);
+}
+
+function addRow(w, helpers, e, logos, family, us) {
+  const compact = family === 'small';
   const row = w.addStack();
   row.centerAlignContent();
   const live = e.st === 'i' || (e.st !== 'c' && Date.now() >= new Date(e.ko) && Date.now() < new Date(e.ko).getTime() + 3 * 3600e3);
   const d = new Date(e.ko);
   const left = row.addText(e.st === 'c' && e.hs != null ? `${e.hs}-${e.as}` : live ? 'LIVE' : `${pad(d.getHours())}:${pad(d.getMinutes())}`);
-  left.font = Font.boldMonospacedSystemFont(compact ? 12 : 13);
+  left.font = Font.boldMonospacedSystemFont(compact ? 11 : 13);
   left.textColor = live ? RED : e.nt ? NIGHT : WHITE;
   row.addSpacer(compact ? 5 : 8);
   const [top, bottom] = us ? [e.a, e.h] : [e.h, e.a];
-  const name = side => compact ? (helpers.teamOf(e.lg, side.id).a || '?') : helpers.teamOf(e.lg, side.id).n;
-  const teams = row.addText(`${name(top)} ${us ? '@' : '–'} ${name(bottom)}`);
-  teams.font = Font.semiboldSystemFont(compact ? 12 : 13);
-  teams.textColor = WHITE;
-  teams.lineLimit = 1;
-  teams.minimumScaleFactor = 0.75;
+  const [t1, t2] = [helpers.teamOf(e.lg, top.id), helpers.teamOf(e.lg, bottom.id)];
+  if (family === 'medium') {
+    const line = row.addStack();
+    line.centerAlignContent();
+    addChip(line, logos[top.id], 16);
+    line.addSpacer(5);
+    addName(line, `${t1.n} ${us ? '@' : '–'} ${t2.n}`, 13);
+    line.addSpacer(5);
+    addChip(line, logos[bottom.id], 16);
+  } else {
+    const teams = row.addStack();
+    teams.layoutVertically();
+    teams.spacing = 2;
+    addTeam(teams, t1, logos[top.id], compact);
+    addTeam(teams, t2, logos[bottom.id], compact);
+  }
   if (!compact && e.ch.length) {
     row.addSpacer();
     const ch = row.addText(e.ch[0]);
@@ -82,7 +142,7 @@ function addRow(w, cat, helpers, e, compact, us) {
 async function main() {
   const family = config.widgetFamily || 'medium';
   const compact = family === 'small';
-  const maxRows = { small: 4, medium: 4, large: 10 }[family] || 4;
+  const maxRows = { small: 3, medium: 4, large: 7 }[family] || 4;
   const w = new ListWidget();
   w.backgroundColor = new Color('#000000');
   w.url = APP_URL;
@@ -125,10 +185,15 @@ async function main() {
     const t = w.addText('Rien au programme pour tes équipes.');
     t.font = Font.systemFont(12); t.textColor = GREY;
   }
-  list.slice(0, maxRows).forEach((e, i) => {
-    if (i) w.addSpacer(compact ? 4 : 6);
+  const shown = list.slice(0, maxRows);
+  const logos = {};
+  await Promise.all(shown.flatMap(e => [e.h, e.a]).map(async side => {
+    logos[side.id] = await loadLogo(helpers.teamOf(shown.find(e => e.h === side || e.a === side).lg, side.id).l);
+  }));
+  shown.forEach((e, i) => {
+    if (i) w.addSpacer(family === 'medium' ? 6 : compact ? 5 : 7);
     const sport = (cat.leagues[e.lg] || {}).sport;
-    addRow(w, cat, helpers, e, compact, sport === 'football' || sport === 'basketball' || sport === 'hockey');
+    addRow(w, helpers, e, logos, family, sport === 'football' || sport === 'basketball' || sport === 'hockey');
   });
   if (list.length > maxRows) {
     w.addSpacer(4);
