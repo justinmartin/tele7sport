@@ -32,6 +32,51 @@ _SOCCER = {
     "Ajax Amsterdam": "AJA", "PSV Eindhoven": "PSV", "Feyenoord Rotterdam": "FEY", "Benfica": "SLB",
     "FC Porto": "FCP", "Sporting CP": "SCP", "Celtic": "CEL", "Celta Vigo": "CLV", "Galatasaray": "GS", "Fenerbahce": "FB",
     "Club Brugge": "CLU", "Shakhtar Donetsk": "SHK", "RB Salzburg": "SAL", "Olympiacos": "OLY",
+    # Le reste de l'Europe (codes UEFA / des ligues)
+    "AEK Athens": "AEK", "AGF": "AGF", "AZ Alkmaar": "AZ", "ADO Den Haag": "ADO", "Anderlecht": "AND",
+    "Ararat-Armenia": "ARA", "Besiktas": "BJK", "Bodo/Glimt": "BOD", "Borac Banja Luka": "BOR", "Braga": "SCB",
+    "CSKA Sofia": "CSK", "CSU Craiova": "UCV", "Dinamo Zagreb": "DZG", "Egnatia": "EGN", "F.C. København": "FCK",
+    "FC Groningen": "GRO", "FC Lugano": "LUG", "FC Midtjylland": "FCM", "FC Nordsjælland": "FCN", "FC Thun": "THU",
+    "FC Twente": "TWE", "FC Utrecht": "UTR", "Ferencvaros": "FTC", "Fortuna Sittard": "FOR", "Go Ahead Eagles": "GAE",
+    "Hajduk Split": "HAJ", "Hapoel Be'er": "HBS", "Heart of Midlothian": "HEA", "Heerenveen": "HEE", "Excelsior": "EXC",
+    "Iberia 1999": "IBE", "Inter D'Escaldes": "INT", "Jablonec": "JAB", "Jagiellonia Bialystok": "JAG", "KAA Gent": "GNT",
+    "Kairat Almaty": "KAI", "Kauno Zalgiris": "KZA", "KuPS Kuopio": "KUP", "LASK Linz": "LAS", "Lech Poznan": "LPO",
+    "Levski Sofia": "LEV", "Lillestrom": "LSK", "Lincoln Red Imps": "LIN", "Mjällby AIF": "MJA", "NEC Nijmegen": "NEC",
+    "NK Celje": "CLJ", "OFI Crete": "OFI", "Omonia Nicosia": "OMO", "PEC Zwolle": "PEC", "Pafos": "PAF",
+    "Panathinaikos": "PAO", "Red Star Belgrade": "CZV", "Riga FC": "RIG", "SC Cambuur": "CAM", "SK Brann": "BRA",
+    "SK Sturm Graz": "STU", "Sabah FK": "SAB", "Sint-Truidense": "STV", "Slavia Prague": "SLA", "Slovan Bratislava": "SBR",
+    "Sparta Prague": "SPA", "Sparta Rotterdam": "SPR", "Telstar": "TEL", "Torreense": "TOR", "Trabzonspor": "TS",
+    "Union St.-Gilloise": "USG", "Viking FK": "VIK", "Viktoria Plzen": "PLZ", "Willem II": "WIL",
+    # Angleterre, Espagne, Italie, Allemagne, Portugal
+    "Brentford": "BRE", "Coventry City": "COV", "Everton": "EVE", "Fulham": "FUL", "Hull City": "HUL",
+    "Ipswich Town": "IPS", "Leeds United": "LEE", "Sunderland": "SUN",
+    "Alavés": "ALA", "Deportivo": "DEP", "Elche": "ELC", "Espanyol": "ESP", "Getafe": "GET", "Levante": "LEV",
+    "Málaga": "MAL", "Osasuna": "OSA", "Racing Santander": "RAC", "Rayo Vallecano": "RAY",
+    "Bologna": "BOL", "Cagliari": "CAG", "Como": "COM", "Frosinone": "FRO", "Genoa": "GEN", "Lecce": "LEC",
+    "Sassuolo": "SAS", "Torino": "TOR", "Udinese": "UDI", "Venezia": "VEN",
+    "FC Augsburg": "FCA", "Hamburg SV": "HSV", "Mainz": "M05", "SC Freiburg": "SCF", "SC Paderborn 07": "SCP",
+    "SV Elversberg": "SVE", "Schalke 04": "S04", "TSG Hoffenheim": "TSG",
+    "Académico de Viseu": "ACV", "Alverca": "ALV", "Arouca": "ARO", "C.D. Nacional": "NAC", "Casa Pia": "CPI",
+    "Estoril": "EST", "Estrela": "EAM", "FC Famalicao": "FAM", "Gil Vicente": "GIL", "Maritimo": "MAR",
+    "Moreirense": "MOR", "Rio Ave": "RAV", "Santa Clara": "STC", "Vitória de Guimaraes": "VSC",
+    # MLS
+    "Atlanta United FC": "ATL", "Austin FC": "ATX", "CF Montréal": "MTL", "Charlotte FC": "CLT", "Chicago Fire FC": "CHI",
+    "Colorado Rapids": "COL", "Columbus Crew": "CLB", "D.C. United": "DC", "FC Cincinnati": "CIN", "FC Dallas": "DAL",
+    "Houston Dynamo FC": "HOU", "Inter Miami CF": "MIA", "LA Galaxy": "LA", "LAFC": "LAFC", "Minnesota United FC": "MIN",
+    "Nashville SC": "NSH", "New England Revolution": "NE", "New York City FC": "NYC", "Orlando City SC": "ORL",
+    "Philadelphia Union": "PHI", "Portland Timbers": "POR", "Real Salt Lake": "RSL", "Red Bull New York": "RBNY",
+    "San Diego FC": "SD", "San Jose Earthquakes": "SJ", "Seattle Sounders FC": "SEA", "Sporting Kansas City": "SKC",
+    "St. Louis CITY SC": "STL", "Toronto FC": "TOR", "Vancouver Whitecaps": "VAN",
+    # Amérique du Sud
+    "Always Ready": "ARE", "Atlético Junior": "JUN", "Barcelona SC": "BSC", "Boca Juniors": "BOC", "Bolívar": "BOL",
+    "Cerro Porteño": "CCP", "Coquimbo Unido": "COQ", "Corinthians": "COR", "Cruzeiro": "CRU", "Cusco FC": "CUS",
+    "Deportes Tolima": "TOL", "Deportivo La Guaira": "DLG", "Estudiantes de La Plata": "EST", "Flamengo": "FLA",
+    "Fluminense": "FLU", "Independiente Medellín": "DIM", "Independiente Rivadavia": "IRI", "Independiente Santa Fe": "SFE",
+    "Independiente del Valle": "IDV", "Lanús": "LAN", "Libertad": "LIB", "Liga de Quito": "LDU", "Mirassol": "MIR",
+    "Nacional": "NAC", "Palmeiras": "PAL", "Peñarol": "PEN", "Platense": "PLA", "Rosario Central": "RCE",
+    "Sporting Cristal": "SCR", "UCV FC": "UCV", "Universidad Católica": "UCA", "Universitario": "UNI",
+    # Féminines
+    "Saint-Malo": "SMA",
 }
 
 _RUGBY = {
@@ -42,10 +87,27 @@ _RUGBY = {
     "Vannes": "RCV", "Montpellier": "MHR",
     # Coupes d'Europe
     "Leinster": "LEI", "Leicester Tigers": "LEIC", "Munster": "MUN", "Ulster": "ULS",
+    # Premiership, URC, Challenge Cup, tests
+    "Bath Rugby": "BAT", "Bristol Rugby": "BRI", "Exeter Chiefs": "EXE", "Gloucester Rugby": "GLO", "Harlequins": "HAR",
+    "Newcastle Falcons": "NEW", "Northampton Saints": "NOR", "Sale Sharks": "SAL", "Saracens": "SAR",
+    "Benetton Treviso": "BEN", "Bulls": "BUL", "Cardiff Blues": "CAR", "Connacht": "CON", "Dragons": "DRA",
+    "Edinburgh": "EDI", "Glasgow Warriors": "GLA", "Lions": "LIO", "Ospreys": "OSP", "Scarlets": "SCA", "Sharks": "SHA",
+    "Stormers": "STO", "Zebre": "ZEB", "Black Lion": "BLI", "Cheetahs": "CHE",
+    "Australia": "AUS", "Fiji": "FIJ", "Japan": "JPN", "New Zealand": "NZL", "France": "FRA", "England": "ENG",
+    "Ireland": "IRL", "Scotland": "SCO", "Wales": "WAL", "Italy": "ITA", "South Africa": "RSA", "Argentina": "ARG",
+}
+
+# Sports US : ESPN abrège parfois (GS, NY…) là où la ligue utilise trois lettres.
+_US = {
+    "basketball": {"GS": "GSW", "NO": "NOP", "NY": "NYK", "SA": "SAS", "UTAH": "UTA", "WSH": "WAS"},
+    "hockey": {"LA": "LAK", "NJ": "NJD", "SJ": "SJS", "TB": "TBL"},
+    "football": {"WSH": "WAS"},
 }
 
 OFFICIAL = {"soccer": _SOCCER, "rugby": _RUGBY}
 
 
 def official_abbr(sport: str, name: str, fallback: str) -> str:
+    if sport in _US:
+        return _US[sport].get(fallback, fallback)
     return OFFICIAL.get(sport, {}).get(name) or fallback

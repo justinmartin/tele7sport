@@ -409,7 +409,8 @@ function renderFavs() {
       </div></div>`;
     });
   });
-  html += newsletterBlock() + `<div class="sport">Widget iPhone</div>
+  // Newsletter par e-mail en pause (identifiants Gmail pas configurés sur Vercel) : NEWSLETTER_ON pour la réactiver
+  html += (NEWSLETTER_ON ? newsletterBlock() : '') + `<div class="sport">Widget iPhone</div>
   <div class="sheet-actions" style="margin-top:10px">
     <button class="btn primary" type="button" data-action="widget">Copier le script du widget</button>
     <p class="note">1. Installe l'app gratuite <strong>Scriptable</strong> (App Store).<br>
@@ -443,6 +444,7 @@ function teamGrid(lg, f) {
 // ---------------------------------------------------------------- newsletter par e-mail
 // On s'inscrit avec son adresse : le serveur garde l'adresse et les favoris, et envoie le
 // programme chaque lundi matin. Les favoris changés ici sont renvoyés automatiquement.
+const NEWSLETTER_ON = false;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 let sub = null;          // { email, id, token }
 
