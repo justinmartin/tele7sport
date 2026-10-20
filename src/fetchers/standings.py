@@ -108,6 +108,10 @@ def get_league_table(league_id: str, today: date) -> Optional[dict]:
     if league_id in _table_cache:
         return _table_cache[league_id]
     cfg = ESPN_LEAGUES.get(league_id)
+    if cfg and cfg.get("source"):
+        from src.fetchers.basket_eu import get_table
+        _table_cache[league_id] = get_table(league_id, cfg, today)
+        return _table_cache[league_id]
     data = _fetch_latest(cfg["sport"], cfg["league"], today) if cfg else None
     table = None
     if data:

@@ -11,7 +11,7 @@ const NIGHT_END_HOUR = 7;      // avant 7h : rattaché à la soirée de la veill
 const MATCH_DURATION_H = 3;
 const LEAGUE_PASS = 'NBA League Pass';
 const US_SPORTS = new Set(['football', 'basketball', 'hockey']); // à l'américaine : extérieur en haut
-const SPORT_LABELS = { soccer: 'Football', basketball: 'Basket', football: 'Football américain', rugby: 'Rugby', hockey: 'Hockey sur glace', tennis: 'Tennis' };
+const SPORT_LABELS = { 'foot-intl': 'Football international', 'rugby-intl': 'Rugby international', jo: 'Jeux olympiques', soccer: 'Football', basketball: 'Basket', football: 'Football américain', rugby: 'Rugby', hockey: 'Hockey sur glace', tennis: 'Tennis' };
 const DAYS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 // Couleurs des chaînes (comme dans la newsletter) : plus facile à repérer d'un coup d'œil.
 const CHANNEL_COLORS = {
@@ -558,8 +558,14 @@ function favSummary(f) {
 }
 
 function renderFavs() {
+  // Sections : clubs par sport, puis sélections nationales et JO à part
+  const SECTION_ORDER = ['soccer', 'foot-intl', 'rugby', 'rugby-intl', 'basketball', 'football', 'hockey', 'tennis', 'jo'];
   const bySport = {};
-  Object.entries(cat.leagues).forEach(([id, L]) => { (bySport[L.sport] ||= []).push([id, L]); });
+  Object.entries(cat.leagues).forEach(([id, L]) => { (bySport[L.group || L.sport] ||= []).push([id, L]); });
+  const sorted = Object.fromEntries(Object.entries(bySport).sort((a, b) =>
+    (SECTION_ORDER.indexOf(a[0]) + 1 || 99) - (SECTION_ORDER.indexOf(b[0]) + 1 || 99)));
+  Object.keys(bySport).forEach(k => delete bySport[k]);
+  Object.assign(bySport, sorted);
   // Dans chaque sport : compétitions en cours d'abord, celles à l'arrêt ensuite
   Object.values(bySport).forEach(list => list.sort((a, b) => (b[1].active !== false) - (a[1].active !== false)));
   let html = '';
@@ -571,7 +577,7 @@ function renderFavs() {
       html += `<div class="fav-league">
         <div class="fav-row">
           ${lgTile(id, 'm')}
-          <button class="label" type="button" data-action="expand" data-league="${id}">${esc(L.label)}<small>${esc(f ? favSummary(f) : 'Non suivie')}${L.active === false ? ' · pas de match en ce moment' : ''}</small></button>
+          <button class="label" type="button" data-action="expand" data-league="${id}">${esc(L.label)}<small>${esc(f ? favSummary(f) : 'Non suivie')}${L.note && L.active === false ? ` · ${esc(L.note)}` : L.active === false ? ' · pas de match en ce moment' : ''}</small></button>
           <button class="switch" role="switch" aria-checked="${!!f}" aria-label="Suivre ${esc(L.label)}" data-action="toggle" data-league="${id}" type="button"></button>
         </div>`;
       if (f && openLeague === id) {
@@ -801,7 +807,7 @@ const ymdNY = d => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_Yor
 async function pollLive() {
   if (!cat || document.visibilityState !== 'visible') return;
   const now = Date.now();
-  const watch = cat.events.filter(e => e.st !== 'c' && e.eid && visible(e)
+  const watch = cat.events.filter(e => e.st !== 'c' && e.eid && league(e.lg)?.espn && visible(e)
     && now >= new Date(e.ko) - 15 * 60e3 && now < new Date(e.ko).getTime() + 5 * 3600e3);
   if (!watch.length) return;
   const byLeague = new Map();
@@ -847,6 +853,7 @@ function teamGamesFromCatalog(lg, id) {
 }
 
 async function teamGamesFromEspn(lg, id) {
+  if (!league(lg)?.espn) return [];  // EuroLeague, Betclic Élite : le catalogue suffit
   try {
     const data = await fetch(espnUrl(`${league(lg).espn}/teams/${id}/schedule`)).then(r => r.ok ? r.json() : {});
     return (data.events || []).map(raw => {

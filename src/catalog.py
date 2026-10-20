@@ -42,6 +42,7 @@ WIKI_LOGOS = {
     "six-nations": "en/Six_Nations_Championship",
     "rugby-world-cup": "en/Rugby_World_Cup",
     "betclic-elite": "fr/Championnat_de_France_de_basket-ball",
+    "euroleague": "en/EuroLeague",
 }
 
 
@@ -57,6 +58,8 @@ def _wiki_logo(page: str) -> str:
 
 def _league_logo(league_id: str, cfg: dict) -> str:
     """Logo de la compétition (version pour fond clair : l'app le pose sur une pastille blanche)."""
+    if cfg.get("logo"):
+        return cfg["logo"]
     logo = ""
     try:
         resp = requests.get(f"{BASE_URL}/{cfg['sport']}/{cfg['league']}/scoreboard", timeout=10)
@@ -166,7 +169,9 @@ def build_catalog(today: date) -> dict:
             tables[league_id] = table
         leagues[league_id] = {
             "label": cfg["label"], "emoji": cfg["emoji"], "sport": cfg["sport"], "logo": _league_logo(league_id, cfg),
-            "espn": f"{cfg['sport']}/{cfg['league']}",  # pour les scores en direct et les fiches équipe
+            # pour les scores en direct et les fiches équipe (rien pour les ligues hors ESPN)
+            "espn": None if cfg.get("source") else f"{cfg['sport']}/{cfg['league']}",
+            "group": cfg.get("group"), "note": cfg.get("note"),
             "teams": dict(sorted(teams.items(), key=lambda kv: kv[1]["n"])),
             "has_finals": any(_round_matches(e.round_info, PHASES) for e in evs) or league_id in FINALS_LEAGUES,
             "active": bool(evs),

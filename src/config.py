@@ -35,9 +35,16 @@ ESPN_LEAGUES = {
         "channels_fr": ["beIN Sports", "NBA League Pass"],
     },
     "betclic-elite": {
-        "sport": "basketball", "league": "fra.1",
+        "sport": "basketball", "league": "fra.1", "source": "thesportsdb", "tsdb_id": 4423,
+        "logo": "https://assets.altrstat.xyz/images/Basketball/Competition/317/logoBlack/md.png",
         "label": "Betclic Élite", "emoji": "🏀",
         "channels_fr": ["Canal+ Sport", "L'Équipe"],
+    },
+    "euroleague": {
+        "sport": "basketball", "league": "euroleague", "source": "euroleague",
+        "logo": "https://r2.thesportsdb.com/images/media/league/badge/7xjtuy1554397263.png",
+        "label": "EuroLeague", "emoji": "🏀",
+        "channels_fr": [],
     },
     # American Football
     "nfl": {
@@ -91,45 +98,50 @@ ESPN_LEAGUES = {
     },
     "nations-league": {
         "sport": "soccer", "league": "uefa.nations",
+        "group": "foot-intl",
         "label": "Ligue des Nations UEFA", "emoji": "⚽",
         "channels_fr": ["TF1", "M6", "France 2"],
     },
     "world-cup-qual": {
         "sport": "soccer", "league": "fifa.worldq.uefa",
+        "group": "foot-intl",
         "label": "Qualif. Coupe du Monde", "emoji": "⚽",
         "channels_fr": ["TF1", "M6"],
     },
     "euro": {
         "sport": "soccer", "league": "uefa.euro",
+        "group": "foot-intl",
         "label": "Euro", "emoji": "⚽",
         "channels_fr": ["TF1", "M6", "beIN Sports"],
     },
     "equipe-de-france-foot": {
         "sport": "soccer", "league": "fifa.friendly",
+        "group": "foot-intl",
         "label": "Matchs amicaux", "emoji": "⚽",
         "channels_fr": ["TF1", "M6", "France 2"],
     },
     "world-cup": {
         "sport": "soccer", "league": "fifa.world",
+        "group": "foot-intl",
         "label": "Coupe du Monde", "emoji": "⚽",
         "channels_fr": ["TF1", "M6", "beIN Sports"],
     },
     # Olympics
     "jo-basket-m": {
         "sport": "basketball", "league": "mens-olympics-basketball",
-        "label": "JO Basketball (H)", "emoji": "🏅",
+        "label": "Basket masculin", "emoji": "🏅", "group": "jo", "note": "Prochains Jeux : Los Angeles, 14-30 juillet 2028",
         "channels_fr": ["France 2", "France 3", "Eurosport"],
         "season_window": (7, 15, 8, 15),
     },
     "jo-basket-w": {
         "sport": "basketball", "league": "womens-olympics-basketball",
-        "label": "JO Basketball (F)", "emoji": "🏅",
+        "label": "Basket féminin", "emoji": "🏅", "group": "jo", "note": "Prochains Jeux : Los Angeles, 14-30 juillet 2028",
         "channels_fr": ["France 2", "France 3", "Eurosport"],
         "season_window": (7, 15, 8, 15),
     },
     "jo-foot": {
         "sport": "soccer", "league": "fifa.olympics",
-        "label": "JO Football (H)", "emoji": "🏅",
+        "label": "Football masculin", "emoji": "🏅", "group": "jo", "note": "Prochains Jeux : Los Angeles, 14-30 juillet 2028",
         "channels_fr": ["France 2", "France 3", "Eurosport"],
         "season_window": (7, 15, 8, 15),
     },
@@ -151,11 +163,13 @@ ESPN_LEAGUES = {
     },
     "six-nations": {
         "sport": "rugby", "league": "180659",
+        "group": "rugby-intl",
         "label": "Six Nations", "emoji": "🏉",
         "channels_fr": ["France 2"],
     },
     "rugby-world-cup": {
         "sport": "rugby", "league": "164205",
+        "group": "rugby-intl",
         "label": "Coupe du Monde Rugby", "emoji": "🏉",
         "channels_fr": ["TF1", "France 2"],
     },
@@ -262,16 +276,19 @@ ESPN_LEAGUES = {
     },
     "euro-qual": {
         "sport": "soccer", "league": "uefa.euroq",
+        "group": "foot-intl",
         "label": "Qualif. Euro", "emoji": "🇪🇺",
         "channels_fr": ["TF1"],
     },
     "copa-america": {
         "sport": "soccer", "league": "conmebol.america",
+        "group": "foot-intl",
         "label": "Copa América", "emoji": "🌎",
         "channels_fr": [],
     },
     "can": {
         "sport": "soccer", "league": "caf.nations",
+        "group": "foot-intl",
         "label": "Coupe d'Afrique des Nations", "emoji": "🌍",
         "channels_fr": ["beIN Sports"],
     },
@@ -282,11 +299,13 @@ ESPN_LEAGUES = {
     },
     "coupe-du-monde-f": {
         "sport": "soccer", "league": "fifa.wwc",
+        "group": "foot-intl",
         "label": "Coupe du Monde féminine", "emoji": "🌍",
         "channels_fr": [],
     },
     "euro-f": {
         "sport": "soccer", "league": "uefa.weuro",
+        "group": "foot-intl",
         "label": "Euro féminin", "emoji": "🇪🇺",
         "channels_fr": [],
     },
@@ -302,6 +321,7 @@ ESPN_LEAGUES = {
     },
     "rugby-championship": {
         "sport": "rugby", "league": "244293",
+        "group": "rugby-intl",
         "label": "Rugby Championship", "emoji": "🏉",
         "channels_fr": [],
     },
@@ -317,6 +337,7 @@ ESPN_LEAGUES = {
     },
     "tests-rugby": {
         "sport": "rugby", "league": "289234",
+        "group": "rugby-intl",
         "label": "Tests internationaux (rugby)", "emoji": "🏉",
         "channels_fr": [],
     },

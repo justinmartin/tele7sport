@@ -247,9 +247,12 @@ def fetch_espn_events(
     if not _is_in_season(league_id, start_date):
         return []
 
-    raw_events = _fetch_scoreboard_range(sport, league, start_date, end_date)
-    for raw in raw_events:
-        ev = _parse_event(raw, league_id, cfg)
+    if cfg.get("source"):  # EuroLeague, Betclic Élite : pas sur ESPN
+        from src.fetchers.basket_eu import fetch_events
+        parsed = fetch_events(league_id, cfg, start_date, end_date)
+    else:
+        parsed = [_parse_event(raw, league_id, cfg) for raw in _fetch_scoreboard_range(sport, league, start_date, end_date)]
+    for ev in parsed:
         if not ev:
             continue
 
