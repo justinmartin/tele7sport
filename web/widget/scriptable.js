@@ -76,6 +76,7 @@ async function loadLogo(url) {
 }
 
 // ---------- widget ----------
+const shortName = n => n.replace(/^(?:FC|AFC|AC|AS|SC|CF|RC|SV|1\. FC) (?=\S)/, '').replace(/ (?:FC|CF|SC|AFC)$/, '');
 function addChip(s, logo, size) {
   // Pastille blanche comme dans l'app : les logos sombres restent lisibles sur fond noir
   const chip = s.addStack();
@@ -115,14 +116,13 @@ function addRow(w, helpers, e, logos, family, us) {
   row.addSpacer(compact ? 5 : 8);
   const [top, bottom] = us ? [e.a, e.h] : [e.h, e.a];
   const [t1, t2] = [helpers.teamOf(e.lg, top.id), helpers.teamOf(e.lg, bottom.id)];
-  if (family === 'medium') {
+  if (family !== 'small') {
+    // Liste dense : [logo] Équipe – Équipe … CHAÎNE
     const line = row.addStack();
     line.centerAlignContent();
     addChip(line, logos[top.id], 16);
-    line.addSpacer(5);
-    addName(line, `${t1.n} ${us ? '@' : '–'} ${t2.n}`, 13);
-    line.addSpacer(5);
-    addChip(line, logos[bottom.id], 16);
+    line.addSpacer(6);
+    addName(line, `${shortName(t1.n)} ${us ? '@' : '–'} ${shortName(t2.n)}`, 13);
   } else {
     const teams = row.addStack();
     teams.layoutVertically();
@@ -132,9 +132,9 @@ function addRow(w, helpers, e, logos, family, us) {
   }
   if (!compact && e.ch.length) {
     row.addSpacer();
-    const ch = row.addText(e.ch[0]);
+    const ch = row.addText(e.ch[0].toUpperCase());
     ch.font = Font.boldSystemFont(10);
-    ch.textColor = new Color(CHANNEL_COLORS[e.ch[0].toLowerCase()] || '#8e8e96');
+    ch.textColor = GREY;
     ch.lineLimit = 1;
   }
 }
@@ -142,7 +142,7 @@ function addRow(w, helpers, e, logos, family, us) {
 async function main() {
   const family = config.widgetFamily || 'medium';
   const compact = family === 'small';
-  const maxRows = { small: 3, medium: 4, large: 7 }[family] || 4;
+  const maxRows = { small: 3, medium: 5, large: 12 }[family] || 5;
   const w = new ListWidget();
   w.backgroundColor = new Color('#000000');
   w.url = APP_URL;
@@ -191,7 +191,7 @@ async function main() {
     logos[side.id] = await loadLogo(helpers.teamOf(shown.find(e => e.h === side || e.a === side).lg, side.id).l);
   }));
   shown.forEach((e, i) => {
-    if (i) w.addSpacer(family === 'medium' ? 6 : compact ? 5 : 7);
+    if (i) w.addSpacer(compact ? 5 : 6);
     const sport = (cat.leagues[e.lg] || {}).sport;
     addRow(w, helpers, e, logos, family, sport === 'football' || sport === 'basketball' || sport === 'hockey');
   });

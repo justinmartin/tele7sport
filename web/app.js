@@ -40,6 +40,8 @@ let filter = 'all';
 let openLeague = null;   // compétition dépliée dans « Mes favoris »
 let teamQuery = '';
 let selDay = null;       // jour choisi dans le calendrier
+let calView = 'month';   // calendrier : month | week | list
+let standLg = null;      // compétition affichée dans Classements
 
 // ---------------------------------------------------------------- utilitaires
 const $ = sel => document.querySelector(sel);
@@ -133,37 +135,54 @@ function liveState(e) {
   return now >= start ? 'done' : 'upcoming';
 }
 
-function teamLine(e, side) {
+// Nom court pour la ligne centrée : « AS Monaco » → « Monaco », « Inter Miami CF » → « Inter Miami »
+const shortName = n => n.replace(/^(?:FC|AFC|AC|AS|SC|CF|RC|SV|1\. FC) (?=\S)/, '').replace(/ (?:FC|CF|SC|AFC)$/, '');
+// Fin estimée (minutes, pauses comprises)
+const DURATION_MIN = { soccer: 115, rugby: 110, basketball: 135, football: 195, hockey: 150 };
+const endTime = e => { const m = DURATION_MIN[league(e.lg)?.sport]; return m ? hhmm(new Date(new Date(e.ko).getTime() + m * 60e3).toISOString()) : ''; };
+
+function teamLogo(lg, id) {
+  const t = team(lg, id);
+  return t.l ? `<img src="${esc(t.l)}" alt="" loading="lazy">` : '<span class="noimg"></span>';
+}
+
+function sideCol(e, side) {
   const s = e[side], t = team(e.lg, s.id);
-  const done = (e.st === 'c' || e.st === 'i') && e.hs != null;
-  const mine = side === 'h' ? e.hs : e.as, theirs = side === 'h' ? e.as : e.hs;
-  const cls = ['team'];
+  const cls = ['mt'];
   if (isFavTeam(e.lg, s.id)) cls.push('fav');
-  if (e.st === 'c' && done && mine < theirs) cls.push('loser');
-  return `<div class="${cls.join(' ')}" data-team="${esc(s.id)}" data-league="${e.lg}" role="button" tabindex="0">
-    ${t.l ? `<img src="${esc(t.l)}" alt="" loading="lazy">` : '<span class="noimg"></span>'}
-    <span class="name">${s.rk ? `<span class="rk">${s.rk}</span>` : ''}${esc(t.n)}${s.r ? `<span class="rec">${recordHtml(s.r)}</span>` : ''}</span>
-    ${done ? `<span class="score">${mine}</span>` : ''}
+  const mine = side === 'h' ? e.hs : e.as, theirs = side === 'h' ? e.as : e.hs;
+  if (e.st === 'c' && e.hs != null && mine < theirs) cls.push('loser');
+  return `<div class="${cls.join(' ')}" data-team="${esc(s.id)}" data-league="${e.lg}" role="button" tabindex="0" aria-label="${esc(t.n)}">
+    ${teamLogo(e.lg, s.id)}
+    <span class="mn">${s.rk ? `<span class="rk">${s.rk}</span>` : ''}${esc(shortName(t.n))}</span>
   </div>`;
 }
 
 function matchRow(e) {
   const state = liveState(e);
   const sport = league(e.lg)?.sport;
-  const [top, bottom] = US_SPORTS.has(sport) ? ['a', 'h'] : ['h', 'a'];
-  let side = '';
-  if (state === 'done' && e.st !== 'c') side = '<span class="status">Score à venir</span>';
-  else if (state === 'live') side = `<span class="live">EN DIRECT</span>${e.det ? `<span class="live-detail">${esc(e.det)}</span>` : ''}`;
-  else if (state === 'upcoming') side = `<span class="time">${hhmm(e.ko)}</span>`;
-  const extras = [];
-  if (e.hl && state !== 'done') extras.push('<span class="tag">À ne pas rater</span>');
-  if (state !== 'done') extras.push(...e.ch.map(c => `<span class="ch" style="background:${chColor(c)}">${esc(c)}</span>`));
-  if (e.rd) extras.push(`<span class="round">${esc(e.rd)}</span>`);
-  if (state === 'upcoming') extras.push(`<button class="cal-add" type="button" data-cal="${e.lg}:${esc(e.eid)}" aria-label="Ajouter à mon agenda">${CAL_ICON}</button>`);
-  return `<article class="match${e.nt ? ' night' : ''}${side ? '' : ' no-side'}">
-    <div class="teams">${teamLine(e, top)}${teamLine(e, bottom)}</div>
-    ${side ? `<div class="side">${side}</div>` : ''}
-    ${extras.length ? `<div class="extras">${extras.join('')}</div>` : ''}
+  const [left, right] = US_SPORTS.has(sport) ? ['a', 'h'] : ['h', 'a'];
+  const hasScore = e.hs != null && (e.st === 'c' || e.st === 'i');
+  const lv = left === 'h' ? e.hs : e.as, rv = left === 'h' ? e.as : e.hs;
+  let center;
+  if (hasScore) center = `<span class="mscore${state === 'live' ? ' on' : ''}">${lv}<i>-</i>${rv}</span>`;
+  else center = `<span class="mtime${state === 'upcoming' ? '' : ' dim'}">${hhmm(e.ko)}</span>`;
+  let under = '';
+  if (state === 'live') under = `<span class="live">EN DIRECT</span>${e.det ? `<span class="live-detail">${esc(e.det)}</span>` : ''}`;
+  else if (state === 'done') under = `<span class="status">${e.st === 'c' ? 'Terminé' : 'Score à venir'}</span>`;
+  else under = e.ch.slice(0, 2).map(c => `<span class="ch" style="background:${chColor(c)}">${esc(c)}</span>`).join('')
+    + `<button class="cal-add" type="button" data-cal="${e.lg}:${esc(e.eid)}" aria-label="Ajouter à mon agenda">${CAL_ICON}</button>`;
+  const top = [e.hl && state !== 'done' ? '<span class="tag">À ne pas rater</span>' : '', e.rd ? esc(e.rd) : ''].filter(Boolean).join(' ');
+  return `<article class="match${e.nt ? ' night' : ''}">
+    ${top ? `<div class="mround">${top}</div>` : ''}
+    <div class="mrow">
+      ${sideCol(e, left)}
+      <div class="mid">
+        <div class="mline"><span class="rec">${recordHtml(e[left].r)}</span>${center}<span class="rec">${recordHtml(e[right].r)}</span></div>
+        <div class="munder">${under}</div>
+      </div>
+      ${sideCol(e, right)}
+    </div>
   </article>`;
 }
 
@@ -171,7 +190,7 @@ function byLeague(events) {
   const groups = new Map();
   events.forEach(e => { if (!groups.has(e.lg)) groups.set(e.lg, []); groups.get(e.lg).push(e); });
   return [...groups].map(([lg, evs]) =>
-    `<div class="league">${lgTile(lg)}${esc(league(lg).label)}</div>${evs.map(matchRow).join('')}`).join('');
+    `<div class="league">${lgTile(lg)}${esc(league(lg).label)}</div><div class="card">${evs.map(matchRow).join('')}</div>`).join('');
 }
 
 function cyclingFor(day) {
@@ -183,11 +202,11 @@ function cyclingRows(list) {
   if (!list.length) return '';
   const groups = new Map();
   list.forEach(c => { if (!groups.has(c.lg)) groups.set(c.lg, []); groups.get(c.lg).push(c); });
-  return [...groups].map(([lg, cs]) => `<div class="league">${lgTile(lg)}${esc(cs[0].label)}</div>` + cs.map(c => `
+  return [...groups].map(([lg, cs]) => `<div class="league">${lgTile(lg)}${esc(cs[0].label)}</div><div class="card">` + cs.map(c => `
     <article class="event-solo">
       <div><div class="name">${esc(c.name)}</div><div class="sub">${esc(c.loc || '')}${c.details ? ` · ${esc(c.details)}` : ''}</div></div>
       <div class="side">${c.time ? `<span class="time">${esc(c.time)}</span>` : ''}<div class="channels">${(c.ch || []).map(x => `<span class="ch" style="background:${chColor(x)}">${esc(x)}</span>`).join('')}</div></div>
-    </article>`).join('')).join('');
+    </article>`).join('') + '</div>').join('');
 }
 
 const CAL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg>';
@@ -216,14 +235,99 @@ function pageHead(kicker, title) {
 const noFavs = () => '<p class="empty">Aucune compétition suivie pour l\'instant.<br><button type="button" data-action="open-favs">Choisir mes favoris</button></p>';
 
 // ---------------------------------------------------------------- pages
+// Le match du soir : une affiche signalée, sinon un match d'une équipe suivie, sinon le premier.
+function featured(list) {
+  const upcoming = list.filter(e => liveState(e) !== 'done');
+  const pool = upcoming.length ? upcoming : list;
+  // Équipes suivies dans n'importe quelle compétition (le PSG suivi en Ligue 1 compte aussi en C1)
+  const favNames = new Set();
+  favs.leagues.filter(f => f.mode === 'teams').forEach(f => {
+    f.teams.forEach(id => favNames.add(team(f.league, id).n));
+    (f.names || []).forEach(n => favNames.add(n));
+  });
+  const isMine = e => [e.h, e.a].some(s => isFavTeam(e.lg, s.id) || [...favNames].some(n => wordMatch(team(e.lg, s.id).n, n)));
+  const prime = e => { const h = new Date(e.ko).getHours(); return h >= 20 && h <= 22; };
+  return pool.find(e => e.hl) || pool.find(isMine) || pool.find(prime) || pool[0];
+}
+
+function heroCard(e) {
+  const L = league(e.lg), state = liveState(e);
+  const [left, right] = US_SPORTS.has(L.sport) ? ['a', 'h'] : ['h', 'a'];
+  const side = k => {
+    const t = team(e.lg, e[k].id);
+    return `<div class="hero-team" data-team="${esc(e[k].id)}" data-league="${e.lg}" role="button" tabindex="0">
+      ${teamLogo(e.lg, e[k].id)}<b>${esc(shortName(t.n))}</b><span class="rec">${recordHtml(e[k].r)}</span></div>`;
+  };
+  const hasScore = e.hs != null && (e.st === 'c' || e.st === 'i');
+  const lv = left === 'h' ? e.hs : e.as, rv = left === 'h' ? e.as : e.hs;
+  const end = endTime(e);
+  const center = hasScore ? `<span class="hero-time">${lv} - ${rv}</span>${state === 'live' ? '<span class="live">EN DIRECT</span>' : '<span class="status">Terminé</span>'}`
+    : `<span class="hero-time">${hhmm(e.ko)}</span>${end ? `<span class="hero-end">fin vers ${end}</span>` : ''}`;
+  const fav = isFavTeam(e.lg, e.h.id) ? e.h.id : isFavTeam(e.lg, e.a.id) ? e.a.id : e[left].id;
+  return `<section class="hero${e.nt ? ' night' : ''}">
+    <div class="hero-top"><span>${e.hl ? 'À ne pas rater' : 'Le match du soir'}</span><span>${lgTile(e.lg)}${esc(L.label)}</span></div>
+    <div class="hero-row">${side(left)}<div class="hero-mid">${center}</div>${side(right)}</div>
+    ${e.ch.length ? `<div class="hero-ch">${e.ch.map(c => `<span class="ch" style="background:${chColor(c)}">${esc(c)}</span>`).join('')}</div>` : ''}
+    <div class="hero-actions">
+      ${state === 'upcoming' ? `<button type="button" data-cal="${e.lg}:${esc(e.eid)}">${CAL_ICON}Ajouter à l'agenda</button>` : ''}
+      <button type="button" data-team="${esc(fav)}" data-league="${e.lg}">Fiche ${esc(shortName(team(e.lg, fav).n).length > 12 && team(e.lg, fav).a ? team(e.lg, fav).a : shortName(team(e.lg, fav).n))}</button>
+    </div>
+  </section>`;
+}
+
+// Une carte compacte du fil horaire : logos, noms, chaîne, compétition et fin estimée.
+function slotCard(e) {
+  const L = league(e.lg), state = liveState(e);
+  const [left, right] = US_SPORTS.has(L.sport) ? ['a', 'h'] : ['h', 'a'];
+  const hasScore = e.hs != null && (e.st === 'c' || e.st === 'i');
+  const line = k => {
+    const score = k === 'h' ? e.hs : e.as;
+    return `<div class="sc-team${isFavTeam(e.lg, e[k].id) ? ' fav' : ''}" data-team="${esc(e[k].id)}" data-league="${e.lg}" role="button" tabindex="0">
+      ${teamLogo(e.lg, e[k].id)}<span>${esc(shortName(team(e.lg, e[k].id).n))}</span>${hasScore ? `<b>${score}</b>` : ''}</div>`;
+  };
+  const end = endTime(e);
+  const info = state === 'live' ? '<span class="live">EN DIRECT</span>' : state === 'done' ? (hasScore ? 'Terminé' : 'Score à venir') : (end ? `fin vers ${end}` : '');
+  return `<article class="slot-card">
+    <div class="sc-teams">${line(left)}${line(right)}</div>
+    <div class="sc-side">${e.ch.slice(0, 1).map(c => `<span class="ch" style="background:${chColor(c)}">${esc(c)}</span>`).join('')}
+      ${state === 'upcoming' ? `<button class="cal-add" type="button" data-cal="${e.lg}:${esc(e.eid)}" aria-label="Ajouter à mon agenda">${CAL_ICON}</button>` : ''}</div>
+    <div class="sc-sub">${lgTile(e.lg)}${esc(L.label)}${info ? ` · ${info}` : ''}</div>
+  </article>`;
+}
+
+function timeline(list) {
+  const slots = new Map();
+  list.sort((a, b) => a.ko.localeCompare(b.ko)).forEach(e => {
+    const k = hhmm(e.ko) + (e.nt ? 'n' : '');
+    if (!slots.has(k)) slots.set(k, []);
+    slots.get(k).push(e);
+  });
+  let nightShown = false;
+  return [...slots].map(([k, evs]) => {
+    const night = k.endsWith('n');
+    const head = night && !nightShown ? (nightShown = true, `<div class="subhead">${MOON}Cette nuit</div>`) : '';
+    return `${head}<div class="slot${night ? ' night' : ''}"><div class="slot-time">${k.replace('n', '')}</div><div class="slot-list">${evs.map(slotCard).join('')}</div></div>`;
+  }).join('');
+}
+
 function renderToday() {
   const today = tvToday();
-  let html = pageHead(cap(dayLabel(today)), 'Ce soir') + installTip();
-  if (!favs.leagues.length && !favs.cycling.length) return html + noFavs();
-  const block = dayBlock(today, myEvents().filter(e => e.day === today), { title: false });
-  if (block) return html + block;
+  if (!favs.leagues.length && !favs.cycling.length) return pageHead(cap(dayLabel(today)), 'Ce soir') + installTip() + noFavs();
+  const list = myEvents().filter(e => e.day === today);
+  const nightCount = list.filter(e => e.nt).length;
+  const summary = list.length ? `${list.length} match${list.length > 1 ? 's' : ''} pour tes équipes${nightCount ? ` · ${nightCount} cette nuit` : ''}` : '';
+  let html = pageHead(cap(dayLabel(today)), 'Ce soir') + (summary ? `<p class="page-sub">${summary}</p>` : '') + installTip();
+  if (list.length) {
+    const hero = featured(list);
+    html += heroCard(hero) + timeline(list.filter(e => e !== hero));
+    const hidden = hiddenNba(today), cycling = cyclingFor(today);
+    if (cycling.length) html += cyclingRows(cycling);
+    if (hidden) html += `<div class="more">+ ${hidden} autre${hidden > 1 ? 's' : ''} match${hidden > 1 ? 's' : ''} NBA sur le League Pass</div>`;
+    return html;
+  }
+  const solo = dayBlock(today, [], { title: false });
+  if (solo) return html + solo;
   html += '<p class="empty">Rien au programme ce soir pour tes équipes.</p>';
-  // Les deux prochaines journées avec des matchs
   const next = [...new Set(myEvents().filter(e => e.day > today).map(e => e.day))].sort().slice(0, 2);
   return html + next.map(d => dayBlock(d, myEvents().filter(e => e.day === d))).join('');
 }
@@ -232,58 +336,113 @@ const WEEKDAYS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 const MONTHS_SHORT = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
 
 // Grille du mois : de ce lundi jusqu'au bout du programme connu (4 à 5 semaines).
-function calendarGrid(today) {
-  const t = parseDay(today);
-  const first = addDays(today, -((t.getDay() + 6) % 7));
-  const last = cat.range?.end && cat.range.end > today ? cat.range.end : addDays(today, 27);
-  const mine = myEvents();
+const SPORT_COLORS = { soccer: '#5b8cff', rugby: '#f2a33a', basketball: '#ff6b5e', football: '#34c759', hockey: '#9aa5ff', tennis: '#d4e157', solo: '#b0b0b8' };
+const SPORT_SHORT = { soccer: 'Foot', rugby: 'Rugby', basketball: 'Basket', football: 'Foot US', hockey: 'Hockey', tennis: 'Tennis', solo: 'Vélo, moto, hiver' };
+const dayEvents = d => myEvents().filter(e => e.day === d);
+const daySports = d => {
+  const set = new Set(dayEvents(d).map(e => league(e.lg)?.sport));
+  if (cyclingFor(d).length) set.add('solo');
+  return [...set].filter(Boolean);
+};
+const calLast = today => cat.range?.end && cat.range.end > today ? cat.range.end : addDays(today, 27);
+const mondayOf = d => addDays(d, -((parseDay(d).getDay() + 6) % 7));
+const dots = d => daySports(d).slice(0, 4).map(sp => `<i style="background:${SPORT_COLORS[sp]}"></i>`).join('');
+
+function monthView(today) {
+  const first = mondayOf(today), last = calLast(today);
   const cells = [];
   for (let d = first; d <= last || (cells.length % 7); d = addDays(d, 1)) {
-    const evs = mine.filter(e => e.day === d);
-    const lgs = [...new Set(evs.map(e => e.lg))];
-    const solo = cyclingFor(d);
-    const marks = [...lgs.map(lg => league(lg)?.logo ? `<span class="mk"><img src="${esc(league(lg).logo)}" alt=""></span>` : `<span class="mk em">${esc(league(lg)?.emoji || '•')}</span>`),
-      ...[...new Set(solo.map(c => c.emoji))].map(em => `<span class="mk em">${esc(em)}</span>`)];
     const n = parseDay(d).getDate();
     const cls = ['cal-day'];
     if (d === today) cls.push('today');
     if (d === selDay) cls.push('sel');
     if (d < today) cls.push('past');
     if (d > last) cls.push('out');
-    cells.push(`<button class="${cls.join(' ')}" type="button" data-day="${d}"${d > last ? ' disabled' : ''} aria-label="${esc(dayLabel(d))}${evs.length ? `, ${evs.length} match${evs.length > 1 ? 's' : ''}` : ''}">
-      <span class="num">${n === 1 ? `1 ${MONTHS_SHORT[parseDay(d).getMonth()]}` : n}</span>
-      <span class="marks">${marks.slice(0, 3).join('')}${marks.length > 3 ? `<span class="mk more">+${marks.length - 3}</span>` : ''}</span>
-    </button>`);
+    const count = dayEvents(d).length;
+    cells.push(`<button class="${cls.join(' ')}" type="button" data-day="${d}"${d > last ? ' disabled' : ''} aria-label="${esc(dayLabel(d))}${count ? `, ${count} match${count > 1 ? 's' : ''}` : ''}">
+      <span class="num">${n === 1 ? `1 ${MONTHS_SHORT[parseDay(d).getMonth()]}` : n}</span><span class="dots">${dots(d)}</span></button>`);
   }
-  return `<div class="cal" role="group" aria-label="Calendrier">
+  const used = new Set();
+  for (let d = first; d <= last; d = addDays(d, 1)) daySports(d).forEach(sp => used.add(sp));
+  return `<div class="cal">
     <div class="cal-head">${WEEKDAYS.map(w => `<span>${w}</span>`).join('')}</div>
     <div class="cal-grid">${cells.join('')}</div>
+    <div class="cal-legend">${[...used].map(sp => `<span><i style="background:${SPORT_COLORS[sp]}"></i>${SPORT_SHORT[sp]}</span>`).join('')}</div>
   </div>`;
+}
+
+function weekView(today) {
+  const start = mondayOf(selDay);
+  const days = [...Array(7)].map((_, i) => addDays(start, i));
+  const last = calLast(today);
+  return `<div class="week-strip">${days.map(d => {
+      const n = dayEvents(d).length + cyclingFor(d).length;
+      const cls = ['wk-day'];
+      if (d === selDay) cls.push('sel');
+      if (d === today) cls.push('today');
+      const off = d < cat.range.start || d > last;
+      return `<button class="${cls.join(' ')}" type="button" data-day="${d}"${off ? ' disabled' : ''}>
+        <span class="w">${SHORT_DAYS[parseDay(d).getDay()].replace('.', '')}</span><span class="n">${parseDay(d).getDate()}</span>
+        <span class="c">${n ? `${n} m.` : '–'}</span></button>`;
+    }).join('')}</div>
+    <div class="week-nav">
+      <button type="button" data-week="-7"${addDays(start, -1) < cat.range.start ? ' disabled' : ''}>‹ Semaine précédente</button>
+      <button type="button" data-week="7"${addDays(start, 7) > last ? ' disabled' : ''}>Semaine suivante ›</button>
+    </div>`;
+}
+
+// Noms complets s'ils tiennent, sinon les acronymes officiels
+function agLabel(e, l, r, us) {
+  const [a, b] = [team(e.lg, e[l].id), team(e.lg, e[r].id)];
+  const full = `${shortName(a.n)} ${us ? '@' : '–'} ${shortName(b.n)}`;
+  return full.length <= 27 || !a.a || !b.a ? full : `${a.a} ${us ? '@' : '–'} ${b.a}`;
+}
+
+function listView(today) {
+  const last = calLast(today);
+  const rows = [];
+  for (let d = today; d <= last; d = addDays(d, 1)) {
+    const evs = dayEvents(d).sort((a, b) => a.ko.localeCompare(b.ko)), solo = cyclingFor(d);
+    if (!evs.length && !solo.length) continue;
+    const dt = parseDay(d);
+    rows.push(`<div class="ag-day${d === today ? ' today' : ''}">
+      <div class="ag-date"><span>${d === today ? 'AUJ.' : SHORT_DAYS[dt.getDay()].toUpperCase()}</span><b>${dt.getDate()}</b>${dt.getDate() === 1 || d === today ? `<small>${MONTHS_SHORT[dt.getMonth()]}</small>` : ''}</div>
+      <div class="ag-list">
+        ${evs.map(e => {
+          const sp = league(e.lg)?.sport, us = US_SPORTS.has(sp);
+          const [l, r] = us ? ['a', 'h'] : ['h', 'a'];
+          return `<button class="ag-item${e.nt ? ' night' : ''}" type="button" data-day-jump="${d}">
+            <i style="background:${SPORT_COLORS[sp] || '#888'}"></i>
+            <span class="lbl">${esc(agLabel(e, l, r, us))}</span>
+            <span class="t">${e.st === 'c' && e.hs != null ? `${e[l] === e.h ? e.hs : e.as}-${e[r] === e.h ? e.hs : e.as}` : hhmm(e.ko)}</span></button>`;
+        }).join('')}
+        ${solo.map(c => `<div class="ag-item"><i style="background:${SPORT_COLORS.solo}"></i><span class="lbl">${esc(c.emoji || '')} ${esc(c.name)}</span><span class="t">${esc(c.time || '')}</span></div>`).join('')}
+      </div>
+    </div>`);
+  }
+  return `<div class="agenda">${rows.join('') || '<p class="empty">Rien au programme pour tes équipes.</p>'}</div>`;
 }
 
 function renderCalendar() {
   const today = tvToday();
   if (!selDay || selDay < cat.range.start || selDay > cat.range.end) selDay = today;
-  const leaguesWithEvents = [...new Set(cat.events.filter(visible).filter(e => e.day >= today).map(e => e.lg))];
   const sel = parseDay(selDay);
-  let html = pageHead(`${cap(MONTHS[sel.getMonth()])} ${sel.getFullYear()}`, 'Calendrier');
+  let html = `<header class="page-head row"><div><div class="kicker">${cap(MONTHS[sel.getMonth()])} ${sel.getFullYear()}</div><h1 class="page-title">Calendrier</h1></div>
+    <button class="sub-pill" type="button" data-action="subscribe">${CAL_ICON}S'abonner</button></header>`;
   if (!favs.leagues.length && !favs.cycling.length) return html + noFavs();
-  html += `<button class="sub-btn" type="button" data-action="subscribe">${CAL_ICON}<span>Mettre mes matchs dans mon agenda</span></button>`;
+  html += `<div class="seg" role="tablist" aria-label="Affichage">${[['month', 'Mois'], ['week', 'Semaine'], ['list', 'Liste']].map(([v, l]) =>
+    `<button type="button" role="tab" aria-selected="${calView === v}" class="${calView === v ? 'on' : ''}" data-calview="${v}">${l}</button>`).join('')}</div>`;
+  const leaguesWithEvents = [...new Set(cat.events.filter(visible).filter(e => e.day >= today).map(e => e.lg))];
   if (leaguesWithEvents.length > 1) {
-    html += `<div class="stories" role="group" aria-label="Filtrer par compétition">
-      <button class="story${filter === 'all' ? ' active' : ''}" data-filter="all" type="button"><span class="ring"><span class="disc all">Tout</span></span><span class="lbl">Tout</span></button>
-      ${leaguesWithEvents.map(lg => `<button class="story${filter === lg ? ' active' : ''}" data-filter="${lg}" type="button">
-        <span class="ring"><span class="disc">${league(lg).logo ? `<img src="${esc(league(lg).logo)}" alt="">` : esc(league(lg).emoji)}</span></span>
-        <span class="lbl">${esc(league(lg).label)}</span></button>`).join('')}
+    html += `<div class="filters" role="group" aria-label="Filtrer par compétition">
+      <button class="chip${filter === 'all' ? ' active' : ''}" data-filter="all" type="button">Tout</button>
+      ${leaguesWithEvents.map(lg => `<button class="chip${filter === lg ? ' active' : ''}" data-filter="${lg}" type="button">${league(lg).logo ? `<img src="${esc(league(lg).logo)}" alt="">` : ''}${esc(league(lg).label)}</button>`).join('')}
     </div>`;
   }
-  html += calendarGrid(today);
-  // Le jour choisi, puis la suite de la semaine
-  const blocks = [];
-  const chosen = dayBlock(selDay, myEvents().filter(e => e.day === selDay));
-  blocks.push(chosen || `<section class="day"><h2 class="day-title"><span>${cap(dayLabel(selDay))}</span></h2><p class="empty small">Rien ce jour-là pour tes équipes.</p></section>`);
-  for (let d = addDays(selDay, 1); d <= addDays(selDay, 6) && d <= cat.range.end; d = addDays(d, 1)) blocks.push(dayBlock(d, myEvents().filter(e => e.day === d)));
-  return html + `<div id="cal-list">${blocks.join('')}</div>`;
+  if (calView === 'list') return html + listView(today);
+  html += calView === 'week' ? weekView(today) : monthView(today);
+  const block = dayBlock(selDay, dayEvents(selDay));
+  return html + `<div id="cal-list">${block || `<section class="day"><h2 class="day-title"><span>${cap(dayLabel(selDay))}</span></h2><p class="empty small">Rien ce jour-là pour tes équipes.</p></section>`}</div>`;
 }
 
 function renderResults() {
@@ -310,33 +469,68 @@ function condensed(entries, isFav, key) {
   return { rows, hidden: entries.length - [...keep].filter(i => i >= 0 && i < entries.length).length };
 }
 
+// Forme (5 derniers matchs) d'après le catalogue
+function formOf(lg, id) {
+  return cat.events.filter(e => e.lg === lg && e.st === 'c' && e.hs != null && (e.h.id === id || e.a.id === id))
+    .sort((a, b) => b.ko.localeCompare(a.ko)).slice(0, 5).reverse()
+    .map(e => { const us = e.h.id === id ? e.hs : e.as, them = e.h.id === id ? e.as : e.hs; return us > them ? 'w' : us < them ? 'l' : 'd'; });
+}
+
+function standingCards() {
+  const cards = [];
+  favs.leagues.filter(f => f.mode === 'teams').forEach(f => {
+    const table = cat.tables[f.league];
+    if (!table) return;
+    const L = league(f.league);
+    table.groups.forEach(g => g.entries.forEach(r => {
+      if (!isFavTeam(f.league, r.team_id)) return;
+      const form = formOf(f.league, r.team_id);
+      const ordinal = r.rank ? (r.rank === 1 ? '1er' : `${r.rank}e`) : '–';
+      cards.push(`<article class="st-card" data-team="${esc(r.team_id)}" data-league="${f.league}" role="button" tabindex="0">
+        <div class="st-top">
+          ${r.logo ? `<img src="${esc(r.logo)}" alt="">` : '<span class="noimg"></span>'}
+          <div class="st-name"><b>${esc(r.team)}</b><span>${esc(L.label)}${table.groups.length > 1 ? ` · ${esc(g.name)}` : ''}</span></div>
+          <div class="st-rank"><b>${ordinal}</b><span>sur ${g.entries.length}</span></div>
+        </div>
+        <div class="st-bottom"><span class="rec-cell">${recordHtml(r.record)}${r.points != null && r.points !== '' ? ` · ${esc(r.points)} pts` : ''}</span>
+          ${form.length ? `<span class="form sm">${form.map(o => `<span class="${o}">${OUTCOME_FR[o]}</span>`).join('')}</span>` : ''}</div>
+      </article>`);
+    }));
+  });
+  return cards.join('');
+}
+
+function leagueTable(lgId, f) {
+  const table = cat.tables[lgId];
+  const isFav = row => isFavTeam(lgId, row.team_id);
+  const L = league(lgId), points = ['soccer', 'rugby'].includes(L.sport);
+  return table.groups.map(g => {
+    const key = `${lgId}:${g.name}`;
+    const { rows, hidden } = condensed(g.entries, isFav, key);
+    const cols = points ? 4 : 3;
+    return `<div class="card table-card"><table class="table">
+      ${table.groups.length > 1 || g.name !== L.label ? `<caption>${esc(g.name)}</caption>` : ''}
+      <thead><tr><th>#</th><th>Équipe</th><th>Bilan</th>${points ? '<th>Pts</th>' : ''}</tr></thead>
+      <tbody>${rows.map(r => r === 'gap' ? `<tr class="gap"><td colspan="${cols}">···</td></tr>` : `<tr class="${isFav(r) ? 'fav' : ''}" data-team="${esc(r.team_id)}" data-league="${lgId}">
+        <td>${r.rank ?? '–'}</td>
+        <td class="team-cell"><span class="tc">${r.logo ? `<img src="${esc(r.logo)}" alt="" loading="lazy">` : ''}<span>${esc(r.team)}</span></span></td>
+        <td class="rec-cell">${recordHtml(r.record)}</td>${points ? `<td class="pts">${esc(r.points ?? '')}</td>` : ''}
+      </tr>`).join('')}</tbody></table>${hidden ? `<button class="table-more" type="button" data-expand="${esc(key)}">Voir les ${g.entries.length} équipes</button>` : ''}</div>`;
+  }).join('');
+}
+
 function renderStandings() {
   let html = pageHead('Bilan de tes équipes', 'Classements');
-  const parts = [];
-  const ordered = [...favs.leagues].sort((a, b) => (b.mode === 'teams') - (a.mode === 'teams'));
-  ordered.forEach(f => {
-    const table = cat.tables[f.league];
-    if (!table || f.mode === 'ap') return;
-    const isFav = row => f.mode === 'teams' && (f.teams.includes(row.team_id) || (f.names || []).some(n => wordMatch(row.team, n)));
-    const groups = f.mode === 'teams' ? table.groups.filter(g => g.entries.some(isFav)) : table.groups;
-    if (!groups.length) return;
-    const L = league(f.league), points = ['soccer', 'rugby'].includes(L.sport);
-    parts.push(`<div class="comp-head">${lgTile(f.league, 'l')}<h2>${esc(L.label)}<small>${esc(table.season)}</small></h2></div>` +
-      groups.map(g => {
-        const key = `${f.league}:${g.name}`;
-        const { rows, hidden } = condensed(g.entries, isFav, key);
-        const cols = points ? 4 : 3;
-        return `<table class="table">
-        ${groups.length > 1 || g.name !== L.label ? `<caption>${esc(g.name)}</caption>` : ''}
-        <thead><tr><th>#</th><th>Équipe</th><th>Bilan</th>${points ? '<th>Pts</th>' : ''}</tr></thead>
-        <tbody>${rows.map(r => r === 'gap' ? `<tr class="gap"><td colspan="${cols}">···</td></tr>` : `<tr class="${isFav(r) ? 'fav' : ''}" data-team="${esc(r.team_id)}" data-league="${f.league}">
-          <td>${r.rank ?? '–'}</td>
-          <td class="team-cell"><span class="tc">${r.logo ? `<img src="${esc(r.logo)}" alt="" loading="lazy">` : ''}<span>${esc(r.team)}</span></span></td>
-          <td class="rec-cell">${recordHtml(r.record)}</td>${points ? `<td class="pts">${esc(r.points ?? '')}</td>` : ''}
-        </tr>`).join('')}</tbody></table>${hidden ? `<button class="table-more" type="button" data-expand="${esc(key)}">Voir les ${g.entries.length} équipes</button>` : ''}`;
-      }).join(''));
-  });
-  return html + (parts.join('') || '<p class="empty">Pas de classement pour tes compétitions en ce moment.</p>');
+  const cards = standingCards();
+  if (cards) html += `<div class="section-title">Mes équipes</div><div class="st-cards">${cards}</div>`;
+  const ordered = [...favs.leagues].sort((a, b) => (b.mode === 'teams') - (a.mode === 'teams'))
+    .filter(f => cat.tables[f.league] && f.mode !== 'ap');
+  if (!ordered.length) return html + (cards ? '' : '<p class="empty">Pas de classement pour tes compétitions en ce moment.</p>');
+  if (!standLg || !ordered.some(f => f.league === standLg)) standLg = ordered[0].league;
+  html += `<div class="section-title" id="tables">Classements complets</div>
+    <div class="filters">${ordered.map(f => `<button class="chip${f.league === standLg ? ' active' : ''}" type="button" data-stand="${f.league}">${league(f.league).logo ? `<img src="${esc(league(f.league).logo)}" alt="">` : ''}${esc(league(f.league).label)}</button>`).join('')}</div>
+`;
+  return html + leagueTable(standLg, favFor(standLg));
 }
 
 function installTip() {
@@ -691,35 +885,45 @@ function renderTeam(lg, id, games) {
   const past = games.filter(g => g.done).sort((a, b) => b.ko.localeCompare(a.ko));
   const next = games.filter(g => !g.done && new Date(g.ko).getTime() > now - 3 * 3600e3).sort((a, b) => a.ko.localeCompare(b.ko));
   const followed = isFavTeam(lg, id);
-  const fixture = g => {
-    const o = outcome(g);
-    const right = g.done ? `<span class="res"><i class="${o}">${OUTCOME_FR[o] || ''}</i>${g.us} - ${g.them}</span>`
-      : g.live ? '<span class="live">EN DIRECT</span>' : '';
-    return `<div class="fixture">
-      <div class="when"><b>${g.done ? shortDate(g.ko) : hhmm(g.ko)}</b>${g.done ? '' : shortDate(g.ko)}</div>
-      <div class="opp">${g.oppLogo ? `<img src="${esc(g.oppLogo)}" alt="" loading="lazy">` : ''}<small>${g.home ? 'vs' : '@'}</small><span>${esc(g.oppName)}</span></div>
-      ${right}
-      ${!g.done && g.ch?.length ? `<div class="chs">${g.ch.map(c => `<span class="ch" style="background:${chColor(c)}">${esc(c)}</span>`).join('')}</div>` : ''}
-    </div>`;
-  };
-  const form = past.slice(0, 5).map(outcome).filter(Boolean);
   const ordinal = n => n === 1 ? '1er' : `${n}e`;
+  const form = past.slice(0, 5).map(outcome).filter(Boolean).reverse();
+  const meta = [L.label, st?.rank ? `${ordinal(st.rank)} sur ${st.size}` : '', st?.record ? recordHtml(st.record) : ''].filter(Boolean);
+  const first = next[0];
+  const firstEvent = first && cat.events.find(e => e.lg === lg && String(e.eid) === String(first.eid));
+  const nextCard = first ? `<section class="next-card">
+      <div class="nc-top"><span>${first.live ? 'EN DIRECT' : 'Prochain match'}</span><span>${cap(shortDate(first.ko))} · ${hhmm(first.ko)}</span></div>
+      <div class="nc-row">
+        <div class="nc-team">${t.l ? `<img src="${esc(t.l)}" alt="">` : '<span class="noimg"></span>'}<b>${esc(shortName(t.n))}</b></div>
+        <div class="nc-mid">${first.home ? 'vs' : '@'}${(first.ch || []).slice(0, 2).map(c => `<span class="ch" style="background:${chColor(c)}">${esc(c)}</span>`).join('')}</div>
+        <div class="nc-team" data-team="${esc(first.oppId)}" data-league="${lg}" role="button" tabindex="0">${first.oppLogo ? `<img src="${esc(first.oppLogo)}" alt="">` : '<span class="noimg"></span>'}<b>${esc(shortName(first.oppName))}</b></div>
+      </div>
+      ${firstEvent && !first.live ? `<button class="nc-cal" type="button" data-cal="${lg}:${esc(first.eid)}">${CAL_ICON}Ajouter à mon agenda</button>` : ''}
+    </section>` : '';
+  const upcoming = g => `<div class="fx">
+      <span class="fx-date">${cap(shortDate(g.ko))}</span>
+      ${g.oppLogo ? `<img src="${esc(g.oppLogo)}" alt="" loading="lazy">` : '<span class="noimg"></span>'}
+      <span class="fx-opp">${g.home ? '' : '<small>à</small> '}${esc(shortName(g.oppName))}</span>
+      <span class="fx-time">${g.live ? '<span class="live">LIVE</span>' : hhmm(g.ko)}</span>
+    </div>`;
+  const result = g => { const o = outcome(g); return `<div class="fx">
+      <span class="fx-badge ${o}">${OUTCOME_FR[o] || ''}</span>
+      <span class="fx-opp">${g.home ? '' : '<small>à</small> '}${esc(shortName(g.oppName))}</span>
+      <span class="fx-date">${shortDate(g.ko)}</span>
+      <span class="fx-time">${g.us}-${g.them}</span>
+    </div>`; };
   return `
-    <div class="team-hero">
-      ${t.l ? `<img src="${esc(t.l)}" alt="">` : ''}
-      <div><h2 id="team-name">${esc(t.n)}</h2><div class="meta">${lgTile(lg)}${esc(L.label)}</div></div>
+    <div class="team-hero2">
+      ${t.l ? `<img src="${esc(t.l)}" alt="">` : '<span class="noimg"></span>'}
+      <h2 id="team-name">${esc(t.n)}</h2>
+      <div class="meta"><span class="rec-cell">${meta.join(' · ')}</span></div>
+      ${form.length ? `<div class="form sm">${form.map(o => `<span class="${o}">${OUTCOME_FR[o]}</span>`).join('')}</div>` : ''}
+      <button class="follow-pill${followed ? ' on' : ''}" type="button" data-follow="${esc(id)}" data-league="${lg}">${followed ? '★ Suivie' : '☆ Suivre l\'équipe'}</button>
     </div>
-    ${st ? `<div class="team-stats" style="grid-template-columns:repeat(${st.points != null || st.played != null ? 3 : 2},minmax(0,1fr))">
-      <div><b>${st.rank ? ordinal(st.rank) : '–'}</b><span>sur ${st.size}</span></div>
-      <div><b class="rec-cell">${recordHtml(st.record)}</b><span>Bilan</span></div>
-      ${st.points != null || st.played != null ? `<div><b>${esc(st.points ?? st.played)}</b><span>${st.points != null ? 'Points' : 'Matchs'}</span></div>` : ''}
-    </div>` : ''}
-    ${form.length ? `<div class="section-title">Forme</div><div class="form">${form.map(o => `<span class="${o}">${OUTCOME_FR[o]}</span>`).join('')}</div>` : ''}
-    <div class="section-title">Prochains matchs</div>
-    ${next.slice(0, 4).map(fixture).join('') || '<p class="empty">Pas de match programmé pour l\'instant.</p>'}
+    ${nextCard}
+    <div class="section-title">À venir</div>
+    <div class="card fx-list">${next.slice(first ? 1 : 0, 6).map(upcoming).join('') || '<p class="empty small">Pas d\'autre match programmé pour l\'instant.</p>'}</div>
     <div class="section-title">Derniers résultats</div>
-    ${past.slice(0, 5).map(fixture).join('') || '<p class="empty">Pas encore de résultat.</p>'}
-    <button class="btn ${followed ? '' : 'primary'} follow-btn" type="button" data-follow="${esc(id)}" data-league="${lg}">${followed ? 'Ne plus suivre' : 'Suivre cette équipe'}</button>`;
+    <div class="card fx-list">${past.slice(0, 5).map(result).join('') || '<p class="empty small">Pas encore de résultat.</p>'}</div>`;
 }
 
 let teamToken = 0;
@@ -787,6 +991,7 @@ favs = read(KEYS.favs);
 if (cat && !favs) favs = defaultFavs();
 tab = read(KEYS.tab) || 'today';
 sub = read(KEYS.sub);
+calView = read('t7s_calview') || 'month';
 
 $('.tabs').addEventListener('click', ev => {
   const b = ev.target.closest('.tab');
@@ -805,6 +1010,14 @@ $('#view').addEventListener('click', ev => {
     return;
   }
   if (ev.target.closest('[data-action="subscribe"]')) { subscribeCalendar(); return; }
+  const cv = ev.target.closest('[data-calview]');
+  if (cv) { calView = cv.dataset.calview; write('t7s_calview', calView); render(); return; }
+  const wk = ev.target.closest('[data-week]');
+  if (wk) { selDay = addDays(selDay, +wk.dataset.week); render(); return; }
+  const jump = ev.target.closest('[data-day-jump]');
+  if (jump) { selDay = jump.dataset.dayJump; calView = 'week'; render(); $('#cal-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  const sl = ev.target.closest('[data-stand]');
+  if (sl) { standLg = sl.dataset.stand; render(); $('#tables')?.scrollIntoView({ block: 'start' }); return; }
   const teamEl = ev.target.closest('[data-team]');
   if (teamEl) { openTeam(teamEl.dataset.league, teamEl.dataset.team); return; }
   const more = ev.target.closest('[data-expand]');
@@ -818,6 +1031,10 @@ $('#open-favs').addEventListener('click', openFavs);
 $('#close-favs').addEventListener('click', closeFavs);
 $('#close-team').addEventListener('click', closeTeam);
 $('#team-body').addEventListener('click', ev => {
+  const c = ev.target.closest('[data-cal]');
+  if (c) { addMatchToCalendar(c.dataset.cal); return; }
+  const other = ev.target.closest('[data-team]');
+  if (other) { openTeam(other.dataset.league, other.dataset.team); return; }
   const b = ev.target.closest('[data-follow]');
   if (b) toggleFollow(b.dataset.league, b.dataset.follow);
 });
