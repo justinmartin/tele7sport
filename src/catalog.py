@@ -56,6 +56,43 @@ def _wiki_logo(page: str) -> str:
         return ""
 
 
+# Logos de clubs absents (ou faux) chez ESPN : ESPN confond parfois l'abréviation d'un club avec un
+# pays (Perpignan « USA » → drapeau des États-Unis, Vannes « VAN » → Vanuatu). On prend le logo sur Wikipédia.
+WIKI_TEAM_LOGOS = {
+    "Perpignan": "fr/Union sportive Arlequins perpignanais",
+    "Vannes": "fr/Rugby club vannetais",
+    "Bayonne": "fr/Aviron bayonnais rugby pro",
+    "Bristol Rugby": "en/Bristol Bears",
+    "Black Lion": "en/Black Lion (rugby union)",
+}
+INTERNATIONAL_GROUPS = {"foot-intl", "rugby-intl", "jo"}
+_team_logo_cache: Dict[str, str] = {}
+
+
+def _wiki_team_logo(page: str) -> str:
+    if page not in _team_logo_cache:
+        lang, title = page.split("/", 1)
+        try:
+            d = requests.get(f"https://{lang}.wikipedia.org/w/api.php", timeout=10, params={
+                "action": "query", "titles": title, "prop": "pageimages", "piprop": "thumbnail", "pithumbsize": 200,
+                "pilicense": "any", "redirects": 1, "format": "json"},
+                headers={"User-Agent": "tele7sport (github.com/justinmartin/tele7sport)"}).json()
+            page_data = next(iter(d["query"]["pages"].values()))
+            _team_logo_cache[page] = (page_data.get("thumbnail") or {}).get("source", "").split("?")[0]
+        except Exception:
+            _team_logo_cache[page] = ""
+    return _team_logo_cache[page]
+
+
+def _fix_team_logo(cfg: dict, name: str, logo: str) -> str:
+    """Un club n'a jamais un drapeau pour logo (hors compétitions de sélections nationales)."""
+    if cfg.get("group") in INTERNATIONAL_GROUPS:
+        return logo
+    if name in WIKI_TEAM_LOGOS and (not logo or "/countries/" in logo):
+        return _wiki_team_logo(WIKI_TEAM_LOGOS[name]) or ""
+    return "" if "/countries/" in (logo or "") else logo
+
+
 def _league_logo(league_id: str, cfg: dict) -> str:
     """Logo de la compétition (version pour fond clair : l'app le pose sur une pastille blanche)."""
     if cfg.get("logo"):
@@ -161,11 +198,11 @@ def build_catalog(today: date) -> dict:
             for side in ("home", "away"):
                 tid = getattr(e, f"{side}_id")
                 if tid:
-                    teams[tid] = {"n": getattr(e, f"{side}_team"), "a": official_abbr(cfg["sport"], getattr(e, f"{side}_team"), getattr(e, f"{side}_abbr")), "l": getattr(e, f"{side}_logo")}
+                    teams[tid] = {"n": getattr(e, f"{side}_team"), "a": official_abbr(cfg["sport"], getattr(e, f"{side}_team"), getattr(e, f"{side}_abbr")), "l": _fix_team_logo(cfg, getattr(e, f"{side}_team"), getattr(e, f"{side}_logo"))}
         if table:
             for g in table["groups"]:
                 for row in g["entries"]:
-                    teams.setdefault(row["team_id"], {"n": row["team"], "a": official_abbr(cfg["sport"], row["team"], row["abbr"]), "l": row["logo"]})
+                    teams.setdefault(row["team_id"], {"n": row["team"], "a": official_abbr(cfg["sport"], row["team"], row["abbr"]), "l": _fix_team_logo(cfg, row["team"], row["logo"])})
             tables[league_id] = table
         leagues[league_id] = {
             "label": cfg["label"], "emoji": cfg["emoji"], "sport": cfg["sport"], "logo": _league_logo(league_id, cfg),

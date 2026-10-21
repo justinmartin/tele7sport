@@ -852,6 +852,15 @@ function teamGamesFromCatalog(lg, id) {
   });
 }
 
+// Logo d'un adversaire venu d'ESPN : celui du catalogue s'il existe (déjà corrigé), et jamais un
+// drapeau pour un club (ESPN confond Perpignan « USA » avec les États-Unis, Vannes « VAN » avec le Vanuatu)
+function clubLogo(lg, id, espnLogo) {
+  const known = team(lg, id).l;
+  if (known) return known;
+  const intl = ['foot-intl', 'rugby-intl', 'jo'].includes(league(lg)?.group);
+  return !intl && /\/countries\//.test(espnLogo) ? '' : espnLogo;
+}
+
 async function teamGamesFromEspn(lg, id) {
   if (!league(lg)?.espn) return [];  // EuroLeague, Betclic Élite : le catalogue suffit
   try {
@@ -864,7 +873,7 @@ async function teamGamesFromEspn(lg, id) {
       const val = c => { const v = typeof c.score === 'object' ? c.score?.displayValue : c.score; const n = parseInt(v, 10); return Number.isNaN(n) ? null : n; };
       const done = !!comp.status?.type?.completed;
       return { eid: raw.id, ko: raw.date, home: me.homeAway === 'home', oppId: String(opp.team?.id || ''),
-               oppName: opp.team?.displayName || '?', oppLogo: opp.team?.logos?.[0]?.href || opp.team?.logo || '',
+               oppName: opp.team?.displayName || '?', oppLogo: clubLogo(lg, String(opp.team?.id || ''), opp.team?.logos?.[0]?.href || opp.team?.logo || ''),
                done, us: done ? val(me) : null, them: done ? val(opp) : null, ch: [] };
     }).filter(Boolean);
   } catch (e) {
