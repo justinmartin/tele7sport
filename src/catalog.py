@@ -64,7 +64,16 @@ WIKI_TEAM_LOGOS = {
     "Bayonne": "fr/Aviron bayonnais rugby pro",
     "Bristol Rugby": "en/Bristol Bears",
     "Black Lion": "en/Black Lion (rugby union)",
+    "London Lions": "en/London Lions (basketball)",
+    "Rot-Weiss Essen": "de/Rot-Weiss Essen",
+    "SG Sonnenhof Großaspach": "de/SG Sonnenhof Großaspach",
+    "SSV Jeddeloh II": "de/SSV Jeddeloh",
+    "Saint-Malo": "fr/US Saint-Malo",
+    "LDLC ASVEL": "fr/ASVEL Lyon-Villeurbanne",
+    "JDA Dijon": "fr/JDA Dijon Basket",
 }
+# Logos présents mais inutilisables (blanc sur blanc, simple texte) : toujours remplacés
+FORCE_WIKI_LOGO = {"LDLC ASVEL", "JDA Dijon"}
 INTERNATIONAL_GROUPS = {"foot-intl", "rugby-intl", "jo"}
 _team_logo_cache: Dict[str, str] = {}
 
@@ -88,7 +97,7 @@ def _fix_team_logo(cfg: dict, name: str, logo: str) -> str:
     """Un club n'a jamais un drapeau pour logo (hors compétitions de sélections nationales)."""
     if cfg.get("group") in INTERNATIONAL_GROUPS:
         return logo
-    if name in WIKI_TEAM_LOGOS and (not logo or "/countries/" in logo):
+    if name in WIKI_TEAM_LOGOS and (not logo or "/countries/" in logo or name in FORCE_WIKI_LOGO):
         return _wiki_team_logo(WIKI_TEAM_LOGOS[name]) or ""
     return "" if "/countries/" in (logo or "") else logo
 
@@ -204,6 +213,10 @@ def build_catalog(today: date) -> dict:
                 for row in g["entries"]:
                     teams.setdefault(row["team_id"], {"n": row["team"], "a": official_abbr(cfg["sport"], row["team"], row["abbr"]), "l": _fix_team_logo(cfg, row["team"], row["logo"])})
             tables[league_id] = table
+        for t in teams.values():
+            if not t["l"]:
+                t["l"] = next((x["l"] for L in leagues.values() if L["sport"] == cfg["sport"]
+                               for x in L["teams"].values() if x["n"] == t["n"] and x["l"]), "")
         leagues[league_id] = {
             "label": cfg["label"], "emoji": cfg["emoji"], "sport": cfg["sport"], "logo": _league_logo(league_id, cfg),
             # pour les scores en direct et les fiches équipe (rien pour les ligues hors ESPN)
