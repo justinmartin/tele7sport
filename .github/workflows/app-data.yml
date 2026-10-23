@@ -2,8 +2,9 @@ name: 📱 Données de l'app (catalog.json)
 
 on:
   schedule:
-    # 5h et 17h UTC (7h et 19h à Paris l'hiver) : scores de la veille, programme du soir
-    - cron: '0 5,17 * * *'
+    # Toutes les 6 h, à une minute « impaire » : GitHub retarde de plusieurs heures les tâches posées
+    # pile sur l'heure (constaté : 5 h UTC partait vers 10 h). Quatre passages gardent l'app fraîche malgré tout.
+    - cron: '17 2,8,14,20 * * *'
   workflow_dispatch:
 
 jobs:

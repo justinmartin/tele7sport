@@ -1,6 +1,6 @@
 # 📺 Télé7Sport
 
-**Votre programme sportif personnalisé, chaque semaine dans votre boîte mail.**
+**Votre programme sportif personnalisé : une app sur le téléphone et une newsletter chaque lundi matin.**
 
 Un bot qui envoie une newsletter hebdomadaire avec le programme de vos équipes et sports favoris : matchs à venir, chaînes TV, et résultats de la semaine passée. Style "Télé 7 Jours", mais pour le sport, et 100% personnalisé.
 
@@ -20,14 +20,18 @@ Un bot qui envoie une newsletter hebdomadaire avec le programme de vos équipes 
 - 📊 **Résultats** — Récap des résultats de la semaine passée
 - 🚴 **Multi-sport** — NBA, NFL, NCAAF, NCAAM, Ligue 1/2, Champions League, Top 14, Six Nations, Tennis Grand Chelem, Cyclisme, VTT…
 - 🏆 **AP Top 25** — Suivi automatique des équipes classées AP en college football et basketball (mise à jour chaque semaine)
-- 🌐 **Configurateur web** — Interface visuelle pour créer votre config ([tele7sport.vercel.app](https://tele7sport.vercel.app))
-- 🤖 **100% automatique** — GitHub Actions envoie la newsletter chaque lundi matin
+- 📱 **L'app** ([tele7sport.vercel.app](https://tele7sport.vercel.app), à ajouter à l'écran d'accueil) — Accueil avec le match vedette et l'heure de fin estimée, calendrier Mois / Semaine / Liste, classements, fiche équipe avec scores en direct, favoris par sport et sections internationales (foot, rugby, JO)
+- 🗓️ **Agenda** — Ajout d'un match à l'agenda, ou abonnement webcal à ses favoris
+- 🧩 **Widget iPhone** — Via Scriptable (`web/widget/scriptable.js`, copié depuis l'app avec les favoris intégrés)
+- 🔤 **Acronymes officiels et logos** — Pour toutes les équipes (`src/abbr.py`), logos vérifiés (jamais un drapeau à la place d'un club)
+- 🌐 **Configurateur web** — Pour créer la config de la newsletter (`/configurateur/`)
+- 🤖 **100% automatique** — GitHub Actions envoie la newsletter le lundi vers 7 h 45 et rafraîchit les données de l'app 4 fois par jour
 
 ## 🏟️ Sports supportés
 
 | Sport | Ligues / Compétitions |
 |-------|----------------------|
-| 🏀 Basketball | NBA, Betclic Élite |
+| 🏀 Basketball | NBA, Betclic Élite, EuroLeague |
 | 🏈 Football US | NFL, NCAA Football (AP Top 25) |
 | 🏀 College | NCAA Basketball (AP Top 25) |
 | ⚽ Football | Ligue 1, Ligue 2, Champions League, Europa League, Conference League, Coupe de France, Ligue des Nations, Qualif. Coupe du Monde, **Coupe du Monde**, Euro, Amicaux |
@@ -273,35 +277,51 @@ Les droits TV changent par saison. Vous pouvez mettre à jour le mapping dans `s
 tele7sport/
 ├── src/
 │   ├── fetchers/
-│   │   ├── espn.py          # ESPN API (NBA, NFL, foot, rugby, tennis)
-│   │   ├── rankings.py      # Classement AP Top 25 (NCAAF, NCAAM)
-│   │   ├── cycling.py       # Calendrier cyclisme/VTT (PCS + statique)
-│   │   └── tv_schedule.py   # Résolution des chaînes TV
-│   ├── render/
-│   │   └── newsletter.py    # Template HTML de la newsletter
-│   ├── send/
-│   │   └── mailer.py        # Envoi SMTP
-│   ├── config.py            # Configuration & registre des ligues
-│   └── main.py              # Orchestrateur principal
-├── web/                     # Configurateur web (Vercel)
-│   ├── index.html
-│   ├── style.css
-│   └── app.js
+│   │   ├── espn.py           # ESPN (NBA, NFL, foot, rugby, tennis…), jour par jour
+│   │   ├── basket_eu.py      # Betclic Élite (TheSportsDB) et EuroLeague (API officielle)
+│   │   ├── nba_tv.py         # Diffuseurs français de la NBA (nba.com)
+│   │   ├── standings.py      # Classements (saison toujours précisée)
+│   │   ├── rankings.py       # AP Top 25 (NCAAF, NCAAM)
+│   │   ├── cycling.py, wiki_calendars.py  # Cyclisme, VTT, MXGP, Supercross, Dakar (Wikipédia)
+│   │   └── tv_schedule.py    # Résolution des chaînes TV
+│   ├── catalog.py            # Catalogue de l'app : compétitions, équipes, logos, acronymes
+│   ├── abbr.py               # Acronymes officiels
+│   ├── render/newsletter.py  # HTML de la newsletter
+│   ├── send/mailer.py        # Envoi SMTP
+│   ├── config.py             # Registre des ligues et sections
+│   └── main.py               # Orchestrateur
+├── web/                      # App PWA (Vercel) : index.html, app.js, app.css, sw.js
+│   ├── data/catalog.json     # Données de l'app, régénérées par le workflow app-data
+│   ├── widget/scriptable.js  # Widget iPhone
+│   └── configurateur/        # Configurateur de la newsletter
+├── api/                      # Fonctions Vercel : espn.js (relais ESPN), ics.js (agenda)
 ├── .github/workflows/
-│   └── weekly-newsletter.yml
-├── favorites.example.json   # Exemple de configuration
-├── run.py                   # Point d'entrée CLI
-├── vercel.json              # Config Vercel (web)
-└── requirements.txt
+│   ├── weekly-newsletter.yml # Newsletter du lundi
+│   └── app-data.yml          # Données de l'app, toutes les 6 h
+├── favorites.example.json
+├── run.py                    # CLI
+└── vercel.json
 ```
+
+### Automatisation
+
+- **Newsletter** (`weekly-newsletter.yml`) : GitHub lance les tâches planifiées du matin avec des heures de retard. Le workflow démarre donc le dimanche soir, attend sur place (5 h 40 au plus par run), puis se relance lui-même jusqu'au lundi 7 h 40 à Paris avant d'envoyer. Les déclenchements du lundi matin servent de filet, et une marque « déjà envoyée » évite les doublons. Le bouton « Run workflow » (case « relais » décochée) envoie tout de suite.
+- **Données de l'app** (`app-data.yml`) : `python run.py export` régénère `web/data/catalog.json` toutes les 6 h et le commite s'il a changé. L'app le lit via raw.githubusercontent.
+- **App** : déployée à la main sur Vercel (`npx vercel --prod`).
+- Les fonctions `api/subscribe`, `api/unsubscribe` et `api/newsletter` (inscription par e-mail depuis l'app) existent mais sont **désactivées** : formulaire masqué (`NEWSLETTER_ON = false` dans `web/app.js`) et plus d'envoi programmé sur Vercel.
 
 ### Sources de données
 
-| Source | Type | Données | Coût |
-|--------|------|---------|------|
-| ESPN API | REST (public) | Scores, calendrier, diffuseurs, classements AP | Gratuit |
-| ProCyclingStats | Scraping | Calendrier cyclisme route | Gratuit |
-| Calendrier statique | JSON local | VTT DH/Enduro, Grands Tours | Gratuit |
+| Source | Type | Données |
+|--------|------|---------|
+| ESPN API | REST public | Scores, calendrier, diffuseurs, classements, AP Top 25, logos |
+| nba.com | Page publique | Diffuseurs français de la NBA |
+| TheSportsDB | API (clé de test) | Betclic Élite |
+| API EuroLeague | REST officiel | EuroLeague : matchs et classement |
+| Wikipédia | Pages publiques | Cyclisme route, VTT, MXGP, Supercross, Dakar, logos manquants |
+| Calendrier statique | JSON local | Grands Tours, VTT DH / Enduro |
+
+ProCyclingStats bloque les scripts : il n'est pas utilisé.
 
 ---
 
@@ -310,6 +330,7 @@ tele7sport/
 ```bash
 python run.py test           # Dry run — génère le HTML sans envoyer d'email
 python run.py once           # Génère et envoie la newsletter
+python run.py export         # Régénère web/data/catalog.json (données de l'app)
 python run.py search <sport> <league> [query]  # Recherche d'équipes ESPN
 ```
 
