@@ -9,7 +9,7 @@ elles sont prises automatiquement dès qu'elles existent.
 import logging
 import re
 import time
-from datetime import date
+from datetime import date, datetime
 from typing import Dict, List, Optional
 
 import requests
@@ -327,10 +327,146 @@ def patinage_gp(start_year: int) -> List[dict]:
     return out
 
 
+# ---------------------------------------------------------------- handball et athlétisme
+# Handball : matchs des Bleus (et Bleues) aux Euros et Mondiaux, plus demi-finales et finales.
+# Pages « 2027 World Men's Handball Championship »… ; chaque match est un petit tableau
+# [date heure, équipe, score ou « v », équipe, salle, ville…]. Heures locales des salles.
+
+COUNTRY_FR = {
+    "France": "France", "Germany": "Allemagne", "Denmark": "Danemark", "Norway": "Norvège", "Sweden": "Suède",
+    "Spain": "Espagne", "Hungary": "Hongrie", "Croatia": "Croatie", "Slovenia": "Slovénie", "Poland": "Pologne",
+    "Netherlands": "Pays-Bas", "Iceland": "Islande", "Portugal": "Portugal", "Austria": "Autriche", "Serbia": "Serbie",
+    "Montenegro": "Monténégro", "Romania": "Roumanie", "Czech Republic": "Tchéquie", "Czechia": "Tchéquie",
+    "Slovakia": "Slovaquie", "Switzerland": "Suisse", "Faroe Islands": "Îles Féroé", "Ukraine": "Ukraine",
+    "North Macedonia": "Macédoine du Nord", "Turkey": "Turquie", "Greece": "Grèce", "Italy": "Italie",
+    "Egypt": "Égypte", "Tunisia": "Tunisie", "Algeria": "Algérie", "Brazil": "Brésil", "Argentina": "Argentine",
+    "Japan": "Japon", "South Korea": "Corée du Sud", "Qatar": "Qatar", "Bahrain": "Bahreïn", "Angola": "Angola",
+    "Senegal": "Sénégal", "Cape Verde": "Cap-Vert", "Chile": "Chili", "United States": "États-Unis",
+    "Bosnia and Herzegovina": "Bosnie-Herzégovine", "Lithuania": "Lituanie", "Georgia": "Géorgie", "Israel": "Israël",
+    "Belgium": "Belgique", "Kosovo": "Kosovo", "United Kingdom": "Royaume-Uni", "China": "Chine", "Morocco": "Maroc",
+    "Qatar ": "Qatar", "Kenya": "Kenya", "Jamaica": "Jamaïque", "Monaco": "Monaco", "Finland": "Finlande", "Ireland": "Irlande", "Cuba": "Cuba", "Iran": "Iran", "Saudi Arabia": "Arabie saoudite",
+}
+CITY_TZ = {"Cluj-Napoca": "Europe/Bucharest", "Oradea": "Europe/Bucharest", "Bucharest": "Europe/Bucharest",
+           "Antalya": "Europe/Istanbul", "Istanbul": "Europe/Istanbul", "Lisbon": "Europe/Lisbon", "Porto": "Europe/Lisbon",
+           "Póvoa de Varzim": "Europe/Lisbon", "Athens": "Europe/Athens", "Helsinki": "Europe/Helsinki"}
+ROUND_FR = [("bronze", "Match pour la 3e place"), ("third", "Match pour la 3e place"), ("fifth", "Match pour la 5e place"),
+            ("seventh", "Match pour la 7e place"), ("placement", "Match de classement"), ("president", "Coupe du président"),
+            ("semi", "Demi-finale"), ("quarter", "Quart de finale"), ("final", "Finale"), ("main round", "Tour principal"),
+            ("group", "Phase de groupes"), ("preliminary", "Phase de groupes")]
+HANDBALL = [("European_Men's_Handball_Championship", "Euro masculin"), ("European_Women's_Handball_Championship", "Euro féminin"),
+            ("World_Men's_Handball_Championship", "Mondial masculin"), ("World_Women's_Handball_Championship", "Mondial féminin")]
+
+
+def _round_fr(table) -> str:
+    """Le titre de section le plus proche ; « Group I » sous « Main round » = tour principal."""
+    found = ""
+    for h in table.find_all_previous(["h2", "h3", "h4"])[:4]:
+        low = h.get_text(" ", strip=True).lower()
+        fr = next((fr for key, fr in ROUND_FR if key in low), "")
+        if fr and fr != "Phase de groupes":
+            return fr if not found or fr == "Tour principal" else found
+        if fr and not found:
+            found = fr
+        if h.name == "h2" and found:
+            break
+    return found
+
+
+def handball_fr(year: int) -> List[dict]:
+    from zoneinfo import ZoneInfo
+    paris = ZoneInfo("Europe/Paris")
+    out = []
+    for page, label in HANDBALL:
+        soup = _page("en", f"{year}_{page}")
+        for t in (soup.find_all("table") if soup else []):
+            if t.get("class"):
+                continue
+            cells = [c.get_text(" ", strip=True) for c in t.find_all(["td", "th"])]
+            if len(cells) < 5 or ("Report" not in cells and cells[2] != "v"):
+                continue
+            m = re.match(r"(\d{1,2} \w+ \d{4})\s+(\d{1,2}):(\d{2})", cells[0])
+            if not m:
+                continue
+            home, score, away = cells[1], cells[2], cells[3]
+            rnd = _round_fr(t)
+            if "France" not in (home, away) and rnd not in ("Demi-finale", "Finale"):
+                continue
+            d = _date(m.group(1), year)
+            if not d:
+                continue
+            venue = cells[4].split("Attendance")[0].strip()
+            city = venue.split(",")[-1].strip()
+            local = datetime(d.year, d.month, d.day, int(m.group(2)), int(m.group(3)), tzinfo=ZoneInfo(CITY_TZ.get(city, "Europe/Paris")))
+            when = local.astimezone(paris)
+            fr = lambda x: COUNTRY_FR.get(x, x if not re.match(r"^[WL]?(SF|QF)\d|^W\w*\d$", x) else "à déterminer")
+            played = re.match(r"\d+\s*[–-]\s*\d+", score)
+            details = f"{rnd} · {score.replace('–', '-')}" if played else rnd
+            known = all(x and fr(x) != "à déterminer" for x in (home, away))
+            name = f"{fr(home)} – {fr(away)} · {label}" if known else f"{rnd} · {label}"
+            if not known:
+                details = "Équipes à déterminer"
+            out.append({"name": name, "start": when.date(), "end": when.date(),
+                        "time": when.strftime("%H:%M"), "location": venue.replace(" ,", ","), "details": details})
+    return out
+
+
+# Athlétisme : grands championnats (infobox « Dates ») et étapes de la Ligue de diamant.
+ATHLE = [("World_Athletics_Championships", "Championnats du monde"), ("World_Athletics_Indoor_Championships", "Championnats du monde en salle"),
+         ("European_Athletics_Championships", "Championnats d'Europe"), ("European_Athletics_Indoor_Championships", "Championnats d'Europe en salle"),
+         ("World_Athletics_Ultimate_Championship", "Ultimate Championship")]
+
+
+def _infobox(soup, key: str) -> str:
+    box = soup.find("table", class_="infobox") if soup else None
+    for tr in (box.find_all("tr") if box else []):
+        th = tr.find("th")
+        if th and th.get_text(" ", strip=True).startswith(key):
+            td = tr.find("td")
+            return td.get_text(" ", strip=True) if td else ""
+    return ""
+
+
+def _span(text: str, year: int):
+    """« 10–19 September 2027 », « 30 November – 19 December », « 16 May – 5 September 2026 »."""
+    parts = [p.strip() for p in re.split(r"[–-]", re.sub(r"\[.*?\]", "", text)) if p.strip()]
+    if not parts:
+        return None, None
+    end = _date(parts[-1], year)
+    if not end:
+        return None, None
+    first = parts[0] if re.search(r"[A-Za-z]", parts[0]) else f"{parts[0]} {end.strftime('%B')}"
+    return _date(first, end.year) or end, end
+
+
+def athletisme(year: int) -> List[dict]:
+    out = []
+    for page, label in ATHLE:
+        soup = _page("en", f"{year}_{page}")
+        start, end = _span(_infobox(soup, "Dates"), year)
+        if start:
+            parts = [p.strip() for p in _infobox(soup, "Host city").replace(" ,", ",").split(",") if p.strip()]
+            where = ", ".join(dict.fromkeys([parts[0], COUNTRY_FR.get(parts[-1], parts[-1])])) if parts else ""
+            out.append({"name": f"{label} d'athlétisme" if "Ultimate" not in label else f"Athlétisme · {label}",
+                        "start": start, "end": end, "location": where, "details": ""})
+    soup = _page("en", f"{year}_Diamond_League")
+    table = next((t for t in (soup.find_all("table", class_="wikitable") if soup else [])
+                  if "Meet" in " ".join(_grid(t)[0])), None)
+    for row in (_grid(table)[1:] if table else []):
+        if len(row) < 5:
+            continue
+        d = _date(row[1], year)
+        if d:
+            final = "final" in row[2].lower() or not row[0].isdigit()
+            out.append({"name": row[2], "start": d, "end": d,
+                        "location": f"{row[4]}, {COUNTRY_FR.get(row[5], row[5])}" if len(row) > 5 else row[4],
+                        "details": "Finale de la Ligue de diamant" if final else f"Ligue de diamant · étape {row[0]}"})
+    return out
+
+
 WINTER = {"ski-alpin": ski_alpin, "biathlon": biathlon, "ski-fond": ski_fond, "saut-ski": saut_a_ski,
           "patinage": patinage_gp}
 
-SOURCES = {"mxgp": mxgp, "supercross": supercross, "dakar": dakar, **WINTER}
+SOURCES = {"mxgp": mxgp, "supercross": supercross, "dakar": dakar, "handball": handball_fr, "athletisme": athletisme, **WINTER}
 
 
 def get_calendar(kind: str, start: date, end: date) -> List[dict]:

@@ -337,7 +337,7 @@ const MONTHS_SHORT = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.',
 
 // Grille du mois : de ce lundi jusqu'au bout du programme connu (4 à 5 semaines).
 const SPORT_COLORS = { soccer: '#5b8cff', rugby: '#f2a33a', basketball: '#ff6b5e', football: '#34c759', hockey: '#9aa5ff', tennis: '#d4e157', solo: '#b0b0b8' };
-const SPORT_SHORT = { soccer: 'Foot', rugby: 'Rugby', basketball: 'Basket', football: 'Foot US', hockey: 'Hockey', tennis: 'Tennis', solo: 'Vélo, moto, hiver' };
+const SPORT_SHORT = { soccer: 'Foot', rugby: 'Rugby', basketball: 'Basket', football: 'Foot US', hockey: 'Hockey', tennis: 'Tennis', solo: 'Tennis, vélo, moto, hiver' };
 const dayEvents = d => myEvents().filter(e => e.day === d);
 const daySports = d => {
   const set = new Set(dayEvents(d).map(e => league(e.lg)?.sport));
@@ -525,12 +525,32 @@ function renderStandings() {
   if (cards) html += `<div class="section-title">Mes équipes</div><div class="st-cards">${cards}</div>`;
   const ordered = [...favs.leagues].sort((a, b) => (b.mode === 'teams') - (a.mode === 'teams'))
     .filter(f => cat.tables[f.league] && f.mode !== 'ap');
-  if (!ordered.length) return html + (cards ? '' : '<p class="empty">Pas de classement pour tes compétitions en ce moment.</p>');
-  if (!standLg || !ordered.some(f => f.league === standLg)) standLg = ordered[0].league;
+  // Sports individuels suivis (F1, MotoGP) : classement des pilotes
+  const solo = favs.cycling.filter(id => cat.solo_tables?.[id]);
+  const ids = [...ordered.map(f => f.league), ...solo];
+  if (!ids.length) return html + (cards ? '' : '<p class="empty">Pas de classement pour tes compétitions en ce moment.</p>');
+  if (!standLg || !ids.includes(standLg)) standLg = ids[0];
+  const chip = id => {
+    const L = league(id) || cat.cycling_leagues[id];
+    return `<button class="chip${id === standLg ? ' active' : ''}" type="button" data-stand="${id}">${L.logo ? `<img src="${esc(L.logo)}" alt="">` : `${esc(L.emoji || '')} `}${esc(L.label)}</button>`;
+  };
   html += `<div class="section-title" id="tables">Classements complets</div>
-    <div class="filters">${ordered.map(f => `<button class="chip${f.league === standLg ? ' active' : ''}" type="button" data-stand="${f.league}">${league(f.league).logo ? `<img src="${esc(league(f.league).logo)}" alt="">` : ''}${esc(league(f.league).label)}</button>`).join('')}</div>
+    <div class="filters">${ids.map(chip).join('')}</div>
 `;
-  return html + leagueTable(standLg, favFor(standLg));
+  return html + (cat.solo_tables?.[standLg] ? soloTable(standLg) : leagueTable(standLg, favFor(standLg)));
+}
+
+function soloTable(lgId) {
+  const t = cat.solo_tables[lgId], key = `${lgId}:solo`;
+  const { rows, hidden } = condensed(t.rows, () => false, key);
+  return `<div class="card table-card"><table class="table">
+    <caption>${esc(t.title)} · saison ${esc(t.season)}</caption>
+    <thead><tr><th>#</th><th>Pilote</th><th>Pts</th></tr></thead>
+    <tbody>${rows.map(r => r === 'gap' ? '<tr class="gap"><td colspan="3">···</td></tr>' : `<tr>
+      <td>${r.rank ?? '–'}</td>
+      <td class="team-cell"><span class="tc">${r.flag ? `<img src="${esc(r.flag)}" alt="" loading="lazy">` : ''}<span>${esc(r.name)}${r.team ? `<small class="sub"> · ${esc(r.team)}</small>` : ''}</span></span></td>
+      <td class="pts">${esc(r.pts ?? '')}</td>
+    </tr>`).join('')}</tbody></table>${hidden ? `<button class="table-more" type="button" data-expand="${esc(key)}">Voir les ${t.rows.length} pilotes</button>` : ''}</div>`;
 }
 
 function installTip() {
@@ -591,7 +611,7 @@ function renderFavs() {
       html += '</div>';
     });
   });
-  const SOLO_SECTIONS = { cycling: 'Cyclisme', moto: 'Sports mécaniques', hiver: "Sports d'hiver" };
+  const SOLO_SECTIONS = { tennis: 'Tennis', cycling: 'Cyclisme', moto: 'Sports mécaniques', autres: 'Handball, athlétisme', hiver: "Sports d'hiver" };
   Object.entries(SOLO_SECTIONS).forEach(([sport, title]) => {
     const list = Object.entries(cat.cycling_leagues || {}).filter(([, C]) => (C.sport || 'cycling') === sport);
     if (!list.length) return;

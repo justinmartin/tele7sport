@@ -35,12 +35,17 @@ const LEAGUES = [
     { id: "roland-garros", emoji: "🎾", label: "Roland-Garros", hasTeams: false, hasRounds: true },
     { id: "wimbledon", emoji: "🎾", label: "Wimbledon", hasTeams: false, hasRounds: true },
     { id: "us-open", emoji: "🎾", label: "US Open", hasTeams: false, hasRounds: true },
+    { id: "masters-1000", emoji: "🎾", label: "Masters 1000 et ATP Finals", detail: "Tournoi, demies et finale", hasTeams: false },
     // Cycling
     { id: "cycling-road", emoji: "🚴", label: "Cyclisme Route", hasTeams: false },
     { id: "cycling-mtb-dh", emoji: "🚵", label: "VTT Descente", detail: "Coupe du Monde", hasTeams: false },
     { id: "cycling-mtb-enduro", emoji: "🚵", label: "VTT Enduro", detail: "Coupe du Monde", hasTeams: false },
     // Sports mécaniques
     { id: "motogp", emoji: "🏍️", label: "MotoGP", detail: "Sprint et course", hasTeams: false },
+    { id: "f1", emoji: "🏎️", label: "Formule 1", detail: "Qualifs, Sprint et course", hasTeams: false },
+    // Autres sports
+    { id: "handball", emoji: "🤾", label: "Handball", detail: "Bleus et Bleues aux Euros et Mondiaux", hasTeams: false },
+    { id: "athletisme", emoji: "🏃", label: "Athlétisme", detail: "Grands championnats et Ligue de diamant", hasTeams: false },
 ];
 
 const CHANNEL_BOUQUETS = [

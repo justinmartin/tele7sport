@@ -13,6 +13,8 @@ import requests
 from src.abbr import official_abbr
 from src.config import ESPN_LEAGUES, CYCLING_LEAGUES, OUT_DIR, load_favorites
 from src.fetchers.cycling import get_cycling_events
+from src.fetchers.f1 import f1_standings
+from src.fetchers.motogp import motogp_standings
 from src.fetchers.espn import BASE_URL, SportEvent, _is_in_season, _round_matches, _team_matches, fetch_espn_events
 from src.fetchers.nba_tv import get_nba_french_tv, match_french_tv
 from src.fetchers.standings import get_league_table
@@ -241,11 +243,20 @@ def build_catalog(today: date) -> dict:
                 "ch": c.channels_fr, "details": c.details,
             })
 
+    # Classements des pilotes (sports individuels)
+    solo_tables = {}
+    for league_id, fn in (("f1", f1_standings), ("motogp", motogp_standings)):
+        try:
+            if (t := fn()):
+                solo_tables[league_id] = t
+        except Exception as e:
+            logger.warning("Classement %s indisponible : %s", league_id, e)
+
     events.sort(key=lambda e: e["ko"])
     catalog = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="minutes"),
         "range": {"start": start.isoformat(), "end": end.isoformat()},
-        "leagues": leagues, "events": events, "tables": tables, "cycling": cycling,
+        "leagues": leagues, "events": events, "tables": tables, "cycling": cycling, "solo_tables": solo_tables,
         "cycling_leagues": {k: {"label": v["label"], "emoji": v["emoji"], "sport": v.get("sport", "cycling"),
                                 "next": _next_event(k, end)} for k, v in CYCLING_LEAGUES.items()},
         "default_favorites": _default_favorites(leagues),

@@ -125,3 +125,21 @@ def get_motogp_sessions(week_start: date, week_end: date) -> List[dict]:
                 })
     logger.info("🏍️  MotoGP : %d course(s) %s → %s", len(out), week_start, week_end)
     return sorted(out, key=lambda x: (x["date"], x["time"]))
+
+
+def motogp_standings() -> Optional[dict]:
+    """Classement des pilotes MotoGP : {season, rows: [{rank, name, flag, team, pts}]}."""
+    year = date.today().year
+    season = _season(year)
+    if not season:
+        return None
+    cats = _get(f"{RESULTS_API}/results/categories", {"seasonUuid": season}) or []
+    cat = next((c["id"] for c in cats if c.get("legacy_id") == 3), None)
+    st = _get(f"{RESULTS_API}/results/standings", {"seasonUuid": season, "categoryUuid": cat}) if cat else None
+    rows = []
+    for r in (st or {}).get("classification") or []:
+        iso = ((r.get("rider") or {}).get("country") or {}).get("iso", "")
+        rows.append({"rank": r.get("position"), "name": r["rider"]["full_name"],
+                     "flag": f"https://flagcdn.com/w40/{iso.lower()}.png" if iso else "",
+                     "team": (r.get("team") or {}).get("name", ""), "pts": r.get("points")})
+    return {"season": str(year), "title": "Pilotes", "rows": rows} if rows else None

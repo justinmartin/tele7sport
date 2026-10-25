@@ -18,9 +18,9 @@ Un bot qui envoie une newsletter hebdomadaire avec le programme de vos équipes 
 - 📺 **Chaînes TV** — Où regarder chaque match (Canal+, beIN, Eurosport, TF1, Prime Video…)
 - ⭐ **Grandes rencontres** — Détection automatique des finales, demi-finales, playoffs
 - 📊 **Résultats** — Récap des résultats de la semaine passée
-- 🚴 **Multi-sport** — NBA, NFL, NCAAF, NCAAM, Ligue 1/2, Champions League, Top 14, Six Nations, Tennis Grand Chelem, Cyclisme, VTT, MotoGP…
+- 🚴 **Multi-sport** — NBA, NFL, NCAAF, NCAAM, Ligue 1/2, Champions League, Top 14, Six Nations, Tennis (Grands Chelems, Masters 1000), Cyclisme, VTT, F1, MotoGP, handball, athlétisme…
 - 🏆 **AP Top 25** — Suivi automatique des équipes classées AP en college football et basketball (mise à jour chaque semaine)
-- 📱 **L'app** ([tele7sport.vercel.app](https://tele7sport.vercel.app), à ajouter à l'écran d'accueil) — Accueil avec le match vedette et l'heure de fin estimée, calendrier Mois / Semaine / Liste, classements, fiche équipe avec scores en direct, favoris par sport et sections internationales (foot, rugby, JO)
+- 📱 **L'app** ([tele7sport.vercel.app](https://tele7sport.vercel.app), à ajouter à l'écran d'accueil) — Accueil avec le match vedette et l'heure de fin estimée, calendrier Mois / Semaine / Liste, classements (équipes, et pilotes F1 et MotoGP), fiche équipe avec scores en direct, favoris par sport et sections internationales (foot, rugby, JO)
 - 🗓️ **Agenda** — Ajout d'un match à l'agenda, ou abonnement webcal à ses favoris
 - 🧩 **Widget iPhone** — Via Scriptable (`web/widget/scriptable.js`, copié depuis l'app avec les favoris intégrés)
 - 🔤 **Acronymes officiels et logos** — Pour toutes les équipes (`src/abbr.py`), logos vérifiés (jamais un drapeau à la place d'un club)
@@ -36,10 +36,13 @@ Un bot qui envoie une newsletter hebdomadaire avec le programme de vos équipes 
 | 🏀 College | NCAA Basketball (AP Top 25) |
 | ⚽ Football | Ligue 1, Ligue 2, Champions League, Europa League, Conference League, Coupe de France, Ligue des Nations, Qualif. Coupe du Monde, **Coupe du Monde**, Euro, Amicaux |
 | 🏉 Rugby | Top 14 (demi-finales + finale), Champions Cup, Challenge Cup, Six Nations, **Coupe du Monde** |
-| 🎾 Tennis | Open d'Australie, Roland-Garros, Wimbledon, US Open (demi-finales + finales) |
+| 🎾 Tennis | Grands Chelems (simples messieurs et dames), Masters 1000 et ATP Finals : le tournoi, les demi-finales et finales avec les joueurs, l'heure et le score |
 | 🏅 Jeux Olympiques | Basketball (H/F), Football (H) |
 | 🚴 Cyclisme | Grands Tours, Monuments, courses World Tour, Tour de France détaillé |
 | 🚵 VTT | Coupe du Monde DH, Coupe du Monde Enduro |
+| 🏎️ Formule 1 | Qualifications, Sprint et course, à l'heure de Paris, pole et vainqueur, leader du championnat (API d'ESPN) |
+| 🤾 Handball | Matchs des Bleus et des Bleues aux Euros et Mondiaux, demi-finales et finales (Wikipédia) |
+| 🏃 Athlétisme | Championnats du monde et d'Europe (plein air et salle), étapes de la Ligue de diamant (Wikipédia) |
 | 🏍️ MotoGP | Sprint du samedi et course du dimanche, à l'heure de Paris, vainqueurs et leader du championnat (API officielle de motogp.com) |
 
 ## 📬 Exemple de newsletter
@@ -222,6 +225,10 @@ Le classement est récupéré dynamiquement chaque semaine via l'API ESPN, donc 
 | `cycling-mtb-dh` | VTT Descente |
 | `cycling-mtb-enduro` | VTT Enduro |
 | `motogp` | MotoGP (Sprint et course) |
+| `f1` | Formule 1 (qualifs, Sprint et course) |
+| `masters-1000` | Masters 1000 et ATP Finals |
+| `handball` | Handball : Bleus et Bleues |
+| `athletisme` | Athlétisme |
 
 </details>
 
@@ -279,12 +286,14 @@ Les droits TV changent par saison. Vous pouvez mettre à jour le mapping dans `s
 tele7sport/
 ├── src/
 │   ├── fetchers/
-│   │   ├── espn.py           # ESPN (NBA, NFL, foot, rugby, tennis…), jour par jour
+│   │   ├── espn.py           # ESPN (NBA, NFL, foot, rugby…), jour par jour
+│   │   ├── tennis.py         # Grands Chelems, Masters 1000, ATP Finals (ESPN)
+│   │   ├── f1.py, motogp.py  # F1 (ESPN) et MotoGP (API motogp.com) : séances, vainqueurs, classements pilotes
 │   │   ├── basket_eu.py      # Betclic Élite (TheSportsDB) et EuroLeague (API officielle)
 │   │   ├── nba_tv.py         # Diffuseurs français de la NBA (nba.com)
 │   │   ├── standings.py      # Classements (saison toujours précisée)
 │   │   ├── rankings.py       # AP Top 25 (NCAAF, NCAAM)
-│   │   ├── cycling.py, wiki_calendars.py  # Cyclisme, VTT, MXGP, Supercross, Dakar (Wikipédia)
+│   │   ├── cycling.py, wiki_calendars.py  # Cyclisme, VTT, MXGP, Supercross, Dakar, handball, athlétisme, hiver (Wikipédia)
 │   │   └── tv_schedule.py    # Résolution des chaînes TV
 │   ├── catalog.py            # Catalogue de l'app : compétitions, équipes, logos, acronymes
 │   ├── abbr.py               # Acronymes officiels
@@ -316,11 +325,12 @@ tele7sport/
 
 | Source | Type | Données |
 |--------|------|---------|
-| ESPN API | REST public | Scores, calendrier, diffuseurs, classements, AP Top 25, logos |
+| ESPN API | REST public | Scores, calendrier, diffuseurs, classements, AP Top 25, logos, tennis, F1 |
+| API motogp.com | REST public | MotoGP : horaires, vainqueurs, classement |
 | nba.com | Page publique | Diffuseurs français de la NBA |
 | TheSportsDB | API (clé de test) | Betclic Élite |
 | API EuroLeague | REST officiel | EuroLeague : matchs et classement |
-| Wikipédia | Pages publiques | Cyclisme route, VTT, MXGP, Supercross, Dakar, logos manquants |
+| Wikipédia | Pages publiques | Cyclisme route, VTT, MXGP, Supercross, Dakar, handball, athlétisme, sports d'hiver, logos manquants |
 | Calendrier statique | JSON local | Grands Tours, VTT DH / Enduro |
 
 ProCyclingStats bloque les scripts : il n'est pas utilisé.

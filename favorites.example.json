@@ -84,6 +84,18 @@
       "league": "motogp"
     },
     {
+      "league": "f1"
+    },
+    {
+      "league": "masters-1000"
+    },
+    {
+      "league": "handball"
+    },
+    {
+      "league": "athletisme"
+    },
+    {
       "league": "betclic-elite",
       "teams": ["France"]
     },

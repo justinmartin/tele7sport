@@ -8,7 +8,9 @@ from typing import List, Optional
 from bs4 import BeautifulSoup
 
 from src.config import CYCLING_LEAGUES
+from src.fetchers.f1 import get_f1_sessions
 from src.fetchers.motogp import get_motogp_sessions
+from src.fetchers.tennis import get_tennis_events
 from src.fetchers.wiki_calendars import SOURCES as WIKI_SOURCES, _page as wiki_page, get_calendar
 
 logger = logging.getLogger("tele7sport")
@@ -151,20 +153,29 @@ def get_cycling_events(
     target_category = cfg["uci_category"]
     events: List[CyclingEvent] = []
 
-    # MotoGP : Sprint et course, avec l'heure
-    if target_category == "motogp":
+    # Tennis : le tournoi, puis demi-finales et finales
+    if target_category == "tennis":
+        return [CyclingEvent(
+            league_id=league_id, league_label=cfg["label"], emoji=cfg["emoji"], name=e["name"],
+            location=e["location"], start_date=e["start"], end_date=e["end"], category="tennis",
+            channels_fr=cfg["channels_fr"], details=e["details"], start_time=e["time"],
+        ) for e in get_tennis_events(cfg["pattern"], cfg["women"], week_start, week_end)]
+
+    # MotoGP et F1 : chaque séance (qualifs, Sprint, course), avec l'heure
+    if target_category in ("motogp", "f1"):
+        sessions = (get_motogp_sessions if target_category == "motogp" else get_f1_sessions)(week_start, week_end)
         return [CyclingEvent(
             league_id=league_id, league_label=cfg["label"], emoji=cfg["emoji"], name=s["name"],
-            location=s["location"], start_date=s["date"], end_date=s["date"], category="motogp",
+            location=s["location"], start_date=s["date"], end_date=s["date"], category=target_category,
             channels_fr=cfg["channels_fr"], details=s["details"], start_time=s["time"],
-        ) for s in get_motogp_sessions(week_start, week_end)]
+        ) for s in sessions]
 
     # Sports mécaniques (MXGP, Supercross, Dakar) : calendriers Wikipédia
     if target_category in WIKI_SOURCES:
         return [CyclingEvent(
             league_id=league_id, league_label=cfg["label"], emoji=cfg["emoji"], name=e["name"],
             location=e["location"], start_date=e["start"], end_date=e["end"], category=target_category,
-            channels_fr=cfg["channels_fr"], details=e["details"], start_time="",
+            channels_fr=cfg["channels_fr"], details=e["details"], start_time=e.get("time", ""),
         ) for e in get_calendar(target_category, week_start, week_end)]
 
     # Route : calendrier WorldTour réel (Wikipédia)

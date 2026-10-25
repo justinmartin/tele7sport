@@ -174,30 +174,6 @@ ESPN_LEAGUES = {
         "channels_fr": ["TF1", "France 2"],
     },
     # Tennis Grand Slams
-    "australian-open": {
-        "sport": "tennis", "league": "560",
-        "label": "Open d'Australie", "emoji": "🎾",
-        "channels_fr": ["Eurosport"],
-        "season_window": (1, 1, 2, 1),  # month_start, day_start, month_end, day_end
-    },
-    "roland-garros": {
-        "sport": "tennis", "league": "520",
-        "label": "Roland-Garros", "emoji": "🎾",
-        "channels_fr": ["France TV", "Eurosport"],
-        "season_window": (5, 20, 6, 12),
-    },
-    "wimbledon": {
-        "sport": "tennis", "league": "540",
-        "label": "Wimbledon", "emoji": "🎾",
-        "channels_fr": ["beIN Sports"],
-        "season_window": (6, 25, 7, 16),
-    },
-    "us-open": {
-        "sport": "tennis", "league": "580",
-        "label": "US Open", "emoji": "🎾",
-        "channels_fr": ["Eurosport"],
-        "season_window": (8, 20, 9, 12),
-    },
     # ── Ajouts 10/2026 : grands championnats, coupes, international, féminines, rugby ──
     "premier-league": {
         "sport": "soccer", "league": "eng.1",
@@ -371,6 +347,34 @@ CYCLING_LEAGUES = {
         "channels_fr": ["Canal+"],
         "uci_category": "motogp", "sport": "moto",
     },
+    # Tennis : API d'ESPN (src/fetchers/tennis.py) : le tournoi, puis demi-finales et finales du simple
+    "australian-open": {
+        "label": "Open d'Australie", "emoji": "🎾", "channels_fr": ["Eurosport"],
+        "uci_category": "tennis", "sport": "tennis", "pattern": r"Australian Open", "women": True,
+    },
+    "roland-garros": {
+        "label": "Roland-Garros", "emoji": "🎾", "channels_fr": ["France TV", "Eurosport"],
+        "uci_category": "tennis", "sport": "tennis", "pattern": r"Roland Garros", "women": True,
+    },
+    "wimbledon": {
+        "label": "Wimbledon", "emoji": "🎾", "channels_fr": ["beIN Sports"],
+        "uci_category": "tennis", "sport": "tennis", "pattern": r"Wimbledon", "women": True,
+    },
+    "us-open": {
+        "label": "US Open", "emoji": "🎾", "channels_fr": ["Eurosport"],
+        "uci_category": "tennis", "sport": "tennis", "pattern": r"^US Open", "women": True,
+    },
+    "masters-1000": {
+        "label": "Masters 1000 et ATP Finals", "emoji": "🎾", "channels_fr": ["beIN Sports"],
+        "uci_category": "tennis", "sport": "tennis", "women": False,
+        "pattern": (r"Indian Wells|BNP Paribas Open|Miami Open|Monte.Carlo|Madrid Open|Mutua Madrid|Internazionali|Italian Open"
+                    r"|National Bank Open|Canadian Open|Cincinnati|Western & Southern|Shanghai|Paris Masters|ATP Finals"),
+    },
+    "f1": {
+        "label": "Formule 1", "emoji": "🏎️",
+        "channels_fr": ["Canal+"],
+        "uci_category": "f1", "sport": "moto",
+    },
     # Sports mécaniques : calendriers Wikipédia (src/fetchers/wiki_calendars.py)
     "mxgp": {
         "label": "Motocross MXGP", "emoji": "🏍️",
@@ -386,6 +390,17 @@ CYCLING_LEAGUES = {
         "label": "Rallye Dakar", "emoji": "🏜️",
         "channels_fr": [],
         "uci_category": "dakar", "sport": "moto",
+    },
+    # Handball et athlétisme : Wikipédia (src/fetchers/wiki_calendars.py)
+    "handball": {
+        "label": "Handball · Bleus et Bleues", "emoji": "🤾",
+        "channels_fr": ["TF1", "beIN Sports"],
+        "uci_category": "handball", "sport": "autres",
+    },
+    "athletisme": {
+        "label": "Athlétisme", "emoji": "🏃",
+        "channels_fr": ["France TV"],
+        "uci_category": "athletisme", "sport": "autres",
     },
     # Sports d'hiver : pages de saison Wikipédia « 2026–27 … World Cup »
     "ski-alpin": {

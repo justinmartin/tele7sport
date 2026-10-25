@@ -123,6 +123,7 @@ main { max-width: 600px; margin: 0 auto; padding: 18px 18px 0; }
 .table .tc { display: flex; align-items: center; gap: 9px; min-width: 0; }
 .table .tc img { width: 20px; height: 20px; object-fit: contain; flex: none; }
 .table .tc span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.table .tc .sub { font-weight: 400; color: var(--text-3); font-size: 12px; }
 .table tr.fav td { background: rgba(232, 72, 59, 0.1); }
 .table tr.fav td:first-child { color: var(--accent); font-weight: 800; box-shadow: inset 3px 0 0 var(--accent); padding-left: 8px; }
 .table tr.fav .tc span { color: #fff; }
