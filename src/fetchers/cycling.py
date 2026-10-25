@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 
 from src.config import CYCLING_LEAGUES
 from src.fetchers.f1 import get_f1_sessions
+from src.fetchers.golf_ufc import get_golf_majors, get_ufc_events
 from src.fetchers.motogp import get_motogp_sessions
 from src.fetchers.tennis import get_tennis_events
 from src.fetchers.wiki_calendars import SOURCES as WIKI_SOURCES, _page as wiki_page, get_calendar
@@ -152,6 +153,16 @@ def get_cycling_events(
 
     target_category = cfg["uci_category"]
     events: List[CyclingEvent] = []
+
+    # Golf (majeurs + Ryder Cup) et UFC
+    if target_category in ("golf", "ufc"):
+        found = (get_golf_majors(week_start, week_end) + get_calendar("ryder-cup", week_start, week_end)
+                 if target_category == "golf" else get_ufc_events(week_start, week_end))
+        return [CyclingEvent(
+            league_id=league_id, league_label=cfg["label"], emoji=cfg["emoji"], name=e["name"],
+            location=e["location"], start_date=e["start"], end_date=e["end"], category=target_category,
+            channels_fr=cfg["channels_fr"], details=e["details"], start_time=e.get("time", ""),
+        ) for e in sorted(found, key=lambda e: e["start"])]
 
     # Tennis : le tournoi, puis demi-finales et finales
     if target_category == "tennis":

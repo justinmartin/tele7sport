@@ -375,6 +375,11 @@ CYCLING_LEAGUES = {
         "channels_fr": ["Canal+"],
         "uci_category": "f1", "sport": "moto",
     },
+    "endurance": {
+        "label": "Endurance (WEC, 24 h du Mans) et rallye (WRC)", "emoji": "🏁",
+        "channels_fr": [],
+        "uci_category": "endurance", "sport": "moto",
+    },
     # Sports mécaniques : calendriers Wikipédia (src/fetchers/wiki_calendars.py)
     "mxgp": {
         "label": "Motocross MXGP", "emoji": "🏍️",
@@ -401,6 +406,32 @@ CYCLING_LEAGUES = {
         "label": "Athlétisme", "emoji": "🏃",
         "channels_fr": ["France TV"],
         "uci_category": "athletisme", "sport": "autres",
+    },
+    "natation": {
+        "label": "Natation", "emoji": "🏊",
+        "channels_fr": ["France TV"],
+        "uci_category": "natation", "sport": "autres",
+    },
+    "volley": {
+        "label": "Volley", "emoji": "🏐",
+        "channels_fr": [],
+        "uci_category": "volley", "sport": "autres",
+    },
+    "voile": {
+        "label": "Voile", "emoji": "⛵",
+        "channels_fr": ["France TV"],
+        "uci_category": "voile", "sport": "autres",
+    },
+    # Golf (majeurs, ESPN ; Ryder Cup, Wikipédia) et UFC (ESPN) : src/fetchers/golf_ufc.py
+    "golf": {
+        "label": "Golf · majeurs et Ryder Cup", "emoji": "⛳",
+        "channels_fr": ["Canal+"],
+        "uci_category": "golf", "sport": "autres",
+    },
+    "ufc": {
+        "label": "UFC", "emoji": "🥊",
+        "channels_fr": ["RMC Sport"],
+        "uci_category": "ufc", "sport": "autres",
     },
     # Sports d'hiver : pages de saison Wikipédia « 2026–27 … World Cup »
     "ski-alpin": {

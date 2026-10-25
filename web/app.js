@@ -337,7 +337,7 @@ const MONTHS_SHORT = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.',
 
 // Grille du mois : de ce lundi jusqu'au bout du programme connu (4 à 5 semaines).
 const SPORT_COLORS = { soccer: '#5b8cff', rugby: '#f2a33a', basketball: '#ff6b5e', football: '#34c759', hockey: '#9aa5ff', tennis: '#d4e157', solo: '#b0b0b8' };
-const SPORT_SHORT = { soccer: 'Foot', rugby: 'Rugby', basketball: 'Basket', football: 'Foot US', hockey: 'Hockey', tennis: 'Tennis', solo: 'Tennis, vélo, moto, hiver' };
+const SPORT_SHORT = { soccer: 'Foot', rugby: 'Rugby', basketball: 'Basket', football: 'Foot US', hockey: 'Hockey', tennis: 'Tennis', solo: 'Autres sports' };
 const dayEvents = d => myEvents().filter(e => e.day === d);
 const daySports = d => {
   const set = new Set(dayEvents(d).map(e => league(e.lg)?.sport));
@@ -611,7 +611,7 @@ function renderFavs() {
       html += '</div>';
     });
   });
-  const SOLO_SECTIONS = { tennis: 'Tennis', cycling: 'Cyclisme', moto: 'Sports mécaniques', autres: 'Handball, athlétisme', hiver: "Sports d'hiver" };
+  const SOLO_SECTIONS = { tennis: 'Tennis', cycling: 'Cyclisme', moto: 'Sports mécaniques', autres: 'Autres sports', hiver: "Sports d'hiver" };
   Object.entries(SOLO_SECTIONS).forEach(([sport, title]) => {
     const list = Object.entries(cat.cycling_leagues || {}).filter(([, C]) => (C.sport || 'cycling') === sport);
     if (!list.length) return;

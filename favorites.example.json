@@ -96,6 +96,24 @@
       "league": "athletisme"
     },
     {
+      "league": "natation"
+    },
+    {
+      "league": "volley"
+    },
+    {
+      "league": "voile"
+    },
+    {
+      "league": "golf"
+    },
+    {
+      "league": "ufc"
+    },
+    {
+      "league": "endurance"
+    },
+    {
       "league": "betclic-elite",
       "teams": ["France"]
     },

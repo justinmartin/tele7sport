@@ -43,9 +43,15 @@ const LEAGUES = [
     // Sports mécaniques
     { id: "motogp", emoji: "🏍️", label: "MotoGP", detail: "Sprint et course", hasTeams: false },
     { id: "f1", emoji: "🏎️", label: "Formule 1", detail: "Qualifs, Sprint et course", hasTeams: false },
+    { id: "endurance", emoji: "🏁", label: "Endurance et rallye", detail: "WEC, 24 h du Mans, WRC", hasTeams: false },
     // Autres sports
     { id: "handball", emoji: "🤾", label: "Handball", detail: "Bleus et Bleues aux Euros et Mondiaux", hasTeams: false },
     { id: "athletisme", emoji: "🏃", label: "Athlétisme", detail: "Grands championnats et Ligue de diamant", hasTeams: false },
+    { id: "natation", emoji: "🏊", label: "Natation", detail: "Mondiaux et Europe", hasTeams: false },
+    { id: "volley", emoji: "🏐", label: "Volley", detail: "Mondiaux, Euros, Ligue des nations", hasTeams: false },
+    { id: "voile", emoji: "⛵", label: "Voile", detail: "Départs des grandes courses au large", hasTeams: false },
+    { id: "golf", emoji: "⛳", label: "Golf", detail: "Les 4 majeurs et la Ryder Cup", hasTeams: false },
+    { id: "ufc", emoji: "🥊", label: "UFC", detail: "Galas numérotés et galas en France", hasTeams: false },
 ];
 
 const CHANNEL_BOUQUETS = [

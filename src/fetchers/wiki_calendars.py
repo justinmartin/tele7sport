@@ -463,10 +463,125 @@ def athletisme(year: int) -> List[dict]:
     return out
 
 
+# ---------------------------------------------------------------- natation, volley, Ryder Cup
+# Un événement par page (infobox « Dates » ou « Date », lieu). Les pages des éditions futures
+# apparaissent au fil du temps : elles sont prises dès qu'elles existent.
+
+def _place(soup) -> str:
+    for key in ("Host city", "Location", "Host country", "Host nation", "Venue"):
+        v = _infobox(soup, key)
+        if v and not v[0].isdigit():
+            parts = [p.strip() for p in re.sub(r"\[.*?\]", "", v).replace(" ,", ",").split(",") if p.strip()]
+            if len(parts) == 1:
+                return COUNTRY_FR.get(parts[0], parts[0])
+            return ", ".join(dict.fromkeys([parts[0], COUNTRY_FR.get(parts[-1], parts[-1])]))
+    return ""
+
+
+def _infobox_events(year: int, items) -> List[dict]:
+    out = []
+    for title, label, details in items:
+        soup = _page("en", title.format(y=year))
+        start, end = _span(_infobox(soup, "Dates") or _infobox(soup, "Date"), year) if soup else (None, None)
+        if start:
+            out.append({"name": label, "start": start, "end": end, "location": _place(soup), "details": details})
+    return out
+
+
+def natation(year: int) -> List[dict]:
+    return _infobox_events(year, [
+        ("{y}_World_Aquatics_Championships", "Championnats du monde de natation", "Natation, plongeon, water-polo…"),
+        ("{y}_World_Aquatics_Swimming_Championships_(25_m)", "Mondiaux de natation en petit bassin", "Bassin de 25 m"),
+        ("{y}_European_Aquatics_Championships", "Championnats d'Europe de natation", ""),
+        ("{y}_European_Short_Course_Swimming_Championships", "Championnats d'Europe en petit bassin", "Bassin de 25 m"),
+    ])
+
+
+def volley(year: int) -> List[dict]:
+    return _infobox_events(year, [
+        ("{y}_FIVB_Men's_Volleyball_World_Championship", "Championnat du monde de volley masculin", ""),
+        ("{y}_FIVB_Women's_Volleyball_World_Championship", "Championnat du monde de volley féminin", ""),
+        ("{y}_Men's_European_Volleyball_Championship", "Euro de volley masculin", ""),
+        ("{y}_Women's_European_Volleyball_Championship", "Euro de volley féminin", ""),
+        ("{y}_FIVB_Men's_Volleyball_Nations_League", "Ligue des nations de volley masculine", ""),
+        ("{y}_FIVB_Women's_Volleyball_Nations_League", "Ligue des nations de volley féminine", ""),
+    ])
+
+
+def ryder_cup(year: int) -> List[dict]:
+    return _infobox_events(year, [("{y}_Ryder_Cup", "Ryder Cup", "Europe – États-Unis")])
+
+
+# ---------------------------------------------------------------- endurance (WEC) et rallye (WRC)
+def endurance(year: int) -> List[dict]:
+    out = []
+    soup = _page("en", f"{year}_FIA_World_Endurance_Championship")
+    for t in (soup.find_all("table", class_="wikitable") if soup else []):
+        grid = _grid(t)
+        if not grid or grid[0][:2] != ["Rnd", "Race"]:
+            continue
+        i_race, i_circ, i_loc, i_date = _cols(grid[0], "race", "circuit", "location", "date")
+        for row in grid[1:]:
+            if len(row) <= i_date or not row[0].strip().isdigit():  # prologue et lignes de notes
+                continue
+            start, end = _span(row[i_date], year)
+            if start:
+                name = row[i_race].replace("Hours of", "Heures de").replace("24 Heures de Le Mans", "24 Heures du Mans")
+                out.append({"name": re.sub(r"\bde ([AEIOUÉ])", r"d'\1", name),
+                            "start": start, "end": end, "location": f"{row[i_circ]}, {row[i_loc]}",
+                            "details": f"Championnat du monde d'endurance · manche {row[0]}"})
+        break
+    soup = _page("en", f"{year}_World_Rally_Championship")
+    for t in (soup.find_all("table", class_="wikitable") if soup else []):
+        grid = _grid(t)
+        if not grid or "Rally" not in grid[0] or "Start date" not in grid[0]:
+            continue
+        i_rnd, i_s, i_e, i_rally, i_hq = _cols(grid[0], "round", "start date", "finish date", "rally", "rally headquarters")
+        for row in grid[1:]:
+            if len(row) <= i_hq:
+                continue
+            start, end = _date(row[i_s], year), _date(row[i_e], year)
+            if start and end:
+                rnd = f" · manche {row[i_rnd]}" if i_rnd is not None and row[i_rnd].isdigit() else ""
+                out.append({"name": re.sub(r"\s*\[.*?\]", "", row[i_rally]), "start": start, "end": end,
+                            "location": row[i_hq].split(",")[0], "details": f"Championnat du monde des rallyes{rnd}"})
+        break
+    return out
+
+
+# ---------------------------------------------------------------- voile (pages françaises)
+VOILE = [("Route_du_Rhum_{y}", "Route du Rhum"), ("Transat_Jacques-Vabre_{y}", "Transat Jacques-Vabre"),
+         ("Transat_Café_L'Or_{y}", "Transat Café L'Or (ex-Jacques-Vabre)"), ("Vendée_Globe_{y}-{y1}", "Vendée Globe"),
+         ("Vendée_Globe_{y}", "Vendée Globe"), ("The_Ocean_Race_{y}-{y1}", "The Ocean Race"),
+         ("Solitaire_du_Figaro_{y}", "Solitaire du Figaro")]
+
+
+def voile(year: int) -> List[dict]:
+    """Le départ des grandes courses au large : « départ programmé le 1er novembre 2026 à 13 h 02 »."""
+    out = []
+    for title, label in VOILE:
+        soup = _page("fr", title.format(y=year, y1=year + 1))
+        if not soup:
+            continue
+        text = soup.get_text(" ", strip=True)
+        m = re.search(r"[Dd]épart[^.]{0,60}?(\d{1,2})\s*(?:er)?\s+(" + "|".join(list(MONTHS)[12:]) + r")\s+(\d{4})", text)
+        if not m:
+            continue
+        d = date(int(m.group(3)), MONTHS[m.group(2)], int(m.group(1)))
+        hm = re.search(r"[Dd]épart[^.]{0,120}?à (\d{1,2}) h (\d{1,2})", text)
+        route = re.search(r"entre ([^()]+?)\s*(?:\([^)]*\))?\s+et\s+([^()]+?)\s*(?:\(|Date)", text)
+        out.append({"name": f"{label} · départ", "start": d, "end": d,
+                    "time": f"{int(hm.group(1)):02d}:{int(hm.group(2)):02d}" if hm else "",
+                    "location": f"{route.group(1).strip()} → {route.group(2).strip()}" if route else "",
+                    "details": "Course au large"})
+    return out
+
+
 WINTER = {"ski-alpin": ski_alpin, "biathlon": biathlon, "ski-fond": ski_fond, "saut-ski": saut_a_ski,
           "patinage": patinage_gp}
 
-SOURCES = {"mxgp": mxgp, "supercross": supercross, "dakar": dakar, "handball": handball_fr, "athletisme": athletisme, **WINTER}
+SOURCES = {"mxgp": mxgp, "supercross": supercross, "dakar": dakar, "handball": handball_fr, "athletisme": athletisme,
+           "natation": natation, "volley": volley, "endurance": endurance, "voile": voile, "ryder-cup": ryder_cup, **WINTER}
 
 
 def get_calendar(kind: str, start: date, end: date) -> List[dict]:
