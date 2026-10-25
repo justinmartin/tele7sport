@@ -39,6 +39,8 @@ const LEAGUES = [
     { id: "cycling-road", emoji: "🚴", label: "Cyclisme Route", hasTeams: false },
     { id: "cycling-mtb-dh", emoji: "🚵", label: "VTT Descente", detail: "Coupe du Monde", hasTeams: false },
     { id: "cycling-mtb-enduro", emoji: "🚵", label: "VTT Enduro", detail: "Coupe du Monde", hasTeams: false },
+    // Sports mécaniques
+    { id: "motogp", emoji: "🏍️", label: "MotoGP", detail: "Sprint et course", hasTeams: false },
 ];
 
 const CHANNEL_BOUQUETS = [

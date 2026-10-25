@@ -18,7 +18,7 @@ Un bot qui envoie une newsletter hebdomadaire avec le programme de vos équipes 
 - 📺 **Chaînes TV** — Où regarder chaque match (Canal+, beIN, Eurosport, TF1, Prime Video…)
 - ⭐ **Grandes rencontres** — Détection automatique des finales, demi-finales, playoffs
 - 📊 **Résultats** — Récap des résultats de la semaine passée
-- 🚴 **Multi-sport** — NBA, NFL, NCAAF, NCAAM, Ligue 1/2, Champions League, Top 14, Six Nations, Tennis Grand Chelem, Cyclisme, VTT…
+- 🚴 **Multi-sport** — NBA, NFL, NCAAF, NCAAM, Ligue 1/2, Champions League, Top 14, Six Nations, Tennis Grand Chelem, Cyclisme, VTT, MotoGP…
 - 🏆 **AP Top 25** — Suivi automatique des équipes classées AP en college football et basketball (mise à jour chaque semaine)
 - 📱 **L'app** ([tele7sport.vercel.app](https://tele7sport.vercel.app), à ajouter à l'écran d'accueil) — Accueil avec le match vedette et l'heure de fin estimée, calendrier Mois / Semaine / Liste, classements, fiche équipe avec scores en direct, favoris par sport et sections internationales (foot, rugby, JO)
 - 🗓️ **Agenda** — Ajout d'un match à l'agenda, ou abonnement webcal à ses favoris
@@ -40,6 +40,7 @@ Un bot qui envoie une newsletter hebdomadaire avec le programme de vos équipes 
 | 🏅 Jeux Olympiques | Basketball (H/F), Football (H) |
 | 🚴 Cyclisme | Grands Tours, Monuments, courses World Tour, Tour de France détaillé |
 | 🚵 VTT | Coupe du Monde DH, Coupe du Monde Enduro |
+| 🏍️ MotoGP | Sprint du samedi et course du dimanche, à l'heure de Paris, vainqueurs et leader du championnat (API officielle de motogp.com) |
 
 ## 📬 Exemple de newsletter
 
@@ -220,6 +221,7 @@ Le classement est récupéré dynamiquement chaque semaine via l'API ESPN, donc 
 | `cycling-road` | Cyclisme Route |
 | `cycling-mtb-dh` | VTT Descente |
 | `cycling-mtb-enduro` | VTT Enduro |
+| `motogp` | MotoGP (Sprint et course) |
 
 </details>
 

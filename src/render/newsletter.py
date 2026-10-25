@@ -569,8 +569,9 @@ def _render_cycling_multi_day(ce: CyclingEvent) -> str:
 
 def _render_cycling_result(ce: CyclingEvent) -> str:
     loc = f" — {ce.location}" if ce.location else ""
+    details = f" · {ce.details}" if ce.details else ""  # le vainqueur, quand la source le donne
     return (
         f'<div class="result-row">'
-        f'{ce.emoji} {ce.name}{loc}'
+        f'{ce.emoji} {ce.name}{loc}{details}'
         f'</div>'
     )

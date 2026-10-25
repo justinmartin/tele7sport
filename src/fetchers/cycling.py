@@ -8,6 +8,7 @@ from typing import List, Optional
 from bs4 import BeautifulSoup
 
 from src.config import CYCLING_LEAGUES
+from src.fetchers.motogp import get_motogp_sessions
 from src.fetchers.wiki_calendars import SOURCES as WIKI_SOURCES, _page as wiki_page, get_calendar
 
 logger = logging.getLogger("tele7sport")
@@ -149,6 +150,14 @@ def get_cycling_events(
 
     target_category = cfg["uci_category"]
     events: List[CyclingEvent] = []
+
+    # MotoGP : Sprint et course, avec l'heure
+    if target_category == "motogp":
+        return [CyclingEvent(
+            league_id=league_id, league_label=cfg["label"], emoji=cfg["emoji"], name=s["name"],
+            location=s["location"], start_date=s["date"], end_date=s["date"], category="motogp",
+            channels_fr=cfg["channels_fr"], details=s["details"], start_time=s["time"],
+        ) for s in get_motogp_sessions(week_start, week_end)]
 
     # Sports mécaniques (MXGP, Supercross, Dakar) : calendriers Wikipédia
     if target_category in WIKI_SOURCES:

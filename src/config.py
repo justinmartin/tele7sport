@@ -365,6 +365,12 @@ CYCLING_LEAGUES = {
         "channels_fr": ["Red Bull TV", "Eurosport"],
         "uci_category": "mtb-enduro",
     },
+    # MotoGP : API du site officiel (src/fetchers/motogp.py), Sprint et course à l'heure de Paris
+    "motogp": {
+        "label": "MotoGP", "emoji": "🏍️",
+        "channels_fr": ["Canal+"],
+        "uci_category": "motogp", "sport": "moto",
+    },
     # Sports mécaniques : calendriers Wikipédia (src/fetchers/wiki_calendars.py)
     "mxgp": {
         "label": "Motocross MXGP", "emoji": "🏍️",
