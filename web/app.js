@@ -124,7 +124,7 @@ const myEvents = () => cat.events.filter(e => visible(e) && (filter === 'all' ||
 function lgTile(lg, size = 's') {
   const L = league(lg) || cat.cycling_leagues?.[lg] || {};
   return L.logo ? `<span class="lg-tile ${size}"><img src="${esc(L.logo)}" alt="" loading="lazy"></span>`
-    : `<span class="lg-tile ${size} emoji"><span class="em">${esc(L.emoji || '')}</span></span>`;
+    : `<span class="lg-tile ${size} mono"><span>${esc(mono(lg, L))}</span></span>`;
 }
 
 function liveState(e) {
@@ -228,9 +228,19 @@ function dayBlock(day, events, { title = true, newestFirst = false } = {}) {
   </section>`;
 }
 
-function pageHead(kicker, title) {
-  return `<header class="page-head"><div class="kicker">${esc(kicker)}</div><h1 class="page-title">${esc(title)}</h1></header>`;
+// Le titre d'abord ; la date ou le contexte en dessous, jamais en sur-titre.
+function pageHead(meta, title) {
+  return `<header class="page-head"><h1 class="page-title">${esc(title)}</h1><div class="page-meta">${esc(meta)}</div></header>`;
 }
+
+// Sports sans logo : un monogramme, pas un émoji
+const MONO = {
+  'cycling-road': 'CYC', 'cycling-mtb-dh': 'DH', 'cycling-mtb-enduro': 'END', motogp: 'MGP', f1: 'F1', mxgp: 'MX',
+  supercross: 'SX', dakar: 'DKR', endurance: 'WEC', 'australian-open': 'AO', 'roland-garros': 'RG', wimbledon: 'WIM',
+  'us-open': 'USO', 'masters-1000': 'ATP', handball: 'HB', athletisme: 'ATH', natation: 'NAT', volley: 'VB', voile: 'VOI',
+  golf: 'GLF', ufc: 'UFC', 'ski-alpin': 'SKI', biathlon: 'BIA', 'ski-fond': 'FND', 'saut-ski': 'SAU', patinage: 'PAT',
+};
+const mono = (lg, L) => MONO[lg] || (L.label || '').split(/\s+/).map(w => w[0]).join('').slice(0, 3).toUpperCase();
 
 const noFavs = () => '<p class="empty">Aucune compétition suivie pour l\'instant.<br><button type="button" data-action="open-favs">Choisir mes favoris</button></p>';
 
@@ -416,7 +426,7 @@ function listView(today) {
             <span class="lbl">${esc(agLabel(e, l, r, us))}</span>
             <span class="t">${e.st === 'c' && e.hs != null ? `${e[l] === e.h ? e.hs : e.as}-${e[r] === e.h ? e.hs : e.as}` : hhmm(e.ko)}</span></button>`;
         }).join('')}
-        ${solo.map(c => `<div class="ag-item"><i style="background:${SPORT_COLORS.solo}"></i><span class="lbl">${esc(c.emoji || '')} ${esc(c.name)}</span><span class="t">${esc(c.time || '')}</span></div>`).join('')}
+        ${solo.map(c => `<div class="ag-item"><i style="background:${SPORT_COLORS.solo}"></i><span class="lbl">${esc(c.name)}</span><span class="t">${esc(c.time || '')}</span></div>`).join('')}
       </div>
     </div>`);
   }
@@ -427,7 +437,7 @@ function renderCalendar() {
   const today = tvToday();
   if (!selDay || selDay < cat.range.start || selDay > cat.range.end) selDay = today;
   const sel = parseDay(selDay);
-  let html = `<header class="page-head row"><div><div class="kicker">${cap(MONTHS[sel.getMonth()])} ${sel.getFullYear()}</div><h1 class="page-title">Calendrier</h1></div>
+  let html = `<header class="page-head row"><div><h1 class="page-title">${cap(MONTHS[sel.getMonth()])} <span class="dim">${sel.getFullYear()}</span></h1></div>
     <button class="sub-pill" type="button" data-action="subscribe">${CAL_ICON}S'abonner</button></header>`;
   if (!favs.leagues.length && !favs.cycling.length) return html + noFavs();
   html += `<div class="seg" role="tablist" aria-label="Affichage">${[['month', 'Mois'], ['week', 'Semaine'], ['list', 'Liste']].map(([v, l]) =>
@@ -532,7 +542,7 @@ function renderStandings() {
   if (!standLg || !ids.includes(standLg)) standLg = ids[0];
   const chip = id => {
     const L = league(id) || cat.cycling_leagues[id];
-    return `<button class="chip${id === standLg ? ' active' : ''}" type="button" data-stand="${id}">${L.logo ? `<img src="${esc(L.logo)}" alt="">` : `${esc(L.emoji || '')} `}${esc(L.label)}</button>`;
+    return `<button class="chip${id === standLg ? ' active' : ''}" type="button" data-stand="${id}">${L.logo ? `<img src="${esc(L.logo)}" alt="">` : lgTile(id)}${esc(L.label)}</button>`;
   };
   html += `<div class="section-title" id="tables">Classements complets</div>
     <div class="filters">${ids.map(chip).join('')}</div>
@@ -623,7 +633,7 @@ function renderFavs() {
       const next = soon ? (soon.start <= today ? `En cours : ${soon.name}` : `Prochain : ${soon.name} · ${dayLabel(soon.start)}`)
         : C.next ? `Prochain : ${C.next.name} · ${dayLabel(C.next.start)}` : 'Calendrier pas encore publié';
       html += `<div class="fav-league"><div class="fav-row">
-        <span class="lg-tile m emoji"><span class="em">${esc(C.emoji)}</span></span>
+        ${lgTile(id, 'm')}
         <span class="label">${esc(C.label)}<small>${esc(next)}</small></span>
         <button class="switch" role="switch" aria-checked="${on}" aria-label="Suivre ${esc(C.label)}" data-action="toggle-cycling" data-league="${id}" type="button"></button>
       </div></div>`;
@@ -741,7 +751,7 @@ function addMatchToCalendar(key) {
   const [a, b] = us ? [e.a, e.h] : [e.h, e.a];
   const title = `${team(lg, a.id).n} ${us ? '@' : '–'} ${team(lg, b.id).n}`;
   const start = new Date(e.ko), end = new Date(start.getTime() + (CAL_DURATION_H[L.sport] || 2) * 3600e3);
-  const details = [L.label + (e.rd ? ` · ${e.rd}` : ''), e.ch.length ? `📺 ${e.ch.join(', ')}` : '', location.origin].filter(Boolean).join('\n');
+  const details = [L.label + (e.rd ? ` · ${e.rd}` : ''), e.ch.length ? `Sur ${e.ch.join(', ')}` : '', location.origin].filter(Boolean).join('\n');
   const q = o => Object.entries(o).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
   openCalSheet(title, `${cap(dayLabel(e.day))} · ${hhmm(e.ko)}${e.ch.length ? ` · ${e.ch.join(', ')}` : ''}`, [
     ['Calendrier Apple', `/api/ics?e=${encodeURIComponent(key)}`],
@@ -953,7 +963,7 @@ function renderTeam(lg, id, games) {
       <h2 id="team-name">${esc(t.n)}</h2>
       <div class="meta"><span class="rec-cell">${meta.join(' · ')}</span></div>
       ${form.length ? `<div class="form sm">${form.map(o => `<span class="${o}">${OUTCOME_FR[o]}</span>`).join('')}</div>` : ''}
-      <button class="follow-pill${followed ? ' on' : ''}" type="button" data-follow="${esc(id)}" data-league="${lg}">${followed ? '★ Suivie' : '☆ Suivre l\'équipe'}</button>
+      <button class="follow-pill${followed ? ' on' : ''}" type="button" data-follow="${esc(id)}" data-league="${lg}">${followed ? 'Équipe suivie' : 'Suivre l\'équipe'}</button>
     </div>
     ${nextCard}
     <div class="section-title">À venir</div>

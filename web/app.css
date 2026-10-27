@@ -60,7 +60,8 @@ img { display: block; }
 /* ----- Pages ----- */
 main { max-width: 600px; margin: 0 auto; padding: 18px 18px 0; }
 .page-head { padding: 6px 0 14px; border-bottom: 1px solid var(--line-strong); margin-bottom: 4px; }
-.kicker { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); }
+.page-meta { font-size: 14px; color: var(--text-2); margin-top: 6px; }
+.page-title .dim { color: var(--text-3); }
 .page-title { font-family: var(--serif); font-weight: 800; font-size: 34px; line-height: 1.05; letter-spacing: -0.03em; margin-top: 4px; }
 .empty { color: var(--text-3); font-size: 15px; padding: 28px 0; text-align: center; line-height: 1.5; }
 .empty button { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
@@ -69,11 +70,11 @@ main { max-width: 600px; margin: 0 auto; padding: 18px 18px 0; }
 .day { padding-top: 22px; }
 .day-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-family: var(--serif); font-weight: 750; font-size: 21px; letter-spacing: -0.02em; }
 .pill { font-family: var(--sans); font-size: 10.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; background: var(--accent); padding: 4px 8px; border-radius: 4px; }
-.subhead { display: flex; align-items: center; gap: 7px; margin-top: 18px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--night); }
+.subhead { display: flex; align-items: center; gap: 7px; margin-top: 18px; font-size: 13px; font-weight: 650; color: var(--night); }
 .subhead svg { width: 14px; height: 14px; }
 
 /* Compétition */
-.league { display: flex; align-items: center; gap: 8px; margin-top: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--line); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-2); }
+.league { display: flex; align-items: center; gap: 8px; margin-top: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--line); font-size: 13px; font-weight: 650; color: var(--text-2); }
 .league img { width: 18px; height: 18px; object-fit: contain; }
 
 /* Match : deux lignes d'équipe + colonne de droite (heure/chaîne ou score) */
@@ -141,7 +142,7 @@ main { max-width: 600px; margin: 0 auto; padding: 18px 18px 0; }
 .sheet-head h2 { font-family: var(--serif); font-weight: 800; font-size: 24px; letter-spacing: -0.03em; }
 .text-btn { min-height: 44px; padding: 0 10px; font-size: 16px; font-weight: 700; color: var(--accent); }
 .sheet-body { flex: 1; overflow-y: auto; padding: 4px 18px calc(var(--safe-bottom) + 30px); -webkit-overflow-scrolling: touch; }
-.sport { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); margin: 24px 0 2px; }
+.sport { font-size: 13px; font-weight: 650; color: var(--text-2); margin: 24px 0 2px; }
 .fav-league { border-bottom: 1px solid var(--line); }
 .fav-row { display: flex; align-items: center; gap: 12px; min-height: 56px; }
 .fav-row img, .fav-row .noimg { width: 26px; height: 26px; object-fit: contain; }
@@ -204,9 +205,10 @@ main { max-width: 600px; margin: 0 auto; padding: 18px 18px 0; }
 /* Bilans : V en vert, D en rouge (et W/L des séries de forme) */
 .rec .w, .rec-cell .w { color: var(--win); }
 .rec .l, .rec-cell .l { color: var(--lose); }
-.lg-tile.emoji { background: var(--raised-2); }
-.lg-tile.emoji .em { font-size: 62%; line-height: 1; }
-.lg-tile.m.emoji .em { font-size: 19px; }
+.lg-tile.mono { background: var(--raised-2); color: var(--text); font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+.lg-tile.s.mono span { font-size: 7.5px; }
+.lg-tile.m.mono span { font-size: 10.5px; }
+.lg-tile.l.mono span { font-size: 13px; }
 
 /* ----- Scores en direct ----- */
 .live-detail { font-size: 11px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
@@ -222,8 +224,8 @@ main { max-width: 600px; margin: 0 auto; padding: 18px 18px 0; }
 .team-stats div { padding: 14px 0; text-align: center; }
 .team-stats div + div { border-left: 1px solid var(--line); }
 .team-stats b { display: block; font-family: var(--serif); font-weight: 800; font-size: 22px; letter-spacing: -0.02em; }
-.team-stats span { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
-.section-title { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); margin: 24px 0 4px; }
+.team-stats span { font-size: 12px; font-weight: 600; color: var(--text-3); }
+.section-title { font-size: 13px; font-weight: 650; color: var(--text-2); margin: 26px 0 4px; }
 .form { display: flex; gap: 6px; margin-top: 10px; }
 .form span { width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; font-size: 12px; font-weight: 800; color: #fff; }
 .form .w { background: var(--win); } .form .l { background: var(--lose); } .form .d { background: #6e6e78; }
@@ -322,9 +324,9 @@ main { max-width: 600px; margin: 0 auto; padding: 18px 18px 0; }
 .munder { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px; min-height: 20px; }
 
 /* Accueil : le match du soir */
-.hero { margin-top: 18px; border-radius: 24px; padding: 18px 16px 16px; background: linear-gradient(160deg, #1d2235 0%, #131622 100%); }
-.hero.night { background: linear-gradient(160deg, #1e1f3a 0%, #121327 100%); }
-.hero-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #b9bfdc; }
+.hero { margin-top: 18px; border-radius: 20px; padding: 18px 16px 16px; background: #181b28; }
+.hero.night { background: #1a1b31; }
+.hero-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; font-weight: 650; color: #b9bfdc; }
 .hero-top span:last-child { display: inline-flex; align-items: center; gap: 6px; letter-spacing: 0.02em; text-transform: none; font-weight: 600; }
 .hero-row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; margin-top: 16px; }
 .hero-team { display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; text-align: center; }
@@ -428,7 +430,7 @@ main .seg button.on { background: var(--line-strong); color: var(--text); box-sh
 .follow-pill { min-height: 38px; padding: 0 16px; border-radius: 19px; border: 1px solid var(--line-strong); font-size: 14px; font-weight: 700; margin-top: 6px; }
 .follow-pill.on { background: var(--text); color: #000; border-color: var(--text); }
 .next-card { background: var(--raised); border-radius: 20px; padding: 16px; margin-top: 18px; }
-.nc-top { display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; }
+.nc-top { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--text-3); }
 .nc-row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; margin-top: 14px; }
 .nc-team { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
 .nc-team img, .nc-team .noimg { width: 48px; height: 48px; object-fit: contain; }
@@ -466,3 +468,9 @@ main .seg button.on { background: var(--line-strong); color: var(--text); box-sh
 main .seg { display: grid; width: 100%; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .munder .cal-add { width: 26px; height: 22px; margin-left: 2px; }
 .munder .cal-add svg { width: 16px; height: 16px; }
+
+/* Ce que le navigateur dessine aussi */
+::selection { background: var(--accent); color: #fff; }
+input, textarea { caret-color: var(--accent); }
+:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; border-radius: 4px; }
+.page-head.row .page-title { white-space: nowrap; }

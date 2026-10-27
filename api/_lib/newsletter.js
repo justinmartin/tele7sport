@@ -53,7 +53,7 @@ function render(cat, favs, { start, unsubscribeUrl }) {
 
   // À ne pas rater
   const highlights = mine.filter(e => e.hl && e.day >= start && e.day <= end && e.st !== 'c');
-  let body = highlights.length ? section('⭐ À ne pas rater', highlights.map(e => sub(esc(cap(dayLabel(e.day))), '#f2c14e') + row(e)).join('')) : '';
+  let body = highlights.length ? section('À ne pas rater', highlights.map(e => sub(esc(cap(dayLabel(e.day))), '#f2c14e') + row(e)).join('')) : '';
 
   // Programme jour par jour
   let days = '';
@@ -64,14 +64,14 @@ function render(cat, favs, { start, unsubscribeUrl }) {
     const hidden = v.hiddenNba(d);
     if (!evs.length && !solo.length && !hidden) continue;
     days += dayTitle(dayLabel(d)) + byLeague(evening) + soloRows(solo)
-      + (night.length ? sub(`🌙 Nuit de ${dayName(d)} à ${dayName(addDays(d, 1))}`, '#9aa5ff') + byLeague(night) : '')
+      + (night.length ? sub(`Nuit de ${dayName(d)} à ${dayName(addDays(d, 1))}`, '#9aa5ff') + byLeague(night) : '')
       + (hidden ? `<div style="font-size:12px;color:#8e8e96;padding:6px 0">+ ${hidden} autre${hidden > 1 ? 's' : ''} match${hidden > 1 ? 's' : ''} NBA sur le League Pass</div>` : '');
   }
-  body += section('📅 Programme de la semaine', days || '<p style="color:#8e8e96;font-size:14px">Rien au programme cette semaine pour tes équipes.</p>');
+  body += section('Programme de la semaine', days || '<p style="color:#8e8e96;font-size:14px">Rien au programme cette semaine pour tes équipes.</p>');
 
   // Résultats de la semaine passée
   const done = mine.filter(e => e.st === 'c' && e.hs != null && e.day >= prevStart && e.day <= prevEnd).sort((x, y) => x.ko.localeCompare(y.ko));
-  if (done.length) body += section('📊 Résultats de la semaine passée', byLeague(done, { score: true }));
+  if (done.length) body += section('Résultats de la semaine passée', byLeague(done, { score: true }));
 
   // Classements des équipes suivies
   const standings = [];
@@ -86,7 +86,7 @@ function render(cat, favs, { start, unsubscribeUrl }) {
         <td width="130" style="padding:8px 0;text-align:right;font-size:13px;color:#a1a1aa"><strong style="color:#fff">${r.rank ? `${r.rank}${r.rank === 1 ? 'er' : 'e'}` : '–'}</strong> · ${esc(r.record || '')}${r.points != null && r.points !== '' ? ` · ${esc(r.points)} pts` : ''}</td></tr></table>`);
     }));
   });
-  if (standings.length) body += section('📈 Classements', standings.join(''));
+  if (standings.length) body += section('Classements', standings.join(''));
 
   const s = new Date(`${start}T12:00:00Z`), e2 = new Date(`${end}T12:00:00Z`);
   const weekLabel = s.getUTCMonth() === e2.getUTCMonth()
@@ -104,7 +104,7 @@ ${body}
   <a href="${APP_URL}" style="color:#f5f5f7;font-weight:700">Ouvrir l'app</a> pour les scores en direct et modifier tes favoris.<br>
   ${unsubscribeUrl ? `<a href="${esc(unsubscribeUrl)}" style="color:#6e6e78">Se désinscrire</a>` : ''}</td></tr>
 </table></td></tr></table></body></html>`;
-  return { subject: `📺 Télé7Sport — ${weekLabel}`, html };
+  return { subject: `Télé7Sport — ${weekLabel}`, html };
 }
 
 module.exports = { render };

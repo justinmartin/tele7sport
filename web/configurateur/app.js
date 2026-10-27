@@ -86,7 +86,6 @@ function renderLeagues() {
     const grid = document.getElementById("leagues-grid");
     grid.innerHTML = LEAGUES.map(l => `
         <div class="league-card" data-id="${l.id}" onclick="toggleLeague('${l.id}')">
-            <span class="emoji">${l.emoji}</span>
             <span class="label">
                 ${l.label}
                 ${l.detail ? `<small>${l.detail}</small>` : ""}
@@ -129,7 +128,7 @@ function showTeamSearch(leagueId) {
     const panel = document.getElementById("team-search-panel");
     panel.classList.remove("hidden");
     document.getElementById("team-search-title").textContent =
-        `Ajouter des équipes — ${league.emoji} ${league.label}`;
+        `Ajouter des équipes — ${league.label}`;
     document.getElementById("team-search-input").value = "";
     document.getElementById("team-results").innerHTML = "";
     renderSelectedTeams();
@@ -243,7 +242,7 @@ function renderSelectedTeams() {
         if (!league) continue;
         if (entry.teams === "AP_RANKED") {
             html += `<div class="selected-team">
-                ${league.emoji} AP Top 25
+                AP Top 25
                 <span class="remove" onclick="removeTeam('${leagueId}','AP_RANKED')">✕</span>
             </div>`;
             continue;
@@ -251,7 +250,7 @@ function renderSelectedTeams() {
         if (!entry.teams || entry.teams.length === 0) continue;
         for (const team of entry.teams) {
             html += `<div class="selected-team">
-                ${league.emoji} ${team}
+                ${team}
                 <span class="remove" onclick="removeTeam('${leagueId}','${escapeHtml(team)}')">✕</span>
             </div>`;
         }
