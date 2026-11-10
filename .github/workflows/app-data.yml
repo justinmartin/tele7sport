@@ -5,6 +5,10 @@ on:
     # Toutes les 6 h, à une minute « impaire » : GitHub retarde de plusieurs heures les tâches posées
     # pile sur l'heure (constaté : 5 h UTC partait vers 10 h). Quatre passages gardent l'app fraîche malgré tout.
     - cron: '17 2,8,14,20 * * *'
+  # Et dès qu'on modifie le code qui fabrique le catalogue (sans attendre le prochain passage)
+  push:
+    branches: [main]
+    paths: ['src/**', 'requirements.txt', '.github/workflows/app-data.yml']
   workflow_dispatch:
 
 jobs:
