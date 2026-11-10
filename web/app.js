@@ -653,6 +653,86 @@ function soloTable(lgId) {
     </tr>`).join('')}</tbody></table>${hidden ? `<button class="table-more" type="button" data-expand="${esc(key)}">Voir les ${t.rows.length} pilotes</button>` : ''}</div>`;
 }
 
+// ---------------------------------------------------------------- actu
+// /api/news : L'Équipe, RMC Sport, Trashtalk, Rugbyrama… rangés par sport. L'app garde les articles des sports
+// suivis, met en avant ceux qui citent tes équipes ou tes compétitions, et le bandeau filtre par compétition.
+let newsData = read('t7s_news');
+let newsMode = 'mine';     // mine : mes sports et équipes | all : toute l'actu
+let newsLimit = 30;
+const SOLO_SPORT = { tennis: 'tennis', cycling: 'cycling', hiver: 'hiver' };
+const SOLO_NEWS = { f1: 'auto', endurance: 'auto', dakar: 'auto', motogp: 'moto', mxgp: 'moto', supercross: 'moto', ufc: 'combat',
+  handball: 'handball', athletisme: 'athletisme', natation: 'natation', voile: 'voile', golf: 'golf' };
+const NEWS_SPORT_LABELS = { soccer: 'Foot', basketball: 'Basket', rugby: 'Rugby', football: 'Foot US', hockey: 'Hockey', tennis: 'Tennis',
+  cycling: 'Cyclisme', auto: 'Auto', moto: 'Moto', hiver: 'Sports d\'hiver', handball: 'Handball', athletisme: 'Athlétisme',
+  natation: 'Natation', voile: 'Voile', golf: 'Golf', combat: 'Combat' };
+const newsSportOf = id => league(id)?.sport || SOLO_NEWS[id] || SOLO_SPORT[cat.cycling_leagues?.[id]?.sport] || (STRIP_GROUPS[id] ? (id === 'cyclisme' ? 'cycling' : id) : null);
+
+let newsLoading = false, newsFailedAt = 0;
+async function loadNews() {
+  if (newsLoading || (newsData && Date.now() - newsData.at < 20 * 60e3) || Date.now() - newsFailedAt < 60e3) return;
+  newsLoading = true;
+  try {
+    const d = await fetch('/api/news').then(r => r.ok ? r.json() : Promise.reject(r.status));
+    newsData = { at: Date.now(), ...d }; write('t7s_news', newsData);
+  } catch (e) { newsFailedAt = Date.now(); }
+  newsLoading = false;
+  if (tab === 'news') render();
+}
+
+// Ce qui m'intéresse : mes équipes (3 points), mes compétitions citées (2), mes sports (1)
+function newsKeys() {
+  const teams = [], comps = [];
+  favs.leagues.forEach(f => {
+    const L = league(f.league);
+    if (!L) return;
+    comps.push(L.label, STRIP_LABELS[f.league]);
+    (f.mode === 'teams' ? f.teams : []).forEach(id => {
+      const t = team(f.league, id);
+      teams.push({ sport: L.sport, v: [t.n, shortName(t.n), US_SPORTS.has(L.sport) ? t.n.split(' ').pop() : '', /^[A-Z]{2,4}$/.test(t.a || '') && t.a.length >= 3 ? t.a : ''].filter(Boolean) });
+    });
+    // Sélections nationales : « France » seul accrocherait « Coupe de France » ; on cherche « équipe de France », « les Bleus »…
+    (f.names || []).forEach(n => teams.push({ sport: L.sport, v: /^france$/i.test(n)
+      ? ['équipe de France', 'Bleus', 'Bleues', ...(L.sport === 'rugby' ? ['XV de France'] : [])]
+      : NATIONS_EN[n.toLowerCase()] || /^[A-ZÉ][a-zé]+$/.test(n) ? [`équipe d'${n}`, `équipe de ${n}`, `${n} –`, `– ${n}`] : [n] }));
+  });
+  favs.cycling.forEach(id => comps.push(cat.cycling_leagues?.[id]?.label));
+  return { teams, comps: comps.filter(c => c && c.length > 2) };
+}
+function scored() {
+  const sports = new Set([...favs.leagues.map(f => newsSportOf(f.league)), ...favs.cycling.map(newsSportOf)].filter(Boolean));
+  const { teams, comps } = newsKeys();
+  const only = filter !== 'all' ? newsSportOf(filter) : null;
+  return (newsData?.articles || []).map(a => {
+    const text = `${a.title} ${a.excerpt}`;
+    // Une équipe ne compte que dans son sport : « France » au rugby n'accroche pas les Bleus du foot
+    const hit = teams.find(t => t.sport === a.sport && t.v.some(v => wordMatchRaw(text, v)));
+    const score = hit ? 3 : comps.some(c => wordMatchRaw(text, c)) ? 2 : sports.has(a.sport) ? 1 : 0;
+    return { ...a, score, tagTeam: hit ? (hit.v[0].startsWith('équipe') ? hit.v[0].replace(/^équipe d(e |')/, '') : hit.v[1] || hit.v[0]) : '' };
+  }).filter(a => (only ? a.sport === only : newsMode === 'all' || a.score > 0));
+}
+function newsCard(a, big) {
+  const src = (newsData.sources || []).find(s => s.id === a.source) || { name: a.source, color: '#333', ink: '#fff' };
+  const meta = `<span class="nw-src" style="background:${src.color};color:${src.ink}">${esc(src.name)}</span><span class="nw-time">${ago(a.date)}</span>${a.tagTeam ? `<span class="nw-tag">${esc(shortName(a.tagTeam))}</span>` : ''}`;
+  return big ? `<a class="nw-hero" href="${esc(a.url)}" target="_blank" rel="noopener">
+      ${a.image ? `<img src="${esc(a.image)}" alt="" loading="lazy">` : ''}<div class="nw-body"><div class="nw-meta">${meta}</div><h2>${esc(a.title)}</h2>${a.excerpt ? `<p>${esc(a.excerpt)}</p>` : ''}</div></a>`
+    : `<a class="nw-row" href="${esc(a.url)}" target="_blank" rel="noopener"><div><div class="nw-meta">${meta}</div><h3>${esc(a.title)}</h3></div>
+      ${a.image ? `<img src="${esc(a.image)}" alt="" loading="lazy">` : ''}</a>`;
+}
+function renderNews() {
+  loadNews();
+  let html = pageHead(filter !== 'all' ? `${NEWS_SPORT_LABELS[newsSportOf(filter)] || ''} · d'après le bandeau` : 'Tes sports et tes équipes', 'Actu');
+  if (filter === 'all') html += `<div class="seg two">${[['mine', 'Pour toi'], ['all', 'Toute l\'actu']].map(([v, l]) => `<button type="button" class="${newsMode === v ? 'on' : ''}" data-newsmode="${v}">${l}</button>`).join('')}</div>`;
+  if (!newsData) return html + `<p class="empty">${newsFailedAt ? 'Actu indisponible pour l\'instant, réessaie dans un moment.' : 'Chargement de l\'actu…'}</p>`;
+  const list = scored();
+  if (!list.length) return html + '<p class="empty">Pas d\'article récent pour tes favoris.</p>';
+  // À la une : l'article le plus récent qui cite une de mes équipes (sinon le plus récent), de préférence avec une image
+  const hero = list.find(a => a.score === 3 && a.image) || list.find(a => a.image) || list[0];
+  const rest = list.filter(a => a !== hero);
+  return html + newsCard(hero, true) + `<div class="nw-list">${rest.slice(0, newsLimit).map(a => newsCard(a)).join('')}</div>`
+    + (rest.length > newsLimit ? '<button class="table-more" type="button" data-newsmore>Voir plus d\'articles</button>' : '')
+    + '<p class="note nw-credit">Titres, images et extraits des sites cités ; l\'article complet s\'ouvre chez eux.</p>';
+}
+
 function installTip() {
   const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   if (standalone || !/iPhone|iPad/.test(navigator.userAgent)) return '';
@@ -664,7 +744,7 @@ function render() {
   document.body.classList.toggle('no-strip', tab === 'standings');
   const view = $('#view');
   if (!cat) { view.innerHTML = '<p class="empty">Chargement du programme…</p>'; return; }
-  view.innerHTML = { today: renderToday, week: renderCalendar, results: renderResults, standings: renderStandings }[tab]();
+  view.innerHTML = { today: renderToday, week: renderCalendar, results: renderResults, standings: renderStandings, news: renderNews }[tab]();
   $('#updated').textContent = ago(cat.generated_at);
   renderStrip();
 }
@@ -1457,6 +1537,9 @@ $('#view').addEventListener('click', ev => {
   if (wk) { selDay = addDays(selDay, +wk.dataset.week); render(); return; }
   const jump = ev.target.closest('[data-day-jump]');
   if (jump) { selDay = jump.dataset.dayJump; calView = 'week'; render(); $('#cal-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  const nm = ev.target.closest('[data-newsmode]');
+  if (nm) { newsMode = nm.dataset.newsmode; newsLimit = 30; render(); return; }
+  if (ev.target.closest('[data-newsmore]')) { newsLimit += 30; render(); return; }
   const sv = ev.target.closest('[data-standview]');
   if (sv) { standView = sv.dataset.standview; render(); return; }
   const sl = ev.target.closest('[data-stand]');

@@ -73,10 +73,6 @@
   <main id="view" aria-live="polite"></main>
 
   <nav class="tabs" aria-label="Sections">
-    <button class="tab" data-tab="today" type="button">
-      <svg class="tab-logo" viewBox="-6 -2 222 104" aria-hidden="true"><g transform="skewX(-14)"><path fill="currentColor" d="M0 0h64v24H44v76H20V24H0z"/><path fill="var(--accent)" d="M72 0h64v24l-36 76H76l34-76H72z"/><path fill="currentColor" d="M152 0h56v24h-40v14h32l8 8v46l-8 8h-56V76h40V62h-32l-8-8V8z"/></g></svg>
-      <span>Ce soir</span>
-    </button>
     <button class="tab" data-tab="week" type="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
       <span>Calendrier</span>
@@ -85,9 +81,17 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>
       <span>Résultats</span>
     </button>
+    <button class="tab tab-main" data-tab="today" type="button">
+      <svg class="tab-logo" viewBox="-6 -2 222 104" aria-hidden="true"><g transform="skewX(-14)"><path fill="currentColor" d="M0 0h64v24H44v76H20V24H0z"/><path fill="var(--accent)" d="M72 0h64v24l-36 76H76l34-76H72z"/><path fill="currentColor" d="M152 0h56v24h-40v14h32l8 8v46l-8 8h-56V76h40V62h-32l-8-8V8z"/></g></svg>
+      <span>Ce soir</span>
+    </button>
     <button class="tab" data-tab="standings" type="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
       <span>Classements</span>
+    </button>
+    <button class="tab" data-tab="news" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 6h3a1 1 0 0 1 1 1v11a2 2 0 0 1-4 0V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v12a3 3 0 0 0 3 3h11M8 8h4M8 12h4M8 16h4"/></svg>
+      <span>Actu</span>
     </button>
   </nav>
 
