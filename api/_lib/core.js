@@ -71,4 +71,17 @@ const hhmm = iso => new Intl.DateTimeFormat('fr-FR', { timeZone: TZ, hour: '2-di
 const parisDay = (d = new Date()) => new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(d);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-module.exports = { APP_URL, TZ, loadCatalog, makeView, encodeFavs, decodeFavs, addDays, dayLabel, dayName, hhmm, parisDay, esc, MONTHS };
+// Favoris reçus d'un téléphone : on ne garde que la forme attendue, tailles bornées
+function cleanFavs(f) {
+  if (!f || !Array.isArray(f.leagues)) return null;
+  const str = a => (Array.isArray(a) ? a : []).filter(x => typeof x === 'string').slice(0, 200).map(x => x.slice(0, 80));
+  return {
+    leagues: f.leagues.slice(0, 100).filter(l => l && typeof l.league === 'string').map(l => ({
+      league: l.league.slice(0, 60), mode: ['all', 'teams', 'ap'].includes(l.mode) ? l.mode : 'all',
+      teams: str(l.teams), names: str(l.names), finals: !!l.finals,
+    })),
+    cycling: str(f.cycling),
+  };
+}
+
+module.exports = { cleanFavs, APP_URL, TZ, loadCatalog, makeView, encodeFavs, decodeFavs, addDays, dayLabel, dayName, hhmm, parisDay, esc, MONTHS };

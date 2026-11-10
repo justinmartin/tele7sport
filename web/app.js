@@ -6,7 +6,7 @@ const SOURCES = [
   'https://raw.githubusercontent.com/justinmartin/tele7sport/main/web/data/catalog.json',
   '/data/catalog.json',
 ];
-const KEYS = { catalog: 't7s_catalog', favs: 't7s_favs', tab: 't7s_tab', sub: 't7s_newsletter' };
+const KEYS = { catalog: 't7s_catalog', favs: 't7s_favs', favsAt: 't7s_favs_at', tab: 't7s_tab', sub: 't7s_newsletter', account: 't7s_account' };
 const NIGHT_END_HOUR = 7;      // avant 7h : rattaché à la soirée de la veille
 const MATCH_DURATION_H = 3;
 const LEAGUE_PASS = 'NBA League Pass';
@@ -90,7 +90,7 @@ function defaultFavs() {
   return { leagues: JSON.parse(JSON.stringify(cat.default_favorites || [])), cycling: [...(cat.default_cycling || [])] };
 }
 
-function saveFavs() { write(KEYS.favs, favs); }
+function saveFavs() { write(KEYS.favs, favs); write(KEYS.favsAt, Date.now()); schedulePush(); }
 
 function isFavTeam(lg, id) {
   const f = favFor(lg);
@@ -121,6 +121,16 @@ function hiddenNba(day) {
 const myEvents = () => cat.events.filter(e => visible(e) && (filter === 'all' || e.lg === filter));
 
 // ---------------------------------------------------------------- composants
+// Terrain dessiné en fond des boîtes (web/fields/) : par sport pour les compétitions par équipes,
+// par discipline pour les sports individuels.
+const SOLO_FIELDS = {
+  'cycling-road': 'cycling', 'cycling-mtb-dh': 'mtb', 'cycling-mtb-enduro': 'mtb', motogp: 'motor', f1: 'motor', endurance: 'motor',
+  dakar: 'dakar', mxgp: 'mx', supercross: 'mx', 'australian-open': 'tennis', 'roland-garros': 'tennis', wimbledon: 'tennis',
+  'us-open': 'tennis', 'masters-1000': 'tennis', handball: 'handball', athletisme: 'athletisme', natation: 'natation', volley: 'volley',
+  voile: 'voile', golf: 'golf', ufc: 'ufc', 'ski-alpin': 'ski', biathlon: 'biathlon', 'ski-fond': 'ski-fond', 'saut-ski': 'saut-ski', patinage: 'patinage',
+};
+const fieldOf = lg => { const f = league(lg)?.sport || SOLO_FIELDS[lg]; return f ? ` f-${f}` : ''; };
+
 function lgTile(lg, size = 's') {
   const L = league(lg) || cat.cycling_leagues?.[lg] || {};
   return L.logo ? `<span class="lg-tile ${size}"><img src="${esc(L.logo)}" alt="" loading="lazy"></span>`
@@ -173,7 +183,7 @@ function matchRow(e) {
   else under = e.ch.slice(0, 2).map(c => `<span class="ch" style="background:${chColor(c)}">${esc(c)}</span>`).join('')
     + `<button class="cal-add" type="button" data-cal="${e.lg}:${esc(e.eid)}" aria-label="Ajouter à mon agenda">${CAL_ICON}</button>`;
   const top = [e.hl && state !== 'done' ? '<span class="tag">À ne pas rater</span>' : '', e.rd ? esc(e.rd) : ''].filter(Boolean).join(' ');
-  return `<article class="match${e.nt ? ' night' : ''}">
+  return `<article class="match box${fieldOf(e.lg)}${e.nt ? ' night' : ''}">
     ${top ? `<div class="mround">${top}</div>` : ''}
     <div class="mrow">
       ${sideCol(e, left)}
@@ -190,20 +200,20 @@ function byLeague(events) {
   const groups = new Map();
   events.forEach(e => { if (!groups.has(e.lg)) groups.set(e.lg, []); groups.get(e.lg).push(e); });
   return [...groups].map(([lg, evs]) =>
-    `<div class="league">${lgTile(lg)}${esc(league(lg).label)}</div><div class="card">${evs.map(matchRow).join('')}</div>`).join('');
+    `<div class="league">${lgTile(lg)}${esc(league(lg).label)}</div><div class="cards">${evs.map(matchRow).join('')}</div>`).join('');
 }
 
 function cyclingFor(day) {
-  if (filter !== 'all') return [];
-  return (cat.cycling || []).filter(c => favs.cycling.includes(c.lg) && c.start <= day && day <= c.end);
+  if (filter !== 'all' && !favs.cycling.includes(filter)) return [];
+  return (cat.cycling || []).filter(c => favs.cycling.includes(c.lg) && (filter === 'all' || c.lg === filter) && c.start <= day && day <= c.end);
 }
 
 function cyclingRows(list) {
   if (!list.length) return '';
   const groups = new Map();
   list.forEach(c => { if (!groups.has(c.lg)) groups.set(c.lg, []); groups.get(c.lg).push(c); });
-  return [...groups].map(([lg, cs]) => `<div class="league">${lgTile(lg)}${esc(cs[0].label)}</div><div class="card">` + cs.map(c => `
-    <article class="event-solo">
+  return [...groups].map(([lg, cs]) => `<div class="league">${lgTile(lg)}${esc(cs[0].label)}</div><div class="cards">` + cs.map(c => `
+    <article class="event-solo box${fieldOf(lg)}">
       <div><div class="name">${esc(c.name)}</div><div class="sub">${esc(c.loc || '')}${c.details ? ` · ${esc(c.details)}` : ''}</div></div>
       <div class="side">${c.time ? `<span class="time">${esc(c.time)}</span>` : ''}<div class="channels">${(c.ch || []).map(x => `<span class="ch" style="background:${chColor(x)}">${esc(x)}</span>`).join('')}</div></div>
     </article>`).join('') + '</div>').join('');
@@ -274,7 +284,7 @@ function heroCard(e) {
   const center = hasScore ? `<span class="hero-time">${lv} - ${rv}</span>${state === 'live' ? '<span class="live">EN DIRECT</span>' : '<span class="status">Terminé</span>'}`
     : `<span class="hero-time">${hhmm(e.ko)}</span>${end ? `<span class="hero-end">fin vers ${end}</span>` : ''}`;
   const fav = isFavTeam(e.lg, e.h.id) ? e.h.id : isFavTeam(e.lg, e.a.id) ? e.a.id : e[left].id;
-  return `<section class="hero${e.nt ? ' night' : ''}">
+  return `<section class="hero${fieldOf(e.lg)}${e.nt ? ' night' : ''}">
     <div class="hero-top"><span>${e.hl ? 'À ne pas rater' : 'Le match du soir'}</span><span>${lgTile(e.lg)}${esc(L.label)}</span></div>
     <div class="hero-row">${side(left)}<div class="hero-mid">${center}</div>${side(right)}</div>
     ${e.ch.length ? `<div class="hero-ch">${e.ch.map(c => `<span class="ch" style="background:${chColor(c)}">${esc(c)}</span>`).join('')}</div>` : ''}
@@ -297,7 +307,7 @@ function slotCard(e) {
   };
   const end = endTime(e);
   const info = state === 'live' ? '<span class="live">EN DIRECT</span>' : state === 'done' ? (hasScore ? 'Terminé' : 'Score à venir') : (end ? `fin vers ${end}` : '');
-  return `<article class="slot-card">
+  return `<article class="slot-card box${fieldOf(e.lg)}${e.nt ? ' night' : ''}">
     <div class="sc-teams">${line(left)}${line(right)}</div>
     <div class="sc-side">${e.ch.slice(0, 1).map(c => `<span class="ch" style="background:${chColor(c)}">${esc(c)}</span>`).join('')}
       ${state === 'upcoming' ? `<button class="cal-add" type="button" data-cal="${e.lg}:${esc(e.eid)}" aria-label="Ajouter à mon agenda">${CAL_ICON}</button>` : ''}</div>
@@ -442,13 +452,6 @@ function renderCalendar() {
   if (!favs.leagues.length && !favs.cycling.length) return html + noFavs();
   html += `<div class="seg" role="tablist" aria-label="Affichage">${[['month', 'Mois'], ['week', 'Semaine'], ['list', 'Liste']].map(([v, l]) =>
     `<button type="button" role="tab" aria-selected="${calView === v}" class="${calView === v ? 'on' : ''}" data-calview="${v}">${l}</button>`).join('')}</div>`;
-  const leaguesWithEvents = [...new Set(cat.events.filter(visible).filter(e => e.day >= today).map(e => e.lg))];
-  if (leaguesWithEvents.length > 1) {
-    html += `<div class="filters" role="group" aria-label="Filtrer par compétition">
-      <button class="chip${filter === 'all' ? ' active' : ''}" data-filter="all" type="button">Tout</button>
-      ${leaguesWithEvents.map(lg => `<button class="chip${filter === lg ? ' active' : ''}" data-filter="${lg}" type="button">${league(lg).logo ? `<img src="${esc(league(lg).logo)}" alt="">` : ''}${esc(league(lg).label)}</button>`).join('')}
-    </div>`;
-  }
   if (calView === 'list') return html + listView(today);
   html += calView === 'week' ? weekView(today) : monthView(today);
   const block = dayBlock(selDay, dayEvents(selDay));
@@ -496,7 +499,7 @@ function standingCards() {
       if (!isFavTeam(f.league, r.team_id)) return;
       const form = formOf(f.league, r.team_id);
       const ordinal = r.rank ? (r.rank === 1 ? '1er' : `${r.rank}e`) : '–';
-      cards.push(`<article class="st-card" data-team="${esc(r.team_id)}" data-league="${f.league}" role="button" tabindex="0">
+      cards.push(`<article class="st-card box${fieldOf(f.league)}" data-team="${esc(r.team_id)}" data-league="${f.league}" role="button" tabindex="0">
         <div class="st-top">
           ${r.logo ? `<img src="${esc(r.logo)}" alt="">` : '<span class="noimg"></span>'}
           <div class="st-name"><b>${esc(r.team)}</b><span>${esc(L.label)}${table.groups.length > 1 ? ` · ${esc(g.name)}` : ''}</span></div>
@@ -539,6 +542,7 @@ function renderStandings() {
   const solo = favs.cycling.filter(id => cat.solo_tables?.[id]);
   const ids = [...ordered.map(f => f.league), ...solo];
   if (!ids.length) return html + (cards ? '' : '<p class="empty">Pas de classement pour tes compétitions en ce moment.</p>');
+  if (ids.includes(filter)) standLg = filter;
   if (!standLg || !ids.includes(standLg)) standLg = ids[0];
   const chip = id => {
     const L = league(id) || cat.cycling_leagues[id];
@@ -575,6 +579,29 @@ function render() {
   if (!cat) { view.innerHTML = '<p class="empty">Chargement du programme…</p>'; return; }
   view.innerHTML = { today: renderToday, week: renderCalendar, results: renderResults, standings: renderStandings }[tab]();
   $('#updated').textContent = ago(cat.generated_at);
+  renderStrip();
+}
+
+// Bandeau du haut (façon ESPN) : « Tout », puis mes compétitions et mes sports. Il filtre toutes les pages.
+const STRIP_LABELS = {
+  'champions-league': 'C1', 'europa-league': 'C3', 'conference-league': 'C4', 'coupe-de-france': 'Coupe de Fr.', 'nations-league': 'Ligue des n.',
+  'world-cup-qual': 'Qualif. CM', 'equipe-de-france-foot': 'Bleus', 'premier-league': 'Premier L.', 'champions-cup-rugby': 'Champions Cup',
+  'challenge-cup-rugby': 'Challenge Cup', 'six-nations': '6 Nations', 'rugby-world-cup': 'CM rugby', 'betclic-elite': 'Betclic Élite',
+  'cycling-road': 'Cyclisme', 'cycling-mtb-dh': 'VTT DH', 'cycling-mtb-enduro': 'Enduro', 'masters-1000': 'Masters 1000', handball: 'Handball',
+  golf: 'Golf', endurance: 'Endurance', 'roland-garros': 'Roland-G.', 'australian-open': 'Open d\'Aus.',
+};
+const PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 4v16M4 12h16"/></svg>';
+function renderStrip() {
+  if (!cat || !favs) return;
+  const ids = [...favs.leagues.map(f => f.league).filter(id => league(id)), ...favs.cycling.filter(id => cat.cycling_leagues?.[id])];
+  if (filter !== 'all' && !ids.includes(filter)) filter = 'all';
+  const item = id => {
+    const L = league(id) || cat.cycling_leagues[id];
+    return `<button class="st-item${filter === id ? ' active' : ''}" type="button" data-strip="${id}" aria-pressed="${filter === id}">${lgTile(id, 'm')}<span>${esc(STRIP_LABELS[id] || L.label)}</span></button>`;
+  };
+  $('#strip').innerHTML = `<button class="st-item${filter === 'all' ? ' active' : ''}" type="button" data-strip="all" aria-pressed="${filter === 'all'}"><span class="st-all">T7S</span><span>Tout</span></button>`
+    + ids.map(item).join('')
+    + `<span class="st-sep"></span><button class="st-item" type="button" data-action="open-favs"><span class="st-plus">${PLUS}</span><span>Favoris</span></button>`;
 }
 
 // ---------------------------------------------------------------- éditeur de favoris
@@ -598,7 +625,10 @@ function renderFavs() {
   Object.assign(bySport, sorted);
   // Dans chaque sport : compétitions en cours d'abord, celles à l'arrêt ensuite
   Object.values(bySport).forEach(list => list.sort((a, b) => (b[1].active !== false) - (a[1].active !== false)));
-  let html = '';
+  let html = account
+    ? `<p class="note" style="margin-top:14px">Synchronisés avec le compte <strong>${esc(account.pseudo)}</strong>.</p>`
+    : `<section class="acc-pitch box f-soccer"><h3>Tes favoris, partout</h3><p>Crée un compte pour les retrouver sur tous tes appareils.</p>
+        <button class="btn primary" type="button" data-action="account">Créer un compte ou me connecter</button></section>`;
   Object.entries(bySport).forEach(([sport, list]) => {
     html += `<div class="sport">${esc(SPORT_LABELS[sport] || sport)}</div>`;
     list.forEach(([id, L]) => {
@@ -715,6 +745,97 @@ async function unsubscribe() {
   renderFavs();
 }
 
+// ---------------------------------------------------------------- compte
+// Pseudo + mot de passe (empreinte scrypt côté serveur, comme Le Fauteuil Rouge) : les favoris suivent
+// sur tous les appareils. Le plus récent gagne ; à la connexion, ceux du compte remplacent ceux du téléphone.
+let account = null;      // { pseudo, token }
+let accMode = 'signup';
+let pushTimer = null;
+const USER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>';
+
+async function accountApi(body) {
+  const r = await fetch('/api/account', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(d.error || 'Erreur, réessaie.'); e.status = r.status; throw e; }
+  return d;
+}
+const accountData = () => ({ favs, updated: read(KEYS.favsAt) || Date.now() });
+function schedulePush() { if (!account) return; clearTimeout(pushTimer); pushTimer = setTimeout(pushNow, 1200); }
+async function pushNow() {
+  if (!account || !favs) return;
+  try { await accountApi({ action: 'push', pseudo: account.pseudo, token: account.token, data: accountData() }); }
+  catch (e) { if (e.status === 401) signOutLocal('Session expirée : reconnecte-toi'); }
+}
+function applyRemote(data) { favs = data.favs; write(KEYS.favs, favs); write(KEYS.favsAt, data.updated); }
+async function pullOnOpen() {
+  if (!account) return;
+  try {
+    const { data } = await accountApi({ action: 'pull', pseudo: account.pseudo, token: account.token });
+    const localAt = read(KEYS.favsAt) || 0;
+    if (data?.favs && data.updated > localAt) { applyRemote(data); if ($('#favs').hidden) render(); }
+    else if (favs && (!data?.favs || localAt > data.updated)) pushNow();
+  } catch (e) { if (e.status === 401) signOutLocal('Session expirée : reconnecte-toi'); }
+}
+function signOutLocal(msg) { account = null; write(KEYS.account, null); refreshMeButton(); if (msg) toast(msg); }
+function refreshMeButton() {
+  const b = $('#open-me');
+  b.innerHTML = account ? `<span class="avatar">${esc(account.pseudo[0].toUpperCase())}</span>` : USER_ICON;
+  b.setAttribute('aria-label', account ? `Mon compte (${account.pseudo})` : 'Mon compte');
+}
+
+function renderAccount() {
+  const body = $('#account-body');
+  if (account) {
+    const n = favs ? favs.leagues.length + favs.cycling.length : 0;
+    body.innerHTML = `<section class="me">
+      <div class="me-head"><span class="avatar">${esc(account.pseudo[0].toUpperCase())}</span><div><h3>${esc(account.pseudo)}</h3><small>${n} compétition${n > 1 ? 's' : ''} suivie${n > 1 ? 's' : ''}, synchronisées sur tous tes appareils</small></div></div>
+      <p class="note">Connecte-toi avec ce pseudo sur un autre téléphone ou un ordinateur : tes favoris y seront aussi.</p>
+      <div class="sheet-actions" style="margin-top:8px">
+        <button class="btn" type="button" data-acc-sync>Synchroniser maintenant</button>
+        <button class="btn" type="button" data-acc-logout>Se déconnecter</button>
+      </div>
+      <button class="link-btn" type="button" data-acc-delete>Supprimer mon compte</button>
+    </section>`;
+    return;
+  }
+  body.innerHTML = `<section class="acc-pitch box f-soccer">
+      <h3>Tes favoris, partout</h3>
+      <p>Un pseudo et un mot de passe suffisent : tes compétitions et tes équipes te suivent d'un téléphone à l'autre, et tu ne les perds plus si tu changes d'appareil.</p>
+    </section>
+    <form id="acc-form" class="acc-form" autocomplete="on">
+      <div class="seg"><button type="button" class="${accMode === 'signup' ? 'on' : ''}" data-acc-mode="signup">Créer un compte</button><button type="button" class="${accMode === 'login' ? 'on' : ''}" data-acc-mode="login">Se connecter</button></div>
+      <label>Pseudo<input class="search" name="pseudo" autocomplete="username" autocapitalize="none" spellcheck="false" required minlength="3" maxlength="24"></label>
+      <label>Mot de passe<input class="search" name="password" type="password" autocomplete="${accMode === 'signup' ? 'new-password' : 'current-password'}" required minlength="8"></label>
+      <button class="btn primary" type="submit">${accMode === 'signup' ? 'Créer mon compte' : 'Me connecter'}</button>
+      <p class="acc-msg" role="status"></p>
+      <p class="note">Pas d'adresse e-mail demandée, donc pas de récupération possible : garde ton mot de passe. Il n'est jamais stocké en clair.</p>
+    </form>`;
+}
+
+async function authSubmit(form) {
+  const msg = form.querySelector('.acc-msg'), btn = form.querySelector('button[type="submit"]');
+  msg.textContent = ''; btn.disabled = true;
+  try {
+    const res = await accountApi({ action: accMode, pseudo: form.pseudo.value.trim(), password: form.password.value });
+    account = { pseudo: res.pseudo, token: res.token }; write(KEYS.account, account);
+    if (res.data?.favs) { applyRemote(res.data); toast('Connecté : tes favoris sont de retour'); }
+    else { await pushNow(); toast(accMode === 'signup' ? `Bienvenue ${res.pseudo} : tes favoris sont sauvegardés` : 'Connecté : favoris sauvegardés'); }
+    refreshMeButton(); renderAccount(); render();
+    if (!$('#favs').hidden) renderFavs();
+  } catch (e) {
+    msg.textContent = e.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function openAccount() { renderAccount(); $('#account').hidden = false; document.body.classList.add('sheet-open'); }
+function closeAccount() {
+  $('#account').hidden = true;
+  if ($('#favs').hidden && $('#team').hidden) document.body.classList.remove('sheet-open');
+  if (!$('#favs').hidden) renderFavs();
+}
+
 // ---------------------------------------------------------------- agenda
 // Un match : fichier .ics (Apple), ou lien d'ajout Google / Outlook.
 // Mes favoris : abonnement (webcal) que l'app d'agenda relit toute seule.
@@ -790,6 +911,9 @@ function onFavAction(el) {
     f.names = [...(f.names || []), el.dataset.name]; teamQuery = '';
   } else if (action === 'drop-name' && f) {
     f.names = (f.names || []).filter(n => n !== el.dataset.name);
+  } else if (action === 'account') {
+    openAccount();
+    return;
   } else if (action === 'unsubscribe') {
     unsubscribe();
     return;
@@ -936,7 +1060,7 @@ function renderTeam(lg, id, games) {
   const meta = [L.label, st?.rank ? `${ordinal(st.rank)} sur ${st.size}` : '', st?.record ? recordHtml(st.record) : ''].filter(Boolean);
   const first = next[0];
   const firstEvent = first && cat.events.find(e => e.lg === lg && String(e.eid) === String(first.eid));
-  const nextCard = first ? `<section class="next-card">
+  const nextCard = first ? `<section class="next-card box${fieldOf(lg)}">
       <div class="nc-top"><span>${first.live ? 'EN DIRECT' : 'Prochain match'}</span><span>${cap(shortDate(first.ko))} · ${hhmm(first.ko)}</span></div>
       <div class="nc-row">
         <div class="nc-team">${t.l ? `<img src="${esc(t.l)}" alt="">` : '<span class="noimg"></span>'}<b>${esc(shortName(t.n))}</b></div>
@@ -958,7 +1082,7 @@ function renderTeam(lg, id, games) {
       <span class="fx-time">${g.us}-${g.them}</span>
     </div>`; };
   return `
-    <div class="team-hero2">
+    <div class="team-hero2 box${fieldOf(lg)}">
       ${t.l ? `<img src="${esc(t.l)}" alt="">` : '<span class="noimg"></span>'}
       <h2 id="team-name">${esc(t.n)}</h2>
       <div class="meta"><span class="rec-cell">${meta.join(' · ')}</span></div>
@@ -1029,6 +1153,7 @@ async function load({ manual = false } = {}) {
   }
   render();
   pollLive();
+  pullOnOpen();
 }
 
 // ---------------------------------------------------------------- démarrage
@@ -1038,6 +1163,8 @@ if (cat && !favs) favs = defaultFavs();
 tab = read(KEYS.tab) || 'today';
 sub = read(KEYS.sub);
 calView = read('t7s_calview') || 'month';
+account = read(KEYS.account);
+refreshMeButton();
 
 $('.tabs').addEventListener('click', ev => {
   const b = ev.target.closest('.tab');
@@ -1072,8 +1199,31 @@ $('#view').addEventListener('click', ev => {
   if (story) { filter = story.dataset.filter; render(); return; }
   if (ev.target.closest('[data-action="open-favs"]')) openFavs();
 });
+$('#strip').addEventListener('click', ev => {
+  if (ev.target.closest('[data-action="open-favs"]')) { openFavs(); return; }
+  const b = ev.target.closest('[data-strip]');
+  if (!b) return;
+  filter = b.dataset.strip;
+  render(); window.scrollTo(0, 0);
+});
 $('#refresh').addEventListener('click', () => load({ manual: true }));
 $('#open-favs').addEventListener('click', openFavs);
+$('#open-me').addEventListener('click', openAccount);
+$('#close-account').addEventListener('click', closeAccount);
+$('#account-body').addEventListener('click', ev => {
+  const m = ev.target.closest('[data-acc-mode]');
+  if (m) { accMode = m.dataset.accMode; renderAccount(); return; }
+  if (ev.target.closest('[data-acc-sync]')) { pushNow().then(pullOnOpen).then(() => { toast('Synchronisé'); renderAccount(); }); return; }
+  if (ev.target.closest('[data-acc-logout]')) {
+    const a = account; signOutLocal(); accountApi({ action: 'logout', pseudo: a.pseudo, token: a.token }).catch(() => {});
+    renderAccount(); toast('Déconnecté de cet appareil (tes favoris restent ici)'); return;
+  }
+  if (ev.target.closest('[data-acc-delete]')) {
+    const pw = prompt(`Supprimer définitivement le compte ${account.pseudo} ? Tes favoris restent sur ce téléphone.\nMot de passe :`);
+    if (pw) accountApi({ action: 'delete', pseudo: account.pseudo, password: pw }).then(() => { signOutLocal(); renderAccount(); toast('Compte supprimé'); }).catch(e => toast(e.message));
+  }
+});
+$('#account-body').addEventListener('submit', ev => { ev.preventDefault(); authSubmit(ev.target); });
 $('#close-favs').addEventListener('click', closeFavs);
 $('#close-team').addEventListener('click', closeTeam);
 $('#team-body').addEventListener('click', ev => {

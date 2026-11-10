@@ -1,23 +1,11 @@
 // Inscription à la newsletter (ou mise à jour des favoris) depuis l'app : { email, favs, id?, token? }.
 // À la première inscription, on envoie tout de suite le programme de la semaine.
-const { APP_URL, loadCatalog, parisDay, addDays } = require('./_lib/core');
+const { APP_URL, loadCatalog, parisDay, addDays, cleanFavs } = require('./_lib/core');
 const { idOf, newToken, sameToken, getSubscriber, saveSubscriber } = require('./_lib/store');
 const { render } = require('./_lib/newsletter');
 const { sendMail, mailReady } = require('./_lib/mail');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function cleanFavs(f) {
-  if (!f || !Array.isArray(f.leagues)) return null;
-  const str = a => (Array.isArray(a) ? a : []).filter(x => typeof x === 'string').slice(0, 200).map(x => x.slice(0, 80));
-  return {
-    leagues: f.leagues.slice(0, 100).filter(l => l && typeof l.league === 'string').map(l => ({
-      league: l.league.slice(0, 60), mode: ['all', 'teams', 'ap'].includes(l.mode) ? l.mode : 'all',
-      teams: str(l.teams), names: str(l.names), finals: !!l.finals,
-    })),
-    cycling: str(f.cycling),
-  };
-}
 
 const unsubscribeUrl = sub => `${APP_URL}/api/unsubscribe?id=${sub.id}&t=${encodeURIComponent(sub.token)}`;
 // Lundi de la semaine en cours (heure de Paris)
