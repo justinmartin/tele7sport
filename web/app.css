@@ -134,17 +134,17 @@ main { max-width: 640px; margin: 0 auto; padding: 18px 16px 0; }
 .f-voile { --field: url(/fields/voile.svg); } .f-golf { --field: url(/fields/golf.svg); } .f-ufc { --field: url(/fields/ufc.svg); }
 .f-ski { --field: url(/fields/ski.svg); } .f-biathlon { --field: url(/fields/biathlon.svg); } .f-ski-fond { --field: url(/fields/ski-fond.svg); }
 .f-saut-ski { --field: url(/fields/saut-ski.svg); } .f-patinage { --field: url(/fields/patinage.svg); }
-/* Terrains entiers, prolongés par la couleur du sol */
-.f-soccer { --fit: contain; --field-bg: #43904c; }
-.f-rugby { --fit: contain; --field-bg: #3e8a48; }
-.f-basketball { --fit: contain; --field-bg: #d8a66a; }
-.f-football { --fit: contain; --field-bg: #3b7d45; }
-.f-hockey { --fit: contain; --field-bg: #eef3f7; }
-.f-tennis { --fit: contain; --field-bg: #4f8a5b; }
-.f-handball { --fit: contain; --field-bg: #2f6fb3; }
-.f-volley { --fit: contain; --field-bg: #3f7fc0; }
-.f-ufc { --fit: contain; --field-bg: #2a2a2e; }
-.f-athletisme { --fit: contain; --field-bg: #4b9654; }
+/* Couleur du sol sous chaque terrain (plein cadre) */
+.f-soccer { --field-bg: #43904c; }
+.f-rugby { --field-bg: #3e8a48; }
+.f-basketball { --field-bg: #d8a66a; }
+.f-football { --field-bg: #3b7d45; }
+.f-hockey { --field-bg: #eef3f7; }
+.f-tennis { --field-bg: #4f8a5b; }
+.f-handball { --field-bg: #2f6fb3; }
+.f-volley { --field-bg: #3f7fc0; }
+.f-ufc { --field-bg: #2a2a2e; }
+.f-athletisme { --field-bg: #4b9654; }
 
 /* Match : équipe | heure ou score (bilans de part et d'autre) | équipe */
 .match { position: relative; padding: 14px 10px 12px; }
