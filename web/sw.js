@@ -1,5 +1,5 @@
 // Hors-ligne : réseau d'abord, cache en secours (le catalogue est aussi gardé dans le localStorage).
-const CACHE = 't7s-v22';
+const CACHE = 't7s-v23';
 const SHELL = ['/', '/app.css', '/app.js', '/manifest.webmanifest', '/icon-180.png', '/icon-512.png', '/logo.svg'];
 
 self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())));

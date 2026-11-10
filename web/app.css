@@ -234,7 +234,12 @@ main { max-width: 640px; margin: 0 auto; padding: 18px 16px 0; }
 .lg-tile.l.mono span { font-size: 13px; }
 
 /* ----- Classements ----- */
-.table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; table-layout: fixed; }
+/* Colonnes figées : le nom de l'équipe prend le reste et se coupe, le tableau ne déborde jamais */
+.table th:nth-child(1) { width: 30px; }
+.table th:nth-child(3) { width: 74px; }
+.table th:nth-child(4) { width: 44px; }
+.table td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .table caption { text-align: left; font-size: 12px; color: var(--text-3); padding: 12px 0 6px; }
 .table th { font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); text-align: right; padding: 8px 0 6px 10px; border-bottom: 1px solid var(--rule); }
 .table th:nth-child(2) { text-align: left; }
@@ -501,7 +506,7 @@ main .seg button.on { background: var(--card); color: var(--text); box-shadow: 0
 #match:not([hidden]) { animation: sheet-in 0.24s cubic-bezier(0.2, 0.8, 0.2, 1); }
 #favs:not([hidden]), #account:not([hidden]) { animation: sheet-up 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
 @keyframes sheet-up { from { transform: translateY(40px); opacity: 0; } }
-.table tr.me td { font-weight: 800; background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.table tr.self td { font-weight: 800; background: color-mix(in srgb, var(--accent) 16%, transparent); }
 
 /* Favoris : tour de départ, recherche d'équipe */
 .from { display: grid; gap: 6px; font-size: 13px; font-weight: 600; color: var(--text-2); }

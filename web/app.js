@@ -1327,7 +1327,7 @@ function fullTable(lg, id) {
   return `<div class="section-title">Classement · ${esc(league(lg).label)}</div>` + table.groups.filter(g => table.groups.length === 1 || g.entries.some(r => r.team_id === id)).map(g => `
     <div class="table-card"><table class="table">${table.groups.length > 1 ? `<caption>${esc(g.name)}</caption>` : ''}
       <thead><tr><th>#</th><th>Équipe</th><th>Bilan</th>${points ? '<th>Pts</th>' : ''}</tr></thead>
-      <tbody>${g.entries.map(r => `<tr class="${r.team_id === id ? 'me' : isFavTeam(lg, r.team_id) ? 'fav' : ''}" data-team="${esc(r.team_id)}" data-league="${lg}">
+      <tbody>${g.entries.map(r => `<tr class="${r.team_id === id ? 'self' : isFavTeam(lg, r.team_id) ? 'fav' : ''}" data-team="${esc(r.team_id)}" data-league="${lg}">
         <td>${r.rank ?? '–'}</td><td class="team-cell"><span class="tc">${r.logo ? pic(r.logo) : ''}<span>${esc(r.team)}</span></span></td>
         <td class="rec-cell">${recordHtml(r.record)}</td>${points ? `<td class="pts">${esc(r.points ?? '')}</td>` : ''}</tr>`).join('')}</tbody></table></div>`).join('');
 }
