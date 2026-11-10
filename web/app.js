@@ -23,6 +23,22 @@ const CHANNEL_COLORS = {
   'nba league pass': '#1d428a', 'league pass': '#1d428a', 'prime video': '#00a8e1', 'red bull tv': '#db0a40', 'espn': '#5a5a64',
 };
 const chColor = c => CHANNEL_COLORS[c.toLowerCase()] || '#3a3a40';
+// Logos des chaînes (web/channels/, tirés de Wikimedia) ; le numéro de chaîne (« beIN Sports 2 ») reste en
+// texte à côté. Sans logo connu : la pastille de couleur avec le nom.
+const CHANNEL_LOGOS = [
+  [/^bein sports\s*(.*)$/i, 'bein.svg'], [/^canal\+ sport$/i, 'canal-sport.png'], [/^canal\+ foot$/i, 'canal-foot.png'],
+  [/^canal\+\s*(.*)$/i, 'canal.svg'], [/^eurosport\s*(.*)$/i, 'eurosport.svg'], [/^tf1$/i, 'tf1.svg'], [/^france 2$/i, 'france2.png'],
+  [/^france 3$/i, 'france3.png'], [/^france 4$/i, 'france4.png'], [/^france\s?\.?tv$/i, 'francetv.svg'], [/^m6$/i, 'm6.svg'],
+  [/^dazn$/i, 'dazn.svg'], [/^rmc sport\s*(.*)$/i, 'rmc.png'], [/^ligue 1\+$/i, 'ligue1plus.svg'], [/^prime video$/i, 'prime.svg'],
+  [/^max$/i, 'max.svg'], [/^espn$/i, 'espn.svg'], [/^l'[ée]quipe$/i, 'lequipe.svg'],
+];
+function chTag(c) {
+  for (const [re, file] of CHANNEL_LOGOS) {
+    const m = c.match(re);
+    if (m) return `<span class="chl" title="${esc(c)}"><img src="/channels/${file}" alt="${esc(c)}">${m[1] ? `<b>${esc(m[1] === 'Premier League' ? 'PL' : m[1])}</b>` : ''}</span>`;
+  }
+  return `<span class="ch" style="background:${chColor(c)}">${esc(c)}</span>`;
+}
 
 // Bilan « 4V 3N 1D » ou forme « WLLWL » : V/W en vert, D/L en rouge.
 function recordHtml(r) {
@@ -180,7 +196,7 @@ function matchRow(e) {
   let under = '';
   if (state === 'live') under = `<span class="live">EN DIRECT</span>${e.det ? `<span class="live-detail">${esc(e.det)}</span>` : ''}`;
   else if (state === 'done') under = `<span class="status">${e.st === 'c' ? 'Terminé' : 'Score à venir'}</span>`;
-  else under = e.ch.slice(0, 2).map(c => `<span class="ch" style="background:${chColor(c)}">${esc(c)}</span>`).join('')
+  else under = e.ch.slice(0, 2).map(c => chTag(c)).join('')
     + `<button class="cal-add" type="button" data-cal="${e.lg}:${esc(e.eid)}" aria-label="Ajouter à mon agenda">${CAL_ICON}</button>`;
   const top = [e.hl && state !== 'done' ? '<span class="tag">À ne pas rater</span>' : '', e.rd ? esc(e.rd) : ''].filter(Boolean).join(' ');
   return `<article class="match box${fieldOf(e.lg)}${e.nt ? ' night' : ''}">
@@ -215,7 +231,7 @@ function cyclingRows(list) {
   return [...groups].map(([lg, cs]) => `<div class="league">${lgTile(lg)}${esc(cs[0].label)}</div><div class="cards">` + cs.map(c => `
     <article class="event-solo box${fieldOf(lg)}">
       <div><div class="name">${esc(c.name)}</div><div class="sub">${esc(c.loc || '')}${c.details ? ` · ${esc(c.details)}` : ''}</div></div>
-      <div class="side">${c.time ? `<span class="time">${esc(c.time)}</span>` : ''}<div class="channels">${(c.ch || []).map(x => `<span class="ch" style="background:${chColor(x)}">${esc(x)}</span>`).join('')}</div></div>
+      <div class="side">${c.time ? `<span class="time">${esc(c.time)}</span>` : ''}<div class="channels">${(c.ch || []).map(x => chTag(x)).join('')}</div></div>
     </article>`).join('') + '</div>').join('');
 }
 
@@ -287,7 +303,7 @@ function heroCard(e) {
   return `<section class="hero${fieldOf(e.lg)}${e.nt ? ' night' : ''}">
     <div class="hero-top"><span>${e.hl ? 'À ne pas rater' : 'Le match du soir'}</span><span>${lgTile(e.lg)}${esc(L.label)}</span></div>
     <div class="hero-row">${side(left)}<div class="hero-mid">${center}</div>${side(right)}</div>
-    ${e.ch.length ? `<div class="hero-ch">${e.ch.map(c => `<span class="ch" style="background:${chColor(c)}">${esc(c)}</span>`).join('')}</div>` : ''}
+    ${e.ch.length ? `<div class="hero-ch">${e.ch.map(c => chTag(c)).join('')}</div>` : ''}
     <div class="hero-actions">
       ${state === 'upcoming' ? `<button type="button" data-cal="${e.lg}:${esc(e.eid)}">${CAL_ICON}Ajouter à l'agenda</button>` : ''}
       <button type="button" data-team="${esc(fav)}" data-league="${e.lg}">Fiche ${esc(shortName(team(e.lg, fav).n).length > 12 && team(e.lg, fav).a ? team(e.lg, fav).a : shortName(team(e.lg, fav).n))}</button>
@@ -309,7 +325,7 @@ function slotCard(e) {
   const info = state === 'live' ? '<span class="live">EN DIRECT</span>' : state === 'done' ? (hasScore ? 'Terminé' : 'Score à venir') : (end ? `fin vers ${end}` : '');
   return `<article class="slot-card box${fieldOf(e.lg)}${e.nt ? ' night' : ''}">
     <div class="sc-teams">${line(left)}${line(right)}</div>
-    <div class="sc-side">${e.ch.slice(0, 1).map(c => `<span class="ch" style="background:${chColor(c)}">${esc(c)}</span>`).join('')}
+    <div class="sc-side">${e.ch.slice(0, 1).map(c => chTag(c)).join('')}
       ${state === 'upcoming' ? `<button class="cal-add" type="button" data-cal="${e.lg}:${esc(e.eid)}" aria-label="Ajouter à mon agenda">${CAL_ICON}</button>` : ''}</div>
     <div class="sc-sub">${lgTile(e.lg)}${esc(L.label)}${info ? ` · ${info}` : ''}</div>
   </article>`;
@@ -1064,7 +1080,7 @@ function renderTeam(lg, id, games) {
       <div class="nc-top"><span>${first.live ? 'EN DIRECT' : 'Prochain match'}</span><span>${cap(shortDate(first.ko))} · ${hhmm(first.ko)}</span></div>
       <div class="nc-row">
         <div class="nc-team">${t.l ? `<img src="${esc(t.l)}" alt="">` : '<span class="noimg"></span>'}<b>${esc(shortName(t.n))}</b></div>
-        <div class="nc-mid">${first.home ? 'vs' : '@'}${(first.ch || []).slice(0, 2).map(c => `<span class="ch" style="background:${chColor(c)}">${esc(c)}</span>`).join('')}</div>
+        <div class="nc-mid">${first.home ? 'vs' : '@'}${(first.ch || []).slice(0, 2).map(c => chTag(c)).join('')}</div>
         <div class="nc-team" data-team="${esc(first.oppId)}" data-league="${lg}" role="button" tabindex="0">${first.oppLogo ? `<img src="${esc(first.oppLogo)}" alt="">` : '<span class="noimg"></span>'}<b>${esc(shortName(first.oppName))}</b></div>
       </div>
       ${firstEvent && !first.live ? `<button class="nc-cal" type="button" data-cal="${lg}:${esc(first.eid)}">${CAL_ICON}Ajouter à mon agenda</button>` : ''}
