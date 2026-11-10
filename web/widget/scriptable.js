@@ -35,6 +35,7 @@ const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const wordRaw = (name, needle) => new RegExp(`(^|[^\\p{L}])${esc(needle)}([^\\p{L}]|$)`, 'iu').test(name);
 const wordMatch = (name, needle) => wordRaw(name, needle) || (!!NATIONS_EN[needle.toLowerCase()] && wordRaw(name, NATIONS_EN[needle.toLowerCase()]));
 
+const STAGES = ['po', 'r32', 'r16', 'qf', 'sf', 'f'];
 function makeVisible(cat) {
   const favFor = lg => FAVS.leagues.find(f => f.league === lg);
   const teamOf = (lg, id) => ((cat.leagues[lg] || {}).teams || {})[id] || { n: '?', a: '?' };
@@ -44,7 +45,12 @@ function makeVisible(cat) {
     teamOf,
     visible(e) {
       const f = favFor(e.lg);
-      if (!f || (f.finals && !e.ph)) return false;
+      if (!f) return false;
+      if (f.from) {  // « tout à partir de… » (tours : po, r32, r16, qf, sf, f)
+        if (f.mode === 'teams' && (isFav(e.lg, e.h.id) || isFav(e.lg, e.a.id))) return true;
+        return !!e.rk && STAGES.indexOf(e.rk) >= STAGES.indexOf(f.from);
+      }
+      if (f.finals && !e.ph) return false;
       if (f.mode === 'ap') return !!(e.h.rk || e.a.rk);
       if (f.mode === 'teams') return isFav(e.lg, e.h.id) || isFav(e.lg, e.a.id);
       if (e.lg === 'nba') return !onlyLP(e) || !!e.hl;

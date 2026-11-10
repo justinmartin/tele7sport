@@ -11,6 +11,7 @@ import re
 import time
 from datetime import date, datetime
 from typing import Dict, List, Optional
+from zoneinfo import ZoneInfo
 
 import requests
 from bs4 import BeautifulSoup
@@ -211,6 +212,48 @@ def _range(text: str, start_year: int):
     return start, end
 
 
+# Horaires des épreuves FIS : le calendrier de la FIS (format agenda) donne l'heure de départ, en temps
+# universel, dès qu'elle est publiée (ski alpin toute la saison ; fond et saut quelques jours avant).
+FIS_SECTORS = {"ski-alpin": "AL", "ski-fond": "CC", "saut-ski": "JP"}
+FIS_FEED = "https://www.fis-ski.com/DB/services/public/icalendar-feed-fis-events.html"
+_fis_cache: Dict[tuple, list] = {}
+
+
+def _fis_feed(sector: str, season: int) -> list:
+    """[{day, time, place, gender}] des courses de Coupe du monde à heure connue (heure de Paris)."""
+    if (sector, season) not in _fis_cache:
+        items = []
+        try:
+            r = requests.get(FIS_FEED, params={"seasoncode": season, "sectorcode": sector, "categorycode": "WC"},
+                             headers={"User-Agent": "Mozilla/5.0"}, timeout=20)
+            r.raise_for_status()
+            for ev in re.findall(r"BEGIN:VEVENT([\s\S]*?)END:VEVENT", r.text):
+                m = re.search(r"DTSTART:(\d{8}T\d{6})Z", ev)
+                if not m:
+                    continue
+                when = datetime.strptime(m.group(1), "%Y%m%dT%H%M%S").replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Europe/Paris"))
+                g = re.search(r"Gender: (\w+)", ev)
+                loc = re.search(r"LOCATION:(.*)", ev)
+                items.append({"day": when.date(), "time": when.strftime("%H:%M"), "place": (loc.group(1) if loc else "").strip().lower(),
+                              "gender": {"Women": "dames", "Men": "hommes"}.get(g.group(1) if g else "", "")})
+        except Exception as e:
+            logger.info("Horaires FIS %s %s indisponibles : %s", sector, season, e)
+        _fis_cache[(sector, season)] = items
+    return _fis_cache[(sector, season)]
+
+
+def _with_fis_times(events: List[dict], sector: str, start_year: int) -> List[dict]:
+    feed = _fis_feed(sector, start_year + 1)
+    for e in events:
+        place = e.get("location", "").lower().split(",")[0].split(" ")[0]
+        gender = "dames" if " dames" in e["name"] else "hommes" if " hommes" in e["name"] else ""
+        times = sorted(f["time"] for f in feed if f["day"] == e["start"] and place and f["place"].startswith(place)
+                       and (not gender or not f["gender"] or f["gender"] == gender))
+        if times:
+            e["time"] = times[0]
+    return events
+
+
 ALPINE_TYPES = {"DH": "Descente", "SG": "Super-G", "GS": "Géant", "SL": "Slalom", "AC": "Combiné",
                 "PG": "Parallèle", "PSL": "Slalom parallèle", "PAR": "Parallèle", "TC": "Combiné par équipes"}
 
@@ -238,7 +281,7 @@ def ski_alpin(start_year: int) -> List[dict]:
             winner = _clean(row[i_win]) if i_win is not None and len(row) > i_win else ""
             out.append({"name": f"{kind} {sex.lower()} · {venue}", "start": d, "end": d, "location": venue,
                         "details": f"Vainqueur : {winner}" if winner and d < date.today() else f"Coupe du monde · {sex}"})
-    return out
+    return _with_fis_times(out, "AL", start_year)
 
 
 BIATHLON_FR = {"Individual / Short individual": "Individuel", "Individual": "Individuel", "Short individual": "Individuel court",
@@ -305,11 +348,11 @@ def _fis_detail(code: str) -> str:
 
 
 def ski_fond(start_year: int) -> List[dict]:
-    return _fis_races(start_year, "FIS_Cross-Country_World_Cup", "Ski de fond")
+    return _with_fis_times(_fis_races(start_year, "FIS_Cross-Country_World_Cup", "Ski de fond"), "CC", start_year)
 
 
 def saut_a_ski(start_year: int) -> List[dict]:
-    return _fis_races(start_year, "FIS_Ski_Jumping_World_Cup", "Saut à ski")
+    return _with_fis_times(_fis_races(start_year, "FIS_Ski_Jumping_World_Cup", "Saut à ski"), "JP", start_year)
 
 
 def patinage_gp(start_year: int) -> List[dict]:

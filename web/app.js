@@ -119,9 +119,20 @@ function isFavTeam(lg, id) {
 const onlyLeaguePass = e => !e.ch.length || e.ch.every(c => c === LEAGUE_PASS);
 
 // Un match fait-il partie de « mon » programme ?
+// Tours d'une phase finale (catalogue : e.rk), du plus tôt au plus tard
+const STAGES = ['po', 'r32', 'r16', 'qf', 'sf', 'f'];
+const STAGE_LABELS = { po: 'Barrages', r32: '16es de finale', r16: '8es de finale', qf: 'Quarts de finale', sf: 'Demi-finales', f: 'Finale' };
+const STAGE_LABELS_US = { r16: '1er tour des playoffs', qf: '2e tour', sf: 'Finales de conférence', f: 'Finale' };
+const stageLabels = lg => US_SPORTS.has(league(lg)?.sport) ? STAGE_LABELS_US : STAGE_LABELS;
+const fromOk = (f, e) => !!e.rk && STAGES.indexOf(e.rk) >= STAGES.indexOf(f.from);
+
 function visible(e) {
   const f = favFor(e.lg);
   if (!f) return false;
+  if (f.from) {  // mes équipes toute la saison, plus tous les matchs à partir de ce tour
+    if (f.mode === 'teams' && (isFavTeam(e.lg, e.h.id) || isFavTeam(e.lg, e.a.id))) return true;
+    return fromOk(f, e);
+  }
   if (f.finals && !e.ph) return false;
   if (f.mode === 'ap') return !!(e.h.rk || e.a.rk);
   if (f.mode === 'teams') return isFavTeam(e.lg, e.h.id) || isFavTeam(e.lg, e.a.id);
@@ -231,7 +242,7 @@ function matchRow(e) {
   else under = e.ch.slice(0, 2).map(c => chTag(c)).join('')
     + `<button class="cal-add" type="button" data-cal="${e.lg}:${esc(e.eid)}" aria-label="Ajouter à mon agenda">${CAL_ICON}</button>`;
   const top = [e.hl && state !== 'done' ? '<span class="tag">À ne pas rater</span>' : '', e.rd ? esc(e.rd) : ''].filter(Boolean).join(' ');
-  return `<article class="match box${fieldOf(e.lg)}${e.nt ? ' night' : ''}">
+  return `<article class="match box${fieldOf(e.lg)}${e.nt ? ' night' : ''}" data-match="${e.lg}:${esc(e.eid)}">
     ${top ? `<div class="mround">${top}</div>` : ''}
     <div class="mrow">
       ${sideCol(e, left)}
@@ -264,7 +275,7 @@ function cyclingRows(list) {
   const groups = new Map();
   list.forEach(c => { if (!groups.has(c.lg)) groups.set(c.lg, []); groups.get(c.lg).push(c); });
   return [...groups].map(([lg, cs]) => `<div class="league">${lgTile(lg)}${esc(cs[0].label)}</div><div class="cards">` + cs.map(c => `
-    <article class="event-solo box${fieldOf(lg)}">
+    <article class="event-solo box${fieldOf(lg)}" data-solo="${(cat.cycling || []).indexOf(c)}">
       <div><div class="name">${esc(c.name)}</div><div class="sub">${esc(c.loc || '')}${c.details ? ` · ${esc(c.details)}` : ''}</div></div>
       <div class="side">${c.time ? `<span class="time">${esc(c.time)}</span>` : ''}<div class="channels">${(c.ch || []).map(x => chTag(x)).join('')}</div></div>
     </article>`).join('') + '</div>').join('');
@@ -335,7 +346,7 @@ function heroCard(e) {
   const center = hasScore ? `<span class="hero-time">${lv} - ${rv}</span>${state === 'live' ? '<span class="live">EN DIRECT</span>' : '<span class="status">Terminé</span>'}`
     : `<span class="hero-time">${hhmm(e.ko)}</span>${end ? `<span class="hero-end">fin vers ${end}</span>` : ''}`;
   const fav = isFavTeam(e.lg, e.h.id) ? e.h.id : isFavTeam(e.lg, e.a.id) ? e.a.id : e[left].id;
-  return `<section class="hero${fieldOf(e.lg)}${e.nt ? ' night' : ''}">
+  return `<section class="hero${fieldOf(e.lg)}${e.nt ? ' night' : ''}" data-match="${e.lg}:${esc(e.eid)}">
     <div class="hero-top"><span>${e.hl ? 'À ne pas rater' : 'Le match du soir'}</span><span>${lgTile(e.lg)}${esc(L.label)}</span></div>
     <div class="hero-row">${side(left)}<div class="hero-mid">${center}</div>${side(right)}</div>
     ${e.ch.length ? `<div class="hero-ch">${e.ch.map(c => chTag(c)).join('')}</div>` : ''}
@@ -358,7 +369,7 @@ function slotCard(e) {
   };
   const end = endTime(e);
   const info = state === 'live' ? '<span class="live">EN DIRECT</span>' : state === 'done' ? (hasScore ? 'Terminé' : 'Score à venir') : (end ? `fin vers ${end}` : '');
-  return `<article class="slot-card box${fieldOf(e.lg)}${e.nt ? ' night' : ''}">
+  return `<article class="slot-card box${fieldOf(e.lg)}${e.nt ? ' night' : ''}" data-match="${e.lg}:${esc(e.eid)}">
     <div class="sc-teams">${line(left)}${line(right)}</div>
     <div class="sc-side">${e.ch.slice(0, 1).map(c => chTag(c)).join('')}
       ${state === 'upcoming' ? `<button class="cal-add" type="button" data-cal="${e.lg}:${esc(e.eid)}" aria-label="Ajouter à mon agenda">${CAL_ICON}</button>` : ''}</div>
@@ -650,6 +661,7 @@ function installTip() {
 
 function render() {
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.body.classList.toggle('no-strip', tab === 'standings');
   const view = $('#view');
   if (!cat) { view.innerHTML = '<p class="empty">Chargement du programme…</p>'; return; }
   view.innerHTML = { today: renderToday, week: renderCalendar, results: renderResults, standings: renderStandings }[tab]();
@@ -685,7 +697,7 @@ function renderStrip() {
 // ---------------------------------------------------------------- éditeur de favoris
 function favSummary(f) {
   if (!f) return '';
-  const finals = f.finals ? ' · phases finales' : '';
+  const finals = f.from ? ` · tout dès les ${stageLabels(f.league)[f.from].toLowerCase()}` : f.finals ? ' · phases finales' : '';
   if (f.mode === 'ap') return 'Top 25 AP';
   if (f.mode === 'all') return (f.league === 'nba' ? 'Toute la ligue (matchs diffusés en France)' : 'Toutes les équipes') + finals;
   const n = f.teams.length + (f.names || []).length;
@@ -703,7 +715,9 @@ function renderFavs() {
   Object.assign(bySport, sorted);
   // Dans chaque sport : compétitions en cours d'abord, celles à l'arrêt ensuite
   Object.values(bySport).forEach(list => list.sort((a, b) => (b[1].active !== false) - (a[1].active !== false)));
-  let html = account
+  let html = `<input class="search team-search" type="search" placeholder="Chercher une équipe (PSG, Lakers, Stade Toulousain…)" value="${esc(favQuery)}" data-action="team-search" autocomplete="off">
+    <div id="team-results">${teamResults()}</div>`;
+  html += account
     ? `<p class="note" style="margin-top:14px">Synchronisés avec le compte <strong>${esc(account.pseudo)}</strong>.</p>`
     : `<section class="acc-pitch box f-soccer"><h3>Tes favoris, partout</h3><p>Crée un compte pour les retrouver sur tous tes appareils.</p>
         <button class="btn primary" type="button" data-action="account">Créer un compte ou me connecter</button></section>`;
@@ -722,7 +736,9 @@ function renderFavs() {
         const modes = [['all', 'Toutes'], ['teams', 'Mes équipes'], ...(ap ? [['ap', 'Top 25']] : [])];
         html += `<div class="fav-detail">
           <div class="seg">${modes.map(([m, l]) => `<button type="button" class="${f.mode === m ? 'on' : ''}" data-action="mode" data-league="${id}" data-mode="${m}">${l}</button>`).join('')}</div>
-          ${L.has_finals ? `<label class="check"><input type="checkbox" data-action="finals" data-league="${id}" ${f.finals ? 'checked' : ''}>Seulement les phases finales</label>` : ''}
+          ${L.has_finals ? `<label class="from">${f.mode === 'teams' ? 'Et tous les matchs à partir des' : 'Seulement à partir des'}
+            <select data-action="from" data-league="${id}"><option value="">${f.mode === 'teams' ? '— (mes équipes seulement)' : '— (toute la compétition)'}</option>
+            ${Object.entries(stageLabels(id)).map(([k, l]) => `<option value="${k}"${f.from === k ? ' selected' : ''}>${l}</option>`).join('')}</select></label>` : ''}
           ${f.mode === 'teams' ? teamPicker(id, f) : ''}
         </div>`;
       }
@@ -756,8 +772,53 @@ function renderFavs() {
       3. Sur l'écran d'accueil : appui long → <strong>+</strong> → Scriptable → widget petit, moyen ou grand → touche-le → Script : <strong>Télé7Sport</strong>.<br>
       Le widget suit tes favoris du moment où tu copies le script : recopie-le si tu les changes.</p>
   </div>
-  <div class="sheet-actions"><button class="btn" type="button" data-action="reset">Revenir aux favoris par défaut</button></div>`;
+  <div class="sheet-actions"><button class="btn" type="button" data-action="reset">Revenir aux favoris par défaut</button>
+    <button class="btn primary" type="button" data-action="done">Terminé</button></div>`;
   $('#favs-body').innerHTML = html;
+}
+
+// Recherche d'une équipe dans toutes les compétitions : la suivre partout d'un geste
+let favQuery = '';
+const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+// Compétitions féminines : le PSG féminin est une autre équipe que le PSG masculin
+const isWomen = lg => /-f$/.test(lg) || /f[ée]minin/i.test(league(lg)?.label || '');
+function teamMatches(q) {
+  const groups = new Map();
+  Object.entries(cat.leagues).forEach(([lg, L]) => Object.entries(L.teams || {}).forEach(([id, t]) => {
+    if (!norm(t.n).includes(q) && norm(t.a || '') !== q) return;
+    const name = isWomen(lg) ? `${t.n} (féminines)` : t.n;
+    if (!groups.has(name)) groups.set(name, { name, logo: t.l, places: [] });
+    groups.get(name).places.push([lg, id]);
+  }));
+  return [...groups.values()].sort((a, b) => norm(a.name).indexOf(q) - norm(b.name).indexOf(q) || b.places.length - a.places.length).slice(0, 8);
+}
+function teamResults() {
+  const q = norm(favQuery.trim());
+  if (q.length < 2) return '';
+  const list = teamMatches(q);
+  if (!list.length) return '<p class="note">Aucune équipe trouvée.</p>';
+  return `<div class="tr-list">${list.map(g => {
+    const all = g.places.every(([lg, id]) => isFavTeam(lg, id) || favFor(lg)?.mode === 'all');
+    return `<div class="tr-row">${g.logo ? pic(g.logo) : '<span class="noimg"></span>'}
+      <span class="tr-name">${esc(g.name)}<small>${esc(g.places.map(([lg]) => league(lg).label).join(' · '))}</small></span>
+      <button class="follow-pill sm${all ? ' on' : ''}" type="button" data-action="follow-everywhere" data-name="${esc(g.name)}">${all ? 'Suivie' : 'Suivre'}</button></div>`;
+  }).join('')}</div>`;
+}
+function followEverywhere(name) {
+  const g = teamMatches(norm(name)).find(x => x.name === name);
+  if (!g) return;
+  const all = g.places.every(([lg, id]) => isFavTeam(lg, id) || favFor(lg)?.mode === 'all');
+  g.places.forEach(([lg, id]) => {
+    let f = favFor(lg);
+    if (all) {  // déjà suivie partout : on la retire de ses compétitions « mes équipes »
+      if (f && f.mode === 'teams') { f.teams = f.teams.filter(x => x !== id); if (!f.teams.length && !(f.names || []).length) favs.leagues = favs.leagues.filter(x => x !== f); }
+      return;
+    }
+    if (!f) { f = { league: lg, mode: 'teams', teams: [], names: [], finals: false }; favs.leagues.push(f); }
+    if (f.mode === 'ap') { f.mode = 'teams'; f.teams = []; }
+    if (f.mode === 'teams' && !f.teams.includes(id)) f.teams.push(id);
+  });
+  toast(all ? `${name} retirée de tes favoris` : `${name} suivie dans ${g.places.length} compétition${g.places.length > 1 ? 's' : ''}`);
 }
 
 function teamPicker(lg, f) {
@@ -844,7 +905,7 @@ async function pushNow() {
   try { await accountApi({ action: 'push', pseudo: account.pseudo, token: account.token, data: accountData() }); }
   catch (e) { if (e.status === 401) signOutLocal('Session expirée : reconnecte-toi'); }
 }
-function applyRemote(data) { favs = data.favs; write(KEYS.favs, favs); write(KEYS.favsAt, data.updated); }
+function applyRemote(data) { favs = data.favs; migrateFavs(); write(KEYS.favs, favs); write(KEYS.favsAt, data.updated); }
 async function pullOnOpen() {
   if (!account) return;
   try {
@@ -980,8 +1041,13 @@ function onFavAction(el) {
     favs.cycling = favs.cycling.includes(lg) ? favs.cycling.filter(x => x !== lg) : [...favs.cycling, lg];
   } else if (action === 'mode' && f) {
     f.mode = el.dataset.mode;
-  } else if (action === 'finals' && f) {
-    f.finals = el.checked;
+  } else if (action === 'from' && f) {
+    f.from = el.value || null; f.finals = !!f.from;  // « finals » : compatibilité newsletter / widget
+  } else if (action === 'follow-everywhere') {
+    followEverywhere(el.dataset.name);
+  } else if (action === 'done') {
+    closeFavs();
+    return;
   } else if (action === 'team' && f) {
     const id = el.dataset.team;
     f.teams = f.teams.includes(id) ? f.teams.filter(x => x !== id) : [...f.teams, id];
@@ -1165,13 +1231,125 @@ function renderTeam(lg, id, games) {
       <h2 id="team-name">${esc(t.n)}</h2>
       <div class="meta"><span class="rec-cell">${meta.join(' · ')}</span></div>
       ${form.length ? `<div class="form sm">${form.map(o => `<span class="${o}">${OUTCOME_FR[o]}</span>`).join('')}</div>` : ''}
-      <button class="follow-pill${followed ? ' on' : ''}" type="button" data-follow="${esc(id)}" data-league="${lg}">${followed ? 'Équipe suivie' : 'Suivre l\'équipe'}</button>
     </div>
     ${nextCard}
     <div class="section-title">À venir</div>
     <div class="card fx-list">${next.slice(first ? 1 : 0, 6).map(upcoming).join('') || '<p class="empty small">Pas d\'autre match programmé pour l\'instant.</p>'}</div>
     <div class="section-title">Derniers résultats</div>
-    <div class="card fx-list">${past.slice(0, 5).map(result).join('') || '<p class="empty small">Pas encore de résultat.</p>'}</div>`;
+    <div class="card fx-list">${past.slice(0, 5).map(result).join('') || '<p class="empty small">Pas encore de résultat.</p>'}</div>${fullTable(lg, id)}`;
+}
+
+// Classement complet de la compétition, l'équipe surlignée
+function fullTable(lg, id) {
+  const table = cat.tables[lg];
+  if (!table) return '';
+  const points = ['soccer', 'rugby'].includes(league(lg).sport);
+  return `<div class="section-title">Classement · ${esc(league(lg).label)}</div>` + table.groups.filter(g => table.groups.length === 1 || g.entries.some(r => r.team_id === id)).map(g => `
+    <div class="table-card"><table class="table">${table.groups.length > 1 ? `<caption>${esc(g.name)}</caption>` : ''}
+      <thead><tr><th>#</th><th>Équipe</th><th>Bilan</th>${points ? '<th>Pts</th>' : ''}</tr></thead>
+      <tbody>${g.entries.map(r => `<tr class="${r.team_id === id ? 'me' : isFavTeam(lg, r.team_id) ? 'fav' : ''}" data-team="${esc(r.team_id)}" data-league="${lg}">
+        <td>${r.rank ?? '–'}</td><td class="team-cell"><span class="tc">${r.logo ? pic(r.logo) : ''}<span>${esc(r.team)}</span></span></td>
+        <td class="rec-cell">${recordHtml(r.record)}</td>${points ? `<td class="pts">${esc(r.points ?? '')}</td>` : ''}</tr>`).join('')}</tbody></table></div>`).join('');
+}
+
+// Étoile « Ajouter à mes favoris » de la fiche équipe
+function refreshTeamStar(lg, id, animate) {
+  const b = $('#team-fav'), on = isFavTeam(lg, id);
+  b.dataset.league = lg; b.dataset.team = id;
+  b.setAttribute('aria-pressed', on);
+  b.querySelector('span').textContent = on ? 'Dans mes favoris' : 'Ajouter à mes favoris';
+  if (animate && on) { b.classList.remove('burst'); void b.offsetWidth; b.classList.add('burst'); }
+}
+
+// ---------------------------------------------------------------- fiche de rencontre
+// Tout de suite ce que dit le catalogue, puis le résumé ESPN : lieu, arbitre, affluence, buteurs,
+// meilleurs joueurs, compositions. Pour un sport individuel : l'épreuve et le reste du programme.
+const row = (k, v) => v ? `<div class="mi-row"><span>${k}</span><b>${v}</b></div>` : '';
+function matchHead(e, data) {
+  const L = league(e.lg), state = liveState(e);
+  const [l, r] = US_SPORTS.has(L.sport) ? ['a', 'h'] : ['h', 'a'];
+  const side = k => { const t = team(e.lg, e[k].id); return `<div class="hero-team" data-team="${esc(e[k].id)}" data-league="${e.lg}" role="button" tabindex="0">
+    ${teamLogo(e.lg, e[k].id)}<b>${esc(shortName(t.n))}</b><span class="rec">${recordHtml(e[k].r)}</span></div>`; };
+  const hasScore = e.hs != null && (e.st === 'c' || e.st === 'i');
+  const lv = l === 'h' ? e.hs : e.as, rv = l === 'h' ? e.as : e.hs;
+  const mid = hasScore ? `<span class="hero-time">${lv} - ${rv}</span>${state === 'live' ? `<span class="live">EN DIRECT</span>${e.det ? `<span class="live-detail">${esc(e.det)}</span>` : ''}` : '<span class="status">Terminé</span>'}`
+    : `<span class="hero-time">${hhmm(e.ko)}</span>${endTime(e) ? `<span class="hero-end">fin vers ${endTime(e)}</span>` : ''}`;
+  return `<section class="hero${fieldOf(e.lg)}">
+    <div class="hero-top"><span>${esc(cap(dayLabel(e.day)))}</span><span>${lgTile(e.lg)}${esc(L.label)}</span></div>
+    ${e.rd ? `<p class="mi-round">${esc(e.rd)}</p>` : ''}
+    <div class="hero-row">${side(l)}<div class="hero-mid">${mid}</div>${side(r)}</div>
+    ${e.ch.length ? `<div class="hero-ch">${e.ch.map(chTag).join('')}</div>` : ''}
+    ${state === 'upcoming' ? `<div class="hero-actions"><button type="button" data-cal="${e.lg}:${esc(e.eid)}">${CAL_ICON}Ajouter à l'agenda</button></div>` : ''}
+  </section>`;
+}
+function matchInfo(e, data) {
+  const gi = data?.gameInfo || {};
+  const venue = gi.venue?.fullName ? gi.venue.fullName + (gi.venue.address?.city ? `, ${gi.venue.address.city}` : '') : e.v;
+  const ref = (gi.officials || []).find(o => /referee|arbitre/i.test(o.position?.displayName || o.position?.name || '')) || (gi.officials || [])[0];
+  const att = gi.attendance ? Number(gi.attendance).toLocaleString('fr-FR') + ' spectateurs' : '';
+  const info = row('Lieu', esc(venue || '')) + row('Coup d\'envoi', `${esc(cap(dayLabel(e.day)))} à ${hhmm(e.ko)}`) + row('Arbitre', esc(ref?.displayName || ''))
+    + row('Affluence', att) + row('Diffusion', esc(e.ch.join(', ')));
+  const form = k => { const f = formOf(e.lg, e[k].id), st = standingOf(e.lg, e[k].id), t = team(e.lg, e[k].id);
+    return `<div class="mi-form">${teamLogo(e.lg, e[k].id)}<span>${esc(shortName(t.n))}${st?.rank ? `<small>${st.rank === 1 ? '1er' : st.rank + 'e'} sur ${st.size}</small>` : ''}</span>
+      ${f.length ? `<span class="form sm">${f.map(o => `<span class="${o}">${OUTCOME_FR[o]}</span>`).join('')}</span>` : ''}</div>`; };
+  return `<div class="section-title">Infos</div><div class="card mi-card">${info}</div>
+    <div class="section-title">Forme et classement</div><div class="card mi-card">${form('h')}${form('a')}</div>`;
+}
+function matchDetails(e, data) {
+  if (!data) return '';
+  let html = '';
+  const goals = (data.keyEvents || []).filter(k => /goal|but|red card|carton rouge|penalty/i.test(k.type?.text || '') && !/disallowed|annul/i.test(k.type?.text || ''));
+  if (goals.length) html += `<div class="section-title">Le match</div><div class="card mi-card">${goals.map(k => {
+    const who = (k.participants || []).map(p => p.athlete?.displayName).filter(Boolean)[0] || '';
+    const kind = /red/i.test(k.type.text) ? 'Carton rouge' : /own/i.test(k.type.text) ? 'But contre son camp' : /penalty/i.test(k.type.text) ? 'But sur penalty' : 'But';
+    return `<div class="mi-ev"><b>${esc(k.clock?.displayValue || '')}</b><span>${kind} · ${esc(who)}</span><small>${esc(shortName(k.team?.displayName || ''))}</small></div>`;
+  }).join('')}</div>`;
+  const leaders = (data.leaders || []).filter(t => t.leaders?.length);
+  if (leaders.length) html += `<div class="section-title">Meilleurs joueurs</div><div class="card mi-card">${leaders.map(t => `<div class="mi-lead"><b>${esc(shortName(t.team?.displayName || ''))}</b>${t.leaders.slice(0, 3).map(c => {
+    const p = c.leaders?.[0]; return p ? `<span>${esc(c.displayName)} : ${esc(p.athlete?.displayName || '')} (${esc(p.displayValue)})</span>` : ''; }).join('')}</div>`).join('')}</div>`;
+  const rosters = (data.rosters || []).filter(r => (r.roster || []).some(p => p.starter));
+  if (rosters.length === 2) html += `<div class="section-title">Compositions</div><div class="card mi-card mi-xi">${rosters.map(r => `<div><b>${esc(shortName(r.team?.displayName || ''))}</b>${(r.formation ? `<small>${esc(r.formation)}</small>` : '')}
+    ${r.roster.filter(p => p.starter).map(p => `<span>${esc(p.jersey || '')} ${esc(p.athlete?.displayName || '')}</span>`).join('')}</div>`).join('')}</div>`;
+  return html;
+}
+let matchToken = 0;
+async function openMatch(key) {
+  const [lg, eid] = key.split(':');
+  const e = cat.events.find(x => x.lg === lg && String(x.eid) === eid);
+  if (!e) return;
+  const token = ++matchToken;
+  const body = $('#match-body');
+  body.innerHTML = matchHead(e) + matchInfo(e) + (league(lg).espn ? '<p class="empty small">Chargement des détails…</p>' : '');
+  body.scrollTop = 0;
+  $('#match').classList.remove('head-hidden');
+  $('#match').hidden = false; document.body.classList.add('sheet-open');
+  if (!league(lg).espn) return;
+  const data = await fetch(espnUrl(`${league(lg).espn}/summary`) + `&event=${encodeURIComponent(eid)}`).then(r => r.ok ? r.json() : null).catch(() => null);
+  if (token !== matchToken || $('#match').hidden) return;
+  body.innerHTML = matchHead(e, data) + matchInfo(e, data) + matchDetails(e, data);
+}
+function openSolo(i) {
+  const c = (cat.cycling || [])[i];
+  if (!c) return;
+  const C = cat.cycling_leagues?.[c.lg] || {};
+  const dates = c.start === c.end ? cap(dayLabel(c.start)) : `Du ${dayLabel(c.start)} au ${dayLabel(c.end)}`;
+  // Le reste du programme : les autres épreuves du même rendez-vous (même lieu, à quelques jours près)
+  const near = (cat.cycling || []).filter(x => x !== c && x.lg === c.lg && x.loc && x.loc === c.loc && Math.abs(parseDay(x.start) - parseDay(c.start)) <= 5 * 864e5)
+    .sort((a, b) => (a.start + a.time).localeCompare(b.start + b.time));
+  $('#match-body').innerHTML = `<section class="hero${fieldOf(c.lg)}">
+      <div class="hero-top"><span>${esc(C.label || '')}</span><span>${lgTile(c.lg)}</span></div>
+      <h2 class="mi-title" id="match-title">${esc(c.name)}</h2>
+      <p class="mi-sub">${esc(dates)}${c.time ? ` · ${esc(c.time)}` : ''}</p>
+      ${(c.ch || []).length ? `<div class="hero-ch">${c.ch.map(chTag).join('')}</div>` : ''}
+    </section>
+    <div class="section-title">Infos</div><div class="card mi-card">${row('Lieu', esc(c.loc || ''))}${row('Départ', c.time ? esc(c.time) : 'Horaire pas encore publié')}${row('Détails', esc(c.details || ''))}${row('Diffusion', esc((c.ch || []).join(', ')))}</div>
+    ${near.length ? `<div class="section-title">Au programme</div><div class="card mi-card">${near.map(x => `<div class="mi-ev"><b>${esc(cap(SHORT_DAYS[parseDay(x.start).getDay()]))} ${parseDay(x.start).getDate()}</b><span>${esc(x.name)}</span><small>${esc(x.time || 'heure à venir')}</small></div>`).join('')}</div>` : ''}`;
+  $('#match-body').scrollTop = 0;
+  $('#match').hidden = false; document.body.classList.add('sheet-open');
+}
+function closeMatch() {
+  $('#match').hidden = true;
+  if ($('#favs').hidden && $('#team').hidden) document.body.classList.remove('sheet-open');
 }
 
 let teamToken = 0;
@@ -1183,6 +1361,8 @@ async function openTeam(lg, id) {
   const fromCatalog = teamGamesFromCatalog(lg, id);
   $('#team-body').innerHTML = renderTeam(lg, id, fromCatalog);
   $('#team-body').scrollTop = 0;
+  $('#team').classList.remove('head-hidden');
+  refreshTeamStar(lg, id);
   const fromEspn = await teamGamesFromEspn(lg, id);
   if (token !== teamToken || $('#team').hidden) return;
   const known = new Set(fromCatalog.map(g => g.eid));
@@ -1191,7 +1371,7 @@ async function openTeam(lg, id) {
 
 function closeTeam() {
   $('#team').hidden = true;
-  if ($('#favs').hidden) document.body.classList.remove('sheet-open');
+  if ($('#favs').hidden && $('#match').hidden) document.body.classList.remove('sheet-open');
   render();
 }
 
@@ -1204,7 +1384,7 @@ function toggleFollow(lg, id) {
   saveFavs();
   syncNewsletter();
   toast(f.teams.includes(id) ? 'Équipe ajoutée à tes favoris' : 'Équipe retirée de tes favoris');
-  openTeam(lg, id);
+  refreshTeamStar(lg, id, true);
 }
 
 // Modèle du script Scriptable, chargé d'avance : Safari n'autorise la copie que pendant le tap.
@@ -1225,7 +1405,7 @@ async function load({ manual = false } = {}) {
   if (fresh && (!cat || fresh.generated_at >= cat.generated_at)) {
     cat = fresh;
     write(KEYS.catalog, cat);
-    if (!favs) { favs = defaultFavs(); saveFavs(); }
+    if (!favs) { favs = defaultFavs(); migrateFavs(); saveFavs(); }
   } else if (manual && !fresh) {
     toast('Hors-ligne : programme gardé en mémoire');
   }
@@ -1243,6 +1423,9 @@ sub = read(KEYS.sub);
 calView = read('t7s_calview') || 'month';
 account = read(KEYS.account);
 refreshMeButton();
+// Ancien réglage « seulement les phases finales » → « à partir des quarts »
+const migrateFavs = () => favs?.leagues.forEach(f => { if (f.finals && !f.from) f.from = 'qf'; });
+migrateFavs();
 if (favs && !read('t7s_mig_nations')) {
   const xv = favs.leagues.find(f => ['six-nations', 'tests-rugby', 'rugby-world-cup'].includes(f.league));
   if (xv && !favs.leagues.some(f => f.league === 'nations-championship'))
@@ -1255,6 +1438,7 @@ $('.tabs').addEventListener('click', ev => {
   if (!b) return;
   tab = b.dataset.tab; write(KEYS.tab, tab);
   render(); window.scrollTo(0, 0);
+  const v = $('#view'); v.classList.remove('enter'); void v.offsetWidth; v.classList.add('enter');
 });
 $('#view').addEventListener('click', ev => {
   const calBtn = ev.target.closest('[data-cal]');
@@ -1279,6 +1463,10 @@ $('#view').addEventListener('click', ev => {
   if (sl) { standLg = sl.dataset.stand; render(); $('#tables')?.scrollIntoView({ block: 'start' }); return; }
   const teamEl = ev.target.closest('[data-team]');
   if (teamEl) { openTeam(teamEl.dataset.league, teamEl.dataset.team); return; }
+  const matchEl = ev.target.closest('[data-match]');
+  if (matchEl && !ev.target.closest('button')) { openMatch(matchEl.dataset.match); return; }
+  const soloEl = ev.target.closest('[data-solo]');
+  if (soloEl) { openSolo(+soloEl.dataset.solo); return; }
   const more = ev.target.closest('[data-expand]');
   if (more) { expandedTables.add(more.dataset.expand); render(); return; }
   const story = ev.target.closest('[data-filter]');
@@ -1312,6 +1500,23 @@ $('#account-body').addEventListener('click', ev => {
 $('#account-body').addEventListener('submit', ev => { ev.preventDefault(); authSubmit(ev.target); });
 $('#close-favs').addEventListener('click', closeFavs);
 $('#close-team').addEventListener('click', closeTeam);
+$('#close-match').addEventListener('click', closeMatch);
+$('#match-body').addEventListener('click', ev => {
+  const c = ev.target.closest('[data-cal]');
+  if (c) { addMatchToCalendar(c.dataset.cal); return; }
+  const t = ev.target.closest('[data-team]');
+  if (t) openTeam(t.dataset.league, t.dataset.team);
+});
+$('#team-fav').addEventListener('click', ev => { const b = ev.currentTarget; toggleFollow(b.dataset.league, b.dataset.team); });
+// Fiches : la barre du haut s'efface quand on descend, revient quand on remonte
+['#team', '#match'].forEach(sel => {
+  let last = 0;
+  $(`${sel} .sheet-body`).addEventListener('scroll', ev => {
+    const y = ev.target.scrollTop;
+    $(sel).classList.toggle('head-hidden', y > 60 && y > last);
+    last = y;
+  }, { passive: true });
+});
 $('#team-body').addEventListener('click', ev => {
   const c = ev.target.closest('[data-cal]');
   if (c) { addMatchToCalendar(c.dataset.cal); return; }
@@ -1322,7 +1527,7 @@ $('#team-body').addEventListener('click', ev => {
 });
 $('#favs-body').addEventListener('click', ev => {
   const el = ev.target.closest('[data-action]');
-  if (el && el.dataset.action !== 'finals' && el.dataset.action !== 'search') onFavAction(el);
+  if (el && !['from', 'search', 'team-search'].includes(el.dataset.action)) onFavAction(el);
 });
 $('#favs-body').addEventListener('submit', async ev => {
   ev.preventDefault();
@@ -1339,8 +1544,9 @@ $('#favs-body').addEventListener('submit', async ev => {
   }
 });
 $('#cal').addEventListener('click', ev => { if (ev.target.closest('[data-close]') || ev.target.closest('.as-option')) setTimeout(closeCalSheet, 0); });
-$('#favs-body').addEventListener('change', ev => { if (ev.target.dataset.action === 'finals') onFavAction(ev.target); });
+$('#favs-body').addEventListener('change', ev => { if (ev.target.dataset.action === 'from') onFavAction(ev.target); });
 $('#favs-body').addEventListener('input', ev => {
+  if (ev.target.dataset.action === 'team-search') { favQuery = ev.target.value; $('#team-results').innerHTML = teamResults(); return; }
   if (ev.target.dataset.action !== 'search') return;
   teamQuery = ev.target.value;
   const grid = ev.target.nextElementSibling, f = favFor(ev.target.dataset.league);

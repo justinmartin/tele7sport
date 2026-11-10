@@ -481,6 +481,72 @@ main .seg button.on { background: var(--card); color: var(--text); box-shadow: 0
 .nl-row .search { flex: 1; margin: 0; height: 48px; }
 .nl-row .btn { padding: 0 16px; flex: none; }
 
+/* ----- Fiche équipe : étoile « Ajouter à mes favoris » ----- */
+.fav-star { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px 0 10px; border-radius: 18px; border: 1px solid var(--line); background: var(--card); font-size: 13px; font-weight: 700; color: var(--text); }
+.fav-star svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; transition: transform 0.2s; }
+.fav-star[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, var(--card)); }
+.fav-star[aria-pressed="true"] svg { fill: var(--accent); stroke: var(--accent-text); }
+/* Activation : l'étoile rebondit et un anneau parme s'élargit autour du bouton */
+.fav-star.burst svg { animation: star-pop 0.45s cubic-bezier(0.3, 1.6, 0.5, 1); }
+.fav-star.burst::after { content: ''; position: absolute; inset: -2px; border-radius: 20px; border: 2px solid var(--accent); animation: ring 0.6s ease-out forwards; pointer-events: none; }
+@keyframes star-pop { 40% { transform: scale(1.45) rotate(-12deg); } }
+@keyframes ring { from { opacity: 0.9; transform: scale(1); } to { opacity: 0; transform: scale(1.35, 1.7); } }
+
+/* Fiches : barre du haut par-dessus le contenu, qui s'efface en descendant */
+#team, #match { --head: calc(var(--safe-top) + 64px); }
+#team .sheet-head, #match .sheet-head { position: absolute; inset: 0 0 auto 0; z-index: 2; transition: transform 0.25s ease; }
+#team .sheet-body, #match .sheet-body { padding-top: var(--head); }
+#team.head-hidden .sheet-head, #match.head-hidden .sheet-head { transform: translateY(-105%); }
+#team { z-index: 41; }
+#match:not([hidden]) { animation: sheet-in 0.24s cubic-bezier(0.2, 0.8, 0.2, 1); }
+#favs:not([hidden]), #account:not([hidden]) { animation: sheet-up 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
+@keyframes sheet-up { from { transform: translateY(40px); opacity: 0; } }
+.table tr.me td { font-weight: 800; background: color-mix(in srgb, var(--accent) 16%, transparent); }
+
+/* Favoris : tour de départ, recherche d'équipe */
+.from { display: grid; gap: 6px; font-size: 13px; font-weight: 600; color: var(--text-2); }
+.from select { height: 40px; border-radius: 4px; border: 1px solid var(--line); background: var(--card); color: var(--text); padding: 0 10px; font: inherit; font-size: 15px; }
+.team-search { margin-top: 14px; }
+.tr-list { display: grid; margin-top: 6px; }
+.tr-row { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.tr-row img, .tr-row .noimg { width: 30px; height: 30px; object-fit: contain; }
+.tr-name { font-size: 15px; font-weight: 700; min-width: 0; }
+.tr-name small { display: block; font-size: 12px; font-weight: 500; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.follow-pill.sm { min-height: 32px; padding: 0 14px; font-size: 13px; margin: 0; }
+
+/* Fiche de rencontre */
+.mi-round { text-align: center; font-size: 12.5px; color: var(--text-2); margin-top: 8px; }
+.mi-title { font-family: var(--display); font-stretch: 125%; font-style: italic; font-weight: 800; font-size: 23px; line-height: 1.15; margin-top: 12px; }
+.mi-sub { font-size: 14px; color: var(--text-2); margin-top: 6px; }
+.mi-card { padding: 4px 14px; }
+.mi-row { display: flex; justify-content: space-between; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.mi-row span { color: var(--text-3); flex: none; }
+.mi-row b { text-align: right; font-weight: 600; }
+.mi-row:last-child, .mi-ev:last-child, .mi-form:last-child, .mi-lead:last-child { border-bottom: 0; }
+.mi-form { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); font-weight: 700; }
+.mi-form img, .mi-form .noimg { width: 26px; height: 26px; object-fit: contain; }
+.mi-form small { display: block; font-size: 12px; font-weight: 500; color: var(--text-3); }
+.mi-ev { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.mi-ev b { font-variant-numeric: tabular-nums; }
+.mi-ev small { color: var(--text-3); font-size: 12px; }
+.mi-lead { display: grid; gap: 4px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; color: var(--text-2); }
+.mi-lead b { color: var(--text); }
+.mi-xi { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 12px 14px; }
+.mi-xi div { display: grid; gap: 4px; font-size: 13px; color: var(--text-2); align-content: start; }
+.mi-xi b { color: var(--text); font-size: 14px; }
+.mi-xi small { color: var(--text-3); }
+.match, .slot-card, .hero, .event-solo { cursor: pointer; }
+
+/* Fluidité : la page entre en fondu à chaque changement d'onglet ; léger enfoncement au toucher */
+main.enter { animation: page-in 0.22s ease-out; }
+@keyframes page-in { from { opacity: 0; transform: translateY(6px); } }
+.box:active, .ag-item:active, .tr-row:active { transform: scale(0.99); }
+.box, .ag-item { transition: transform 0.12s ease; }
+/* Classements : pas de bandeau (le choix de la compétition est dans la page) */
+body.no-strip .strip { display: none; }
+body.no-strip { --top-h: 50px; }
+@media (prefers-reduced-motion: reduce) { main.enter, #match, #favs, #account, .fav-star.burst svg, .fav-star.burst::after { animation: none !important; } }
+
 /* Ce que le navigateur dessine aussi */
 ::selection { background: var(--accent); color: var(--accent-ink); }
 input, textarea { caret-color: var(--accent); }

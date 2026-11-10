@@ -5,6 +5,7 @@ classements), pour que l'app filtre elle-même selon les favoris choisis sur le 
 """
 import json
 import logging
+import re
 from datetime import date, datetime, timedelta, timezone
 from typing import Dict, List
 
@@ -135,6 +136,38 @@ def _team(ev: SportEvent, side: str) -> dict:
     return team
 
 
+# Tour d'une phase finale, du plus tôt au plus tard : sert au « tout à partir des quarts » des favoris
+STAGES = ["po", "r32", "r16", "qf", "sf", "f"]
+_SLUG_STAGES = {"knockout-round-playoffs": "po", "round-of-32": "r32", "round-of-16": "r16",
+                "quarterfinals": "qf", "semifinals": "sf", "final": "f"}
+
+
+def _stage(ev: SportEvent) -> str:
+    if ev.season_slug in _SLUG_STAGES:
+        return _SLUG_STAGES[ev.season_slug]
+    t = ev.round_info.lower()
+    if not t:
+        return ""
+    # NBA / NHL : demi-finales de conférence = quarts, finales de conférence = demies
+    if re.search(r"(east|west)(ern)? (conference )?semifinals", t):
+        return "qf"
+    if re.search(r"(east|west)(ern)? (conference )?finals|conference finals", t):
+        return "sf"
+    if re.search(r"nba finals|super bowl|\bfinale?\b(?!.*(semi|quarter|demi|quart))", t) and not re.search(r"semi|quarter|demi|quart|conference|conf\.", t):
+        return "f"
+    if re.search(r"semi|demi|conference final|conf\. final|championship game", t):
+        return "sf"
+    if re.search(r"quarter|quart|divisional|semifinals", t):
+        return "qf"
+    if re.search(r"round of 16|8es|huitième|1st round|wild ?card", t):
+        return "r16"
+    if re.search(r"round of 32|16es|seizième", t):
+        return "r32"
+    if re.search(r"play-?off|barrage", t):
+        return "po"
+    return ""
+
+
 def _event(ev: SportEvent, channels: List[str], idx: int) -> dict:
     day, night = tv_day(ev.datetime_utc)
     out = {
@@ -149,6 +182,11 @@ def _event(ev: SportEvent, channels: List[str], idx: int) -> dict:
         out["hs"], out["as"] = ev.home_score, ev.away_score
     if ev.is_highlight:
         out["hl"] = 1
+    if ev.venue:
+        out["v"] = ev.venue + (f", {ev.city}" if ev.city and ev.city not in ev.venue else "")
+    stage = _stage(ev)
+    if stage:
+        out["rk"] = stage
     if ev.round_info:
         out["rd"] = ev.round_info
         phases = [p for p in PHASES if _round_matches(ev.round_info, [p])]

@@ -1,7 +1,7 @@
 // Relais ESPN pour l'app (même domaine → pas de souci CORS : le CDN d'ESPN ne renvoie pas
 // toujours l'en-tête Access-Control-Allow-Origin). Limité au scoreboard et au calendrier
-// d'une équipe. Cache 60 s côté Vercel.
-const ALLOWED = /^(football|basketball|soccer|rugby|hockey)\/[\w.-]+\/(scoreboard|teams\/\d+\/schedule)$/;
+// d'une équipe, et au résumé d'un match (fiche de rencontre). Cache 60 s côté Vercel.
+const ALLOWED = /^(football|basketball|soccer|rugby|hockey)\/[\w.-]+\/(scoreboard|summary|teams\/\d+\/schedule)$/;
 
 module.exports = async (req, res) => {
   const path = String(req.query.path || '');
@@ -9,7 +9,8 @@ module.exports = async (req, res) => {
     res.status(400).json({ error: 'chemin non autorisé' });
     return;
   }
-  const dates = /^\d{8}$/.test(String(req.query.dates || '')) ? `?dates=${req.query.dates}` : '';
+  const dates = /^\d{8}$/.test(String(req.query.dates || '')) ? `?dates=${req.query.dates}`
+    : /^\d+$/.test(String(req.query.event || '')) ? `?event=${req.query.event}` : '';
   try {
     const upstream = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${path}${dates}`);
     res.setHeader('Content-Type', 'application/json; charset=utf-8');

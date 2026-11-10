@@ -26,7 +26,9 @@ class SportEvent:
     away_score: Optional[int] = None
     broadcasts: List[str] = field(default_factory=list)
     venue: str = ""
+    city: str = ""
     round_info: str = ""
+    season_slug: str = ""  # tour d'une phase finale chez ESPN (« quarterfinals », « round-of-16 »…)
     is_highlight: bool = False
     matched_team: str = ""
     home_id: str = ""
@@ -120,6 +122,7 @@ def _parse_event(event_data: dict, league_id: str, league_cfg: dict) -> Optional
         broadcasts.extend(bc.get("names", []))
 
     venue = comp.get("venue", {}).get("fullName", "")
+    city = (comp.get("venue", {}).get("address") or {}).get("city", "")
     notes = comp.get("notes", [])
     round_info = notes[0].get("headline", "") if notes else ""
 
@@ -143,7 +146,9 @@ def _parse_event(event_data: dict, league_id: str, league_cfg: dict) -> Optional
         away_score=away_score,
         broadcasts=broadcasts,
         venue=venue,
+        city=city,
         round_info=round_info,
+        season_slug=(event_data.get("season") or {}).get("slug", ""),
         is_highlight=is_highlight,
         home_id=home_id,
         away_id=away_id,

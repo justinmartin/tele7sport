@@ -5,6 +5,8 @@ const APP_URL = 'https://tele7sport.vercel.app';
 const TZ = 'Europe/Paris';
 const LEAGUE_PASS = 'NBA League Pass';
 const US_SPORTS = new Set(['football', 'basketball', 'hockey']);
+// Tours d'une phase finale, du plus tôt au plus tard (catalogue : e.rk)
+const STAGES = ['po', 'r32', 'r16', 'qf', 'sf', 'f'];
 const NATIONS_EN = { 'écosse': 'Scotland', 'angleterre': 'England', 'irlande': 'Ireland', 'pays de galles': 'Wales', 'italie': 'Italy', 'espagne': 'Spain', 'allemagne': 'Germany', 'belgique': 'Belgium', 'pays-bas': 'Netherlands', 'argentine': 'Argentina', 'brésil': 'Brazil', 'nouvelle-zélande': 'New Zealand', 'afrique du sud': 'South Africa', 'australie': 'Australia', 'japon': 'Japan', 'états-unis': 'United States', 'suisse': 'Switzerland', 'croatie': 'Croatia', 'maroc': 'Morocco', 'géorgie': 'Georgia', 'fidji': 'Fiji', 'portugal': 'Portugal' };
 
 let cached = null;
@@ -29,9 +31,16 @@ function makeView(cat, favs) {
     return !!f && f.mode === 'teams' && ((f.teams || []).includes(id) || (f.names || []).some(n => wordMatch(teamOf(lg, id).n, n)));
   };
   const onlyLP = e => !e.ch.length || e.ch.every(c => c === LEAGUE_PASS);
+  // « Tout à partir de… » : tous les matchs depuis ce tour (et ceux de mes équipes avant, en mode équipes)
+  const fromOk = (f, e) => !!e.rk && STAGES.indexOf(e.rk) >= STAGES.indexOf(f.from);
   const visible = e => {
     const f = favFor(e.lg);
-    if (!f || (f.finals && !e.ph)) return false;
+    if (!f) return false;
+    if (f.from) {
+      if (f.mode === 'teams' && (isFavTeam(e.lg, e.h.id) || isFavTeam(e.lg, e.a.id))) return true;
+      return fromOk(f, e);
+    }
+    if (f.finals && !e.ph) return false;
     if (f.mode === 'ap') return !!(e.h.rk || e.a.rk);
     if (f.mode === 'teams') return isFavTeam(e.lg, e.h.id) || isFavTeam(e.lg, e.a.id);
     if (e.lg === 'nba') return !onlyLP(e) || !!e.hl;
@@ -79,6 +88,7 @@ function cleanFavs(f) {
     leagues: f.leagues.slice(0, 100).filter(l => l && typeof l.league === 'string').map(l => ({
       league: l.league.slice(0, 60), mode: ['all', 'teams', 'ap'].includes(l.mode) ? l.mode : 'all',
       teams: str(l.teams), names: str(l.names), finals: !!l.finals,
+      from: STAGES.includes(l.from) ? l.from : null,
     })),
     cycling: str(f.cycling),
   };

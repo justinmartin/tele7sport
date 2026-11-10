@@ -112,9 +112,22 @@
       <button class="text-btn back" id="close-team" type="button" aria-label="Fermer la fiche">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Retour
       </button>
-      <span></span>
+      <button class="fav-star" id="team-fav" type="button" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z"/></svg>
+        <span>Ajouter à mes favoris</span>
+      </button>
     </div>
     <div class="sheet-body" id="team-body"></div>
+  </div>
+
+  <div class="sheet" id="match" role="dialog" aria-modal="true" aria-labelledby="match-title" hidden>
+    <div class="sheet-head">
+      <button class="text-btn back" id="close-match" type="button" aria-label="Fermer la fiche">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Retour
+      </button>
+      <span></span>
+    </div>
+    <div class="sheet-body" id="match-body"></div>
   </div>
 
   <div class="action-sheet" id="cal" hidden>
