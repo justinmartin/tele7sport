@@ -14,7 +14,7 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta
 from functools import lru_cache
-from typing import List
+from typing import Dict, List, Optional
 from zoneinfo import ZoneInfo
 
 import requests
@@ -140,3 +140,61 @@ def get_tennis_events(pattern: str, women: bool, start: date, end: date) -> List
     out = [e for e in out if e["end"] >= start and e["start"] <= end]
     logger.info("🎾 Tennis %s : %d entrée(s) %s → %s", pattern[:30], len(out), start, end)
     return sorted(out, key=lambda e: (e["start"], e["time"]))
+
+
+BRACKET_ROUNDS = ["8es", "Quarts", "Demies", "Finale"]
+
+
+def _bracket_side(x: dict, done: bool) -> dict:
+    a = x.get("athlete") or {}
+    sets = " ".join(str(int(l["value"])) for l in x.get("linescores") or [] if l.get("value") is not None)
+    seed = ((x.get("curatedRank") or {}).get("current"))
+    return {"id": str(a.get("id") or a.get("displayName", "")), "n": a.get("displayName", "À venir"), "l": (a.get("flag") or {}).get("href", ""),
+            "seed": seed if seed and seed < 99 else None, "score": sets or None, "win": bool(done and x.get("winner"))}
+
+
+def get_tennis_bracket(pattern: str, women: bool, start: date, end: date) -> Optional[dict]:
+    """Tableau du tournoi en cours (sinon du prochain), des 8es à la finale. Vide tant que le tirage n'est pas fait."""
+    evs = [ev for ev in _tournaments(start - timedelta(days=14), end) if re.search(pattern, ev.get("name", ""), re.I)]
+    evs = [ev for ev in evs if _utc(ev["endDate"]).astimezone(ET).date() >= start]
+    if not evs:
+        return None
+    ev = min(evs, key=lambda e: e["date"])
+    name = _name(ev)
+    sections = []
+    for g in ev.get("groupings") or []:
+        draw = DRAWS.get((g.get("grouping") or {}).get("displayName"))
+        if not draw or (draw == "dames" and not women):
+            continue
+        comps = g.get("competitions") or []
+        by_round: Dict[str, list] = {}
+        for c in comps:
+            by_round.setdefault((c.get("round") or {}).get("displayName", ""), []).append(c)
+        # 8es : le dernier tour à 8 matchs avant les quarts (« Round 3 » en Masters, « Round 4 » en Grand Chelem)
+        r16 = next((r for r in sorted(by_round, reverse=True) if r.startswith("Round") and len(by_round[r]) == 8), None)
+        rounds = []
+        for label, key, n in zip(BRACKET_ROUNDS, [r16, "Quarterfinal", "Semifinal", "Final"], [8, 4, 2, 1]):
+            ties = []
+            for c in sorted(by_round.get(key) or [], key=lambda c: c.get("date", "")):
+                done = ((c.get("status") or {}).get("type") or {}).get("completed")
+                sides = [_bracket_side(x, done) for x in (c.get("competitors") or [])[:2]]
+                if len(sides) == 2:
+                    ties.append({"a": sides[0] if sides[0]["n"] != "TBD" else None, "b": sides[1] if sides[1]["n"] != "TBD" else None, "info": ""})
+            rounds.append({"name": label, "ties": ties + [{"a": None, "b": None, "info": ""}] * max(n - len(ties), 0)})
+        from src.brackets import _order  # rangés dans l'ordre du tableau
+        rounds = _order(rounds)
+        sections.append({"name": f"Simple {draw}" if women else "", "rounds": rounds})
+    t_start = _utc(ev["date"]).astimezone(ET).date()
+    if not sections:
+        empty = lambda: [{"name": l, "ties": [{"a": None, "b": None, "info": ""}] * n} for l, n in zip(BRACKET_ROUNDS, [8, 4, 2, 1])]
+        sections = [{"name": f"Simple {d}", "rounds": empty()} for d in (["messieurs", "dames"] if women else [""])]
+        if not women:
+            sections[0]["name"] = ""
+        note = f"Le tableau est publié au tirage, juste avant le tournoi (début le {t_start.day}/{t_start.month:02d})."
+        kind = "empty"
+    else:
+        note, kind = "", "live"
+    if "finals" in ev.get("name", "").lower() and kind == "empty":
+        sections = [{"name": "", "rounds": [{"name": "Demies", "ties": [{"a": None, "b": None, "info": ""}] * 2}, {"name": "Finale", "ties": [{"a": None, "b": None, "info": ""}]}]}]
+        note = "Deux groupes de quatre : les deux premiers de chaque groupe vont en demi-finales. " + note
+    return {"title": name, "kind": kind, "sections": sections, "note": note}

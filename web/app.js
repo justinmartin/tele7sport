@@ -587,10 +587,11 @@ function renderStandings() {
   let html = pageHead('Bilan de tes équipes', 'Classements');
   const cards = standingCards();
   if (cards) html += `<div class="section-title">Mes équipes</div><div class="st-cards">${cards}</div>`;
+  const brackets = cat.brackets || {};
   const ordered = [...favs.leagues].sort((a, b) => (b.mode === 'teams') - (a.mode === 'teams'))
-    .filter(f => cat.tables[f.league] && f.mode !== 'ap');
+    .filter(f => (cat.tables[f.league] && f.mode !== 'ap') || brackets[f.league]);
   // Sports individuels suivis (F1, MotoGP) : classement des pilotes
-  const solo = favs.cycling.filter(id => cat.solo_tables?.[id]);
+  const solo = favs.cycling.filter(id => cat.solo_tables?.[id] || brackets[id]);
   const ids = [...ordered.map(f => f.league), ...solo];
   if (!ids.length) return html + (cards ? '' : '<p class="empty">Pas de classement pour tes compétitions en ce moment.</p>');
   if (ids.includes(filter)) standLg = filter;
@@ -602,7 +603,30 @@ function renderStandings() {
   html += `<div class="section-title" id="tables">Classements complets</div>
     <div class="filters">${ids.map(chip).join('')}</div>
 `;
+  const hasTable = !!(cat.tables[standLg] || cat.solo_tables?.[standLg]), b = brackets[standLg];
+  if (b && hasTable) html += `<div class="seg two">${[['table', 'Classement'], ['bracket', 'Tableau']].map(([v, l]) =>
+    `<button type="button" class="${(standView === v) ? 'on' : ''}" data-standview="${v}">${l}</button>`).join('')}</div>`;
+  if (b && (standView === 'bracket' || !hasTable)) return html + bracketView(b, standLg);
   return html + (cat.solo_tables?.[standLg] ? soloTable(standLg) : leagueTable(standLg, favFor(standLg)));
+}
+
+// Tableau des phases finales : une colonne par tour, défilement horizontal ; projection signalée
+let standView = 'table';
+function bracketSide(s, lgId, us) {
+  if (!s) return '<div class="bk-side tbd"><span class="bk-name">À venir</span></div>';
+  if (s.tbd) return `<div class="bk-side tbd"><span class="bk-name">${esc(s.n)}</span></div>`;
+  const fav = lgId && league(lgId) && isFavTeam(lgId, s.id);
+  const logo = s.l ? pic(s.l) : '<span class="noimg"></span>';
+  return `<div class="bk-side${s.win ? ' win' : ''}${fav ? ' fav' : ''}"${league(lgId) && s.id ? ` data-team="${esc(s.id)}" data-league="${lgId}" role="button" tabindex="0"` : ''}>
+    ${logo}<span class="bk-name">${s.seed ? `<small>${s.seed}</small>` : ''}${esc(US_SPORTS.has(league(lgId)?.sport) && s.n.includes(' ') ? s.n.replace(/^.* (\S+)$/, '$1') : shortName(s.n))}</span>${s.score != null && s.score !== '' ? `<b>${esc(s.score)}</b>` : ''}</div>`;
+}
+function bracketView(b, lgId) {
+  const head = b.kind === 'projection' ? '<span class="bk-badge">Projection</span>' : b.kind === 'empty' ? '<span class="bk-badge muted">À venir</span>' : '';
+  return `<div class="bk-head">${head}${b.note ? `<p class="note">${esc(b.note)}</p>` : ''}</div>` + b.sections.map(sec => `
+    ${sec.name ? `<h3 class="bk-section">${esc(sec.name)}</h3>` : ''}
+    <div class="bracket">${sec.rounds.map(r => `<div class="bk-round"><div class="bk-rname">${esc(r.name)}</div><div class="bk-ties">
+      ${r.ties.map(t => `<div class="bk-tie">${bracketSide(t.a, lgId)}${bracketSide(t.b, lgId)}${t.info ? `<div class="bk-info">${esc(t.info)}</div>` : ''}</div>`).join('')}
+    </div></div>`).join('')}</div>`).join('');
 }
 
 function soloTable(lgId) {
@@ -1249,6 +1273,8 @@ $('#view').addEventListener('click', ev => {
   if (wk) { selDay = addDays(selDay, +wk.dataset.week); render(); return; }
   const jump = ev.target.closest('[data-day-jump]');
   if (jump) { selDay = jump.dataset.dayJump; calView = 'week'; render(); $('#cal-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  const sv = ev.target.closest('[data-standview]');
+  if (sv) { standView = sv.dataset.standview; render(); return; }
   const sl = ev.target.closest('[data-stand]');
   if (sl) { standLg = sl.dataset.stand; render(); $('#tables')?.scrollIntoView({ block: 'start' }); return; }
   const teamEl = ev.target.closest('[data-team]');

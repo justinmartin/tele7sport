@@ -10,6 +10,8 @@ from typing import Dict, List
 
 import requests
 
+from src.brackets import build_brackets
+from src.fetchers.tennis import get_tennis_bracket
 from src.abbr import official_abbr
 from src.config import ESPN_LEAGUES, CYCLING_LEAGUES, OUT_DIR, load_favorites
 from src.fetchers.cycling import get_cycling_events
@@ -254,11 +256,21 @@ def build_catalog(today: date) -> dict:
         except Exception as e:
             logger.warning("Classement %s indisponible : %s", league_id, e)
 
+    # Tableaux des phases finales (projection avant, résultats pendant) et tableaux des tournois de tennis
+    brackets = build_brackets(tables, today)
+    for league_id, cfg in CYCLING_LEAGUES.items():
+        if cfg.get("sport") == "tennis":
+            try:
+                if (b := get_tennis_bracket(cfg["pattern"], cfg["women"], today, today + timedelta(days=60))):
+                    brackets[league_id] = b
+            except Exception as e:
+                logger.warning("Tableau %s indisponible : %s", league_id, e)
+
     events.sort(key=lambda e: e["ko"])
     catalog = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="minutes"),
         "range": {"start": start.isoformat(), "end": end.isoformat()},
-        "leagues": leagues, "events": events, "tables": tables, "cycling": cycling, "solo_tables": solo_tables,
+        "leagues": leagues, "events": events, "tables": tables, "cycling": cycling, "solo_tables": solo_tables, "brackets": brackets,
         "cycling_leagues": {k: {"label": v["label"], "emoji": v["emoji"], "sport": v.get("sport", "cycling"),
                                 "next": _next_event(k, end)} for k, v in CYCLING_LEAGUES.items()},
         "default_favorites": _default_favorites(leagues),
