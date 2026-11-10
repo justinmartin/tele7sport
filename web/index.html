@@ -17,6 +17,39 @@
   <link rel="stylesheet" href="/app.css">
 </head>
 <body>
+  <!-- Écran de bienvenue : une fois par jour, 2 s, puis le logo grandit vers nous et l'app apparaît.
+       Un toucher l'écourte. Pas quand un lien ouvre directement une page. -->
+  <div class="splash" id="splash" hidden>
+    <div class="splash-logo"><svg viewBox="-110 -2 324 104" aria-hidden="true" class="splash-mark"><g transform="skewX(-14)"><rect x="-66" y="7" width="58" height="11" rx="5.5" fill="#c3a6e6" opacity="1"/><rect x="-42" y="31" width="34" height="11" rx="5.5" fill="#c3a6e6" opacity="0.85"/><rect x="-84" y="55" width="76" height="11" rx="5.5" fill="#c3a6e6" opacity="1"/><rect x="-34" y="79" width="26" height="11" rx="5.5" fill="#c3a6e6" opacity="0.7"/><path fill="#fff" d="M0 0h64v24H44v76H20V24H0z"/><path fill="#c3a6e6" d="M72 0h64v24l-36 76H76l34-76H72z"/><path fill="#fff" d="M152 0h56v24h-40v14h32l8 8v46l-8 8h-56V76h40V62h-32l-8-8V8z"/><rect x="-4" y="44.5" width="122" height="4" fill="#141414"/><rect x="-4" y="68.5" width="76" height="4" fill="#141414"/></g></svg></div>
+    <p class="splash-title">Bienvenue<span id="splash-name"></span></p>
+  </div>
+  <script>
+    (function () {
+      var el = document.getElementById('splash');
+      var get = function (k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
+      var d = new Date(), day = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+      if (location.search || get('t7s_splash') === day) return;
+      try { localStorage.setItem('t7s_splash', JSON.stringify(day)); } catch (e) {}
+      var account = get('t7s_account');
+      if (account && account.pseudo) {
+        var name = document.createElement('i');
+        name.textContent = account.pseudo;
+        document.getElementById('splash-name').append(',\u00a0', name);
+      }
+      el.hidden = false;
+      document.documentElement.classList.add('splash-on');
+      requestAnimationFrame(function () { el.classList.add('in'); });
+      var done = false, timer = setTimeout(close, 1500);
+      function close() {
+        if (done) return;
+        done = true; clearTimeout(timer);
+        el.classList.add('out');
+        document.documentElement.classList.remove('splash-on');
+        setTimeout(function () { el.remove(); }, 650);
+      }
+      el.addEventListener('click', close);
+    })();
+  </script>
   <!-- Barre du haut façon ESPN : logo sur un bloc rouge biseauté, puis le bandeau de mes compétitions -->
   <header class="top">
     <div class="topbar">
