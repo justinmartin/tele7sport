@@ -6,6 +6,8 @@ Par tournoi :
 - le tournoi lui-même, sur toute sa durée (vainqueurs une fois fini) ;
 - les demi-finales et finales du simple (messieurs, et dames en Grand Chelem), avec les joueurs et
   l'heure dès qu'ils sont connus, puis le score ; la finale apparaît dès le départ, au dernier jour.
+Tant que le tableau n'est pas publié, des créneaux « joueurs à venir » d'après le format du tournoi :
+demi-finales la veille de la finale, et pour l'ATP Finals les six jours de phase de groupes avant.
 """
 import logging
 import re
@@ -27,7 +29,7 @@ ET = ZoneInfo("America/New_York")  # ESPN borne les tournois à minuit, heure de
 
 ROUNDS = {"Semifinal": "Demi-finale", "Final": "Finale"}
 DRAWS = {"Men's Singles": "messieurs", "Women's Singles": "dames"}
-NAMES_FR = {"Roland Garros": "Roland-Garros", "Australian Open": "Open d'Australie", "US Open": "US Open",
+NAMES_FR = {"Nitto ATP Finals": "ATP Finals", "Roland Garros": "Roland-Garros", "Australian Open": "Open d'Australie", "US Open": "US Open",
             "Wimbledon": "Wimbledon"}
 
 
@@ -75,6 +77,22 @@ def _result(c: dict) -> str:
     return note.strip()
 
 
+def _placeholders(name: str, t_end: date, women: bool, finals: bool, seen: set) -> List[dict]:
+    """Créneaux sans joueurs ni horaire, avant la publication du tableau."""
+    tbd = lambda day, rnd, label, details: {"name": f"{label} · {name}", "start": day, "end": day, "time": "",
+                                            "location": "", "details": details, "phase": rnd}
+    # Grand Chelem : finale messieurs le dimanche, dames le samedi, demi-finales jeudi (dames) et vendredi (messieurs)
+    shifts = [(" messieurs", 0), (" dames", 1)] if women else [("", 0)]
+    out = []
+    for suffix, shift in shifts if "Finale" not in seen else []:
+        out.append(tbd(t_end - timedelta(days=shift + (2 if women else 1)), "Demi-finale", f"Demi-finales{suffix}", "Joueurs et horaires à venir"))
+        out.append(tbd(t_end - timedelta(days=shift), "Finale", f"Finale{suffix}", "Joueurs et horaire à venir"))
+    if finals and "Phase de groupes" not in seen:  # ATP Finals : phase de groupes du dimanche au vendredi, deux simples par jour
+        for i in range(7, 1, -1):
+            out.append(tbd(t_end - timedelta(days=i), "", f"Phase de groupes (jour {8 - i})", "2 matchs de simple · joueurs et horaires à venir"))
+    return out
+
+
 def get_tennis_events(pattern: str, women: bool, start: date, end: date) -> List[dict]:
     out = []
     for ev in _tournaments(start - timedelta(days=14), end):
@@ -84,12 +102,14 @@ def get_tennis_events(pattern: str, women: bool, start: date, end: date) -> List
         t_start, t_end = _utc(ev["date"]).astimezone(ET).date(), _utc(ev["endDate"]).astimezone(ET).date()
         venue = ""
         winners = []
+        finals_ev = "finals" in ev.get("name", "").lower()
+        seen = set()  # tours déjà publiés par ESPN
         for g in ev.get("groupings") or []:
             draw = DRAWS.get((g.get("grouping") or {}).get("displayName"))
             if not draw or (draw == "dames" and not women):
                 continue
             for c in g.get("competitions") or []:
-                rnd = ROUNDS.get((c.get("round") or {}).get("displayName"))
+                rnd = ROUNDS.get((c.get("round") or {}).get("displayName")) or ("Phase de groupes" if finals_ev else None)
                 if not rnd:
                     continue
                 venue = venue or (c.get("venue") or {}).get("fullName", "")
@@ -106,9 +126,11 @@ def get_tennis_events(pattern: str, women: bool, start: date, end: date) -> List
                 timed = c.get("timeValid") or done
                 day = when.date() if timed and known else t_end
                 details = _result(c) if done else (" – ".join(players) if known else "Joueurs à venir")
+                seen.add(rnd)
                 out.append({"name": f"{rnd} {draw} · {name}", "start": day, "end": day,
                             "time": when.strftime("%H:%M") if timed and known else "",
                             "location": venue, "details": details, "phase": rnd})
+        out.extend(_placeholders(name, t_end, women, finals_ev, seen))
         kind = "Grand Chelem" if women else "Masters 1000" if "finals" not in ev.get("name", "").lower() else "ATP Finals"
         if not women:  # un seul tableau : pas besoin de préciser « messieurs »
             winners = [w.replace(" (messieurs)", "") for w in winners]

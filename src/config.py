@@ -311,6 +311,15 @@ ESPN_LEAGUES = {
         "label": "United Rugby Championship", "emoji": "🏉",
         "channels_fr": [],
     },
+    # Nouvelle compétition mondiale (2026) : les tests de juillet et de novembre des grandes nations
+    "nations-championship": {
+        "sport": "rugby", "league": "17567",
+        "group": "rugby-intl",
+        "label": "Nations Championship", "emoji": "🏉",
+        "channels_fr": [],
+        # Diffuseur connu seulement pour les matchs du XV de France
+        "channels_fr_teams": {"France": ["France 2"]},
+    },
     "tests-rugby": {
         "sport": "rugby", "league": "289234",
         "group": "rugby-intl",

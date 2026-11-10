@@ -42,6 +42,7 @@ WIKI_LOGOS = {
     "champions-cup-rugby": "en/European_Rugby_Champions_Cup",
     "challenge-cup-rugby": "en/EPCR_Challenge_Cup",
     "six-nations": "en/Six_Nations_Championship",
+    "nations-championship": "en/Nations_Championship",
     "rugby-world-cup": "en/Rugby_World_Cup",
     "betclic-elite": "fr/Championnat_de_France_de_basket-ball",
     "euroleague": "en/EuroLeague",
@@ -229,7 +230,8 @@ def build_catalog(today: date) -> dict:
             "active": bool(evs),
         }
         for e in evs:
-            channels = e.channels_fr or resolve_channels(league_id, e.broadcasts, [])
+            by_team = next((ch for team, ch in cfg.get("channels_fr_teams", {}).items() if team in (e.home_team, e.away_team)), [])
+            channels = e.channels_fr or by_team or resolve_channels(league_id, e.broadcasts, [])
             events.append(_event(e, channels, len(events)))
         if evs:
             logger.info("   %s : %d matchs, %d équipes%s", cfg["label"], len(evs), len(teams), ", classement" if table else "")

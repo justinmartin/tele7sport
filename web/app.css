@@ -90,7 +90,8 @@ a { color: inherit; }
 .st-item > span:last-child { max-width: 62px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .st-item.active { color: var(--text); font-weight: 800; }
 .st-item.active::after { content: ''; position: absolute; left: 10px; right: 10px; bottom: 0; height: 3px; background: var(--accent); }
-.st-all { width: 30px; height: 30px; display: grid; place-items: center; font-family: var(--display); font-stretch: 125%; font-weight: 700; font-size: 13px; border: 1.5px solid var(--text); border-radius: 50%; }
+.st-all { width: 32px; height: 32px; display: grid; place-items: center; border: 1.5px solid var(--text); border-radius: 50%; }
+.st-all svg { width: 21px; height: auto; margin-left: 1px; }
 .st-plus { width: 30px; height: 30px; display: grid; place-items: center; }
 .st-plus svg { width: 24px; height: 24px; }
 .st-sep { flex: none; width: 1px; margin: 16px 4px; background: var(--line); }

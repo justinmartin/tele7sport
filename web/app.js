@@ -161,7 +161,7 @@ const fieldOf = lg => { const f = league(lg)?.sport || SOLO_FIELDS[lg]; return f
 // Sports sans logo de compétition : logo officiel quand il existe (web/sports/), sinon picto (Tabler Icons, MIT)
 const PICTOS = {"ball-volleyball": "<path d=\"M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0\" /> <path d=\"M12 12a8 8 0 0 0 8 4\" /> <path d=\"M7.5 13.5a12 12 0 0 0 8.5 6.5\" /> <path d=\"M12 12a8 8 0 0 0 -7.464 4.928\" /> <path d=\"M12.951 7.353a12 12 0 0 0 -9.88 4.111\" /> <path d=\"M12 12a8 8 0 0 0 -.536 -8.928\" /> <path d=\"M15.549 15.147a12 12 0 0 0 1.38 -10.611\" />","target": "<path d=\"M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0\" /> <path d=\"M12 12m-5 0a5 5 0 1 0 10 0a5 5 0 1 0 -10 0\" /> <path d=\"M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0\" />","ball-tennis": "<path d=\"M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0\" /> <path d=\"M6 5.3a9 9 0 0 1 0 13.4\" /> <path d=\"M18 5.3a9 9 0 0 0 0 13.4\" />","bike": "<path d=\"M5 18m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0\" /> <path d=\"M19 18m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0\" /> <path d=\"M12 19l0 -4l-3 -3l5 -4l2 3l3 0\" /> <path d=\"M17 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0\" />","motorbike": "<path d=\"M5 16m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0\" /> <path d=\"M19 16m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0\" /> <path d=\"M7.5 14h5l4 -4h-10.5m1.5 4l4 -4\" /> <path d=\"M13 6h2l1.5 3l2 4\" />","ski-jumping": "<path d=\"M11 3a1 1 0 1 0 2 0a1 1 0 0 0 -2 0\" /> <path d=\"M17 17.5l-5 -4.5v-6l5 4\" /> <path d=\"M7 17.5l5 -4.5\" /> <path d=\"M15.103 21.58l6.762 -14.502a2 2 0 0 0 -.968 -2.657\" /> <path d=\"M8.897 21.58l-6.762 -14.503a2 2 0 0 1 .968 -2.657\" /> <path d=\"M7 11l5 -4\" />","sailboat": "<path d=\"M2 20a2.4 2.4 0 0 0 2 1a2.4 2.4 0 0 0 2 -1a2.4 2.4 0 0 1 2 -1a2.4 2.4 0 0 1 2 1a2.4 2.4 0 0 0 2 1a2.4 2.4 0 0 0 2 -1a2.4 2.4 0 0 1 2 -1a2.4 2.4 0 0 1 2 1a2.4 2.4 0 0 0 2 1a2.4 2.4 0 0 0 2 -1\" /> <path d=\"M4 18l-1 -3h18l-1 3\" /> <path d=\"M11 12h7l-7 -9v9\" /> <path d=\"M8 7l-2 5\" />","snowflake": "<path d=\"M10 4l2 1l2 -1\" /> <path d=\"M12 2v6.5l3 1.72\" /> <path d=\"M17.928 6.268l.134 2.232l1.866 1.232\" /> <path d=\"M20.66 7l-5.629 3.25l.01 3.458\" /> <path d=\"M19.928 14.268l-1.866 1.232l-.134 2.232\" /> <path d=\"M20.66 17l-5.629 -3.25l-2.99 1.738\" /> <path d=\"M14 20l-2 -1l-2 1\" /> <path d=\"M12 22v-6.5l-3 -1.72\" /> <path d=\"M6.072 17.732l-.134 -2.232l-1.866 -1.232\" /> <path d=\"M3.34 17l5.629 -3.25l-.01 -3.458\" /> <path d=\"M4.072 9.732l1.866 -1.232l.134 -2.232\" /> <path d=\"M3.34 7l5.629 3.25l2.99 -1.738\" />","trophy": "<path d=\"M8 21l8 0\" /> <path d=\"M12 17l0 4\" /> <path d=\"M7 4l10 0\" /> <path d=\"M17 4v8a5 5 0 0 1 -10 0v-8\" /> <path d=\"M5 9m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" /> <path d=\"M19 9m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\" />","play-handball": "<path d=\"M13 21l3.5 -2l-4.5 -4l2 -4.5\" /> <path d=\"M7 6l2 4l5 .5l4 2.5l2.5 3\" /> <path d=\"M4 20l5 -1l1.5 -2\" /> <path d=\"M15 7a1 1 0 1 0 2 0a1 1 0 0 0 -2 0\" /> <path d=\"M9.5 5a.5 .5 0 1 0 0 -1a.5 .5 0 0 0 0 1z\" fill=\"currentColor\" />","ice-skating": "<path d=\"M5.905 5h3.418a1 1 0 0 1 .928 .629l1.143 2.856a3 3 0 0 0 2.207 1.83l4.717 .926a2.084 2.084 0 0 1 1.682 2.045v.714a1 1 0 0 1 -1 1h-13.895a1 1 0 0 1 -1 -1.1l.8 -8a1 1 0 0 1 1 -.9z\" /> <path d=\"M3 19h17a1 1 0 0 0 1 -1\" /> <path d=\"M9 15v4\" /> <path d=\"M15 15v4\" />","golf": "<path d=\"M12 18v-15l7 4l-7 4\" /> <path d=\"M9 17.67c-.62 .36 -1 .82 -1 1.33c0 1.1 1.8 2 4 2s4 -.9 4 -2c0 -.5 -.38 -.97 -1 -1.33\" />","ball-basketball": "<path d=\"M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0\" /> <path d=\"M5.65 5.65l12.7 12.7\" /> <path d=\"M5.65 18.35l12.7 -12.7\" /> <path d=\"M12 3a9 9 0 0 0 9 9\" /> <path d=\"M3 12a9 9 0 0 1 9 9\" />","mountain": "<path d=\"M3 20h18l-6.921 -14.612a2.3 2.3 0 0 0 -4.158 0l-6.921 14.612z\" /> <path d=\"M7.5 11l2 2.5l2.5 -2.5l2 3l2.5 -2\" />","swimming": "<path d=\"M16 9m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0\" /> <path d=\"M6 11l4 -2l3.5 3l-1.5 2\" /> <path d=\"M3 16.75a2.4 2.4 0 0 0 1 .25a2.4 2.4 0 0 0 2 -1a2.4 2.4 0 0 1 2 -1a2.4 2.4 0 0 1 2 1a2.4 2.4 0 0 0 2 1a2.4 2.4 0 0 0 2 -1a2.4 2.4 0 0 1 2 -1a2.4 2.4 0 0 1 2 1a2.4 2.4 0 0 0 2 1a2.4 2.4 0 0 0 1 -.25\" />","run": "<path d=\"M13 4m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0\" /> <path d=\"M4 17l5 1l.75 -1.5\" /> <path d=\"M15 21l0 -4l-4 -3l1 -6\" /> <path d=\"M7 12l0 -3l5 -1l3 3l3 1\" />"};
 const SPORT_ICONS = {
-  'cycling-road': 'bike', 'cycling-mtb-dh': 'bike', 'cycling-mtb-enduro': 'bike', tennis: 'ball-tennis', 'australian-open': 'ball-tennis',
+  cyclisme: 'bike', 'cycling-road': 'bike', 'cycling-mtb-dh': 'bike', 'cycling-mtb-enduro': 'bike', tennis: 'ball-tennis', 'australian-open': 'ball-tennis',
   'roland-garros': 'ball-tennis', wimbledon: 'ball-tennis', 'us-open': 'ball-tennis', 'masters-1000': 'ball-tennis',
   motogp: '@motogp.svg', f1: '@f1.svg', endurance: '@wec.png', dakar: '@dakar.svg', ufc: '@ufc.svg', mxgp: 'motorbike', supercross: 'motorbike',
   handball: 'play-handball', athletisme: 'run', natation: 'swimming', volley: 'ball-volleyball', voile: 'sailboat', golf: 'golf',
@@ -252,7 +252,7 @@ function byLeague(events) {
 }
 
 // Le bandeau regroupe certains sports sous une seule entrée (tous les tournois de tennis)
-const STRIP_GROUPS = { tennis: ['australian-open', 'roland-garros', 'wimbledon', 'us-open', 'masters-1000'] };
+const STRIP_GROUPS = { cyclisme: ['cycling-road', 'cycling-mtb-dh', 'cycling-mtb-enduro'], tennis: ['australian-open', 'roland-garros', 'wimbledon', 'us-open', 'masters-1000'] };
 const inFilter = lg => filter === 'all' || lg === filter || (STRIP_GROUPS[filter] || []).includes(lg);
 
 function cyclingFor(day) {
@@ -653,7 +653,7 @@ function renderStrip() {
     const L = league(id) || cat.cycling_leagues[id] || { label: cap(id) };
     return `<button class="st-item${filter === id ? ' active' : ''}" type="button" data-strip="${id}" aria-pressed="${filter === id}">${STRIP_GROUPS[id] ? sportIcon(id, 'm') : lgTile(id, 'm')}<span>${esc(STRIP_LABELS[id] || L.label)}</span></button>`;
   };
-  $('#strip').innerHTML = `<button class="st-item${filter === 'all' ? ' active' : ''}" type="button" data-strip="all" aria-pressed="${filter === 'all'}"><span class="st-all">T7S</span><span>Tout</span></button>`
+  $('#strip').innerHTML = `<button class="st-item${filter === 'all' ? ' active' : ''}" type="button" data-strip="all" aria-pressed="${filter === 'all'}"><span class="st-all"><svg viewBox="-6 -2 222 104" aria-hidden="true"><g transform="skewX(-14)"><path fill="currentColor" d="M0 0h64v24H44v76H20V24H0z"/><path fill="var(--accent)" d="M72 0h64v24l-36 76H76l34-76H72z"/><path fill="currentColor" d="M152 0h56v24h-40v14h32l8 8v46l-8 8h-56V76h40V62h-32l-8-8V8z"/></g></svg></span><span>Tout</span></button>`
     + ids.map(item).join('')
     + `<span class="st-sep"></span><button class="st-item" type="button" data-action="open-favs"><span class="st-plus">${PLUS}</span><span>Favoris</span></button>`;
 }
@@ -1219,6 +1219,12 @@ sub = read(KEYS.sub);
 calView = read('t7s_calview') || 'month';
 account = read(KEYS.account);
 refreshMeButton();
+if (favs && !read('t7s_mig_nations')) {
+  const xv = favs.leagues.find(f => ['six-nations', 'tests-rugby', 'rugby-world-cup'].includes(f.league));
+  if (xv && !favs.leagues.some(f => f.league === 'nations-championship'))
+    favs.leagues.push({ league: 'nations-championship', mode: xv.mode, teams: [], names: xv.mode === 'teams' ? [...(xv.names || [])] : [], finals: false });
+  write(KEYS.favs, favs); write('t7s_mig_nations', true);
+}
 
 $('.tabs').addEventListener('click', ev => {
   const b = ev.target.closest('.tab');
