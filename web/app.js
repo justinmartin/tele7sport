@@ -708,7 +708,7 @@ function scored() {
     const hit = teams.find(t => t.sport === a.sport && t.v.some(v => wordMatchRaw(text, v)));
     const score = hit ? 3 : comps.some(c => wordMatchRaw(text, c)) ? 2 : sports.has(a.sport) ? 1 : 0;
     return { ...a, score, tagTeam: hit ? (hit.v[0].startsWith('équipe') ? hit.v[0].replace(/^équipe d(e |')/, '') : hit.v[1] || hit.v[0]) : '' };
-  }).filter(a => (only ? a.sport === only : newsMode === 'all' || a.score > 0));
+  }).filter(a => (only ? a.sport === only : true));
 }
 function newsCard(a, big) {
   const src = (newsData.sources || []).find(s => s.id === a.source) || { name: a.source, color: '#333', ink: '#fff' };
@@ -723,13 +723,21 @@ function renderNews() {
   let html = pageHead(filter !== 'all' ? `${NEWS_SPORT_LABELS[newsSportOf(filter)] || ''} · d'après le bandeau` : 'Tes sports et tes équipes', 'Actu');
   if (filter === 'all') html += `<div class="seg two">${[['mine', 'Pour toi'], ['all', 'Toute l\'actu']].map(([v, l]) => `<button type="button" class="${newsMode === v ? 'on' : ''}" data-newsmode="${v}">${l}</button>`).join('')}</div>`;
   if (!newsData) return html + `<p class="empty">${newsFailedAt ? 'Actu indisponible pour l\'instant, réessaie dans un moment.' : 'Chargement de l\'actu…'}</p>`;
-  const list = scored();
-  if (!list.length) return html + '<p class="empty">Pas d\'article récent pour tes favoris.</p>';
+  const all = scored();
+  // « Pour toi » : d'abord ce qui cite mes équipes ou mes compétitions, puis le reste de mes sports ;
+  // « Toute l'actu » : tout, du plus récent au plus ancien
+  const mine = newsMode === 'mine' && filter === 'all';
+  const top = mine ? all.filter(a => a.score >= 2) : all;
+  const more = mine ? all.filter(a => a.score === 1) : [];
+  if (!top.length && !more.length) return html + '<p class="empty">Pas d\'article récent pour tes favoris.</p>';
   // À la une : l'article le plus récent qui cite une de mes équipes (sinon le plus récent), de préférence avec une image
-  const hero = list.find(a => a.score === 3 && a.image) || list.find(a => a.image) || list[0];
-  const rest = list.filter(a => a !== hero);
-  return html + newsCard(hero, true) + `<div class="nw-list">${rest.slice(0, newsLimit).map(a => newsCard(a)).join('')}</div>`
-    + (rest.length > newsLimit ? '<button class="table-more" type="button" data-newsmore>Voir plus d\'articles</button>' : '')
+  const pool = top.length ? top : more;
+  const hero = pool.find(a => a.score === 3 && a.image) || pool.find(a => a.image) || pool[0];
+  const rest = top.filter(a => a !== hero), rest2 = more.filter(a => a !== hero);
+  const shown = rest.slice(0, newsLimit), left = newsLimit - shown.length;
+  return html + newsCard(hero, true) + `<div class="nw-list">${shown.map(a => newsCard(a)).join('')}</div>`
+    + (mine && left > 0 && rest2.length ? `<div class="section-title">Dans tes sports</div><div class="nw-list">${rest2.slice(0, left).map(a => newsCard(a)).join('')}</div>` : '')
+    + (rest.length + rest2.length > newsLimit ? '<button class="table-more" type="button" data-newsmore>Voir plus d\'articles</button>' : '')
     + '<p class="note nw-credit">Titres, images et extraits des sites cités ; l\'article complet s\'ouvre chez eux.</p>';
 }
 
