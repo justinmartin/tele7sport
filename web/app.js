@@ -25,6 +25,8 @@ const CHANNEL_COLORS = {
 const chColor = c => CHANNEL_COLORS[c.toLowerCase()] || '#3a3a40';
 // Logos des chaînes (web/channels/, tirés de Wikimedia) ; le numéro de chaîne (« beIN Sports 2 ») reste en
 // texte à côté. Sans logo connu : la pastille de couleur avec le nom.
+const INVERT_DARK = new Set(['eurosport.svg', 'france2.png', 'france3.png', 'france4.png', 'francetv.svg', 'max.svg']);
+const DARK_LOGOS = { 'lequipe.svg': 'lequipe-dark.svg' };
 const CHANNEL_LOGOS = [
   [/^bein sports\s*(.*)$/i, 'bein.svg'], [/^canal\+ sport$/i, 'canal-sport.png'], [/^canal\+ foot$/i, 'canal-foot.png'],
   [/^canal\+\s*(.*)$/i, 'canal.svg'], [/^eurosport\s*(.*)$/i, 'eurosport.svg'], [/^tf1$/i, 'tf1.svg'], [/^france 2$/i, 'france2.png'],
@@ -35,7 +37,7 @@ const CHANNEL_LOGOS = [
 function chTag(c) {
   for (const [re, file] of CHANNEL_LOGOS) {
     const m = c.match(re);
-    if (m) return `<span class="chl" title="${esc(c)}"><img src="/channels/${file}" alt="${esc(c)}">${m[1] ? `<b>${esc(m[1] === 'Premier League' ? 'PL' : m[1])}</b>` : ''}</span>`;
+    if (m) return `<span class="chl" title="${esc(c)}">${DARK_LOGOS[file] ? `<picture><source srcset="/channels/${DARK_LOGOS[file]}" media="(prefers-color-scheme: dark)">` : ''}<img src="/channels/${file}" alt="${esc(c)}"${INVERT_DARK.has(file) ? ' class="inv"' : ''}>${DARK_LOGOS[file] ? '</picture>' : ''}${m[1] ? `<b>${esc(m[1] === 'Premier League' ? 'PL' : m[1])}</b>` : ''}</span>`;
   }
   return `<span class="ch" style="background:${chColor(c)}">${esc(c)}</span>`;
 }
@@ -137,6 +139,15 @@ function hiddenNba(day) {
 const myEvents = () => cat.events.filter(e => visible(e) && (filter === 'all' || e.lg === filter));
 
 // ---------------------------------------------------------------- composants
+// Logos sans fond : ESPN publie une variante pour fond sombre (/500-dark/), servie en mode sombre.
+const darkSrc = url => /espncdn\.com\/i\/(teamlogos|leaguelogos)\/[^/]+\/500\//.test(url) && !/combiner/.test(url) ? url.replace('/500/', '/500-dark/')
+  : /altrstat\.xyz\/.*\/logoBlack\//.test(url) ? url.replace('/logoBlack/', '/logoWhite/') : '';
+function pic(url, attrs = 'alt="" loading="lazy"') {
+  const dark = darkSrc(url);
+  const img = `<img src="${esc(url)}" ${attrs}>`;
+  return dark ? `<picture><source srcset="${esc(dark)}" media="(prefers-color-scheme: dark)">${img}</picture>` : img;
+}
+
 // Terrain dessiné en fond des boîtes (web/fields/) : par sport pour les compétitions par équipes,
 // par discipline pour les sports individuels.
 const SOLO_FIELDS = {
@@ -149,7 +160,7 @@ const fieldOf = lg => { const f = league(lg)?.sport || SOLO_FIELDS[lg]; return f
 
 function lgTile(lg, size = 's') {
   const L = league(lg) || cat.cycling_leagues?.[lg] || {};
-  return L.logo ? `<span class="lg-tile ${size}"><img src="${esc(L.logo)}" alt="" loading="lazy"></span>`
+  return L.logo ? `<span class="lg-tile ${size}${/\.jpe?g$/i.test(L.logo) ? ' solid' : ''}">${pic(L.logo)}</span>`
     : `<span class="lg-tile ${size} mono"><span>${esc(mono(lg, L))}</span></span>`;
 }
 
@@ -169,7 +180,7 @@ const endTime = e => { const m = DURATION_MIN[league(e.lg)?.sport]; return m ? h
 
 function teamLogo(lg, id) {
   const t = team(lg, id);
-  return t.l ? `<img src="${esc(t.l)}" alt="" loading="lazy">` : '<span class="noimg"></span>';
+  return t.l ? pic(t.l) : '<span class="noimg"></span>';
 }
 
 function sideCol(e, side) {
@@ -517,7 +528,7 @@ function standingCards() {
       const ordinal = r.rank ? (r.rank === 1 ? '1er' : `${r.rank}e`) : '–';
       cards.push(`<article class="st-card box${fieldOf(f.league)}" data-team="${esc(r.team_id)}" data-league="${f.league}" role="button" tabindex="0">
         <div class="st-top">
-          ${r.logo ? `<img src="${esc(r.logo)}" alt="">` : '<span class="noimg"></span>'}
+          ${r.logo ? pic(r.logo, 'alt=""') : '<span class="noimg"></span>'}
           <div class="st-name"><b>${esc(r.team)}</b><span>${esc(L.label)}${table.groups.length > 1 ? ` · ${esc(g.name)}` : ''}</span></div>
           <div class="st-rank"><b>${ordinal}</b><span>sur ${g.entries.length}</span></div>
         </div>
@@ -542,7 +553,7 @@ function leagueTable(lgId, f) {
       <thead><tr><th>#</th><th>Équipe</th><th>Bilan</th>${points ? '<th>Pts</th>' : ''}</tr></thead>
       <tbody>${rows.map(r => r === 'gap' ? `<tr class="gap"><td colspan="${cols}">···</td></tr>` : `<tr class="${isFav(r) ? 'fav' : ''}" data-team="${esc(r.team_id)}" data-league="${lgId}">
         <td>${r.rank ?? '–'}</td>
-        <td class="team-cell"><span class="tc">${r.logo ? `<img src="${esc(r.logo)}" alt="" loading="lazy">` : ''}<span>${esc(r.team)}</span></span></td>
+        <td class="team-cell"><span class="tc">${r.logo ? pic(r.logo) : ''}<span>${esc(r.team)}</span></span></td>
         <td class="rec-cell">${recordHtml(r.record)}</td>${points ? `<td class="pts">${esc(r.points ?? '')}</td>` : ''}
       </tr>`).join('')}</tbody></table>${hidden ? `<button class="table-more" type="button" data-expand="${esc(key)}">Voir les ${g.entries.length} équipes</button>` : ''}</div>`;
   }).join('');
@@ -562,7 +573,7 @@ function renderStandings() {
   if (!standLg || !ids.includes(standLg)) standLg = ids[0];
   const chip = id => {
     const L = league(id) || cat.cycling_leagues[id];
-    return `<button class="chip${id === standLg ? ' active' : ''}" type="button" data-stand="${id}">${L.logo ? `<img src="${esc(L.logo)}" alt="">` : lgTile(id)}${esc(L.label)}</button>`;
+    return `<button class="chip${id === standLg ? ' active' : ''}" type="button" data-stand="${id}">${L.logo ? pic(L.logo, 'alt=""') : lgTile(id)}${esc(L.label)}</button>`;
   };
   html += `<div class="section-title" id="tables">Classements complets</div>
     <div class="filters">${ids.map(chip).join('')}</div>
@@ -578,7 +589,7 @@ function soloTable(lgId) {
     <thead><tr><th>#</th><th>Pilote</th><th>Pts</th></tr></thead>
     <tbody>${rows.map(r => r === 'gap' ? '<tr class="gap"><td colspan="3">···</td></tr>' : `<tr>
       <td>${r.rank ?? '–'}</td>
-      <td class="team-cell"><span class="tc">${r.flag ? `<img src="${esc(r.flag)}" alt="" loading="lazy">` : ''}<span>${esc(r.name)}${r.team ? `<small class="sub"> · ${esc(r.team)}</small>` : ''}</span></span></td>
+      <td class="team-cell"><span class="tc">${r.flag ? pic(r.flag) : ''}<span>${esc(r.name)}${r.team ? `<small class="sub"> · ${esc(r.team)}</small>` : ''}</span></span></td>
       <td class="pts">${esc(r.pts ?? '')}</td>
     </tr>`).join('')}</tbody></table>${hidden ? `<button class="table-more" type="button" data-expand="${esc(key)}">Voir les ${t.rows.length} pilotes</button>` : ''}</div>`;
 }
@@ -714,7 +725,7 @@ function teamGrid(lg, f) {
     ? `<button class="team-chip" type="button" data-action="add-name" data-league="${lg}" data-name="${esc(typed)}">+ Suivre « ${esc(typed)} »</button>` : '';
   if (!all.length && !names && !addName) return '<p class="note">Les équipes apparaîtront dès les premiers matchs. Tape un nom pour le suivre dès maintenant.</p>';
   return `<div class="team-grid">${names}${addName}${list.map(([id, t]) => `<button class="team-chip${f.teams.includes(id) ? ' on' : ''}" type="button" data-action="team" data-league="${lg}" data-team="${id}">
-      ${t.l ? `<img src="${esc(t.l)}" alt="" loading="lazy">` : ''}${esc(t.n)}</button>`).join('')}</div>`;
+      ${t.l ? pic(t.l) : ''}${esc(t.n)}</button>`).join('')}</div>`;
 }
 
 // ---------------------------------------------------------------- newsletter par e-mail
@@ -1079,15 +1090,15 @@ function renderTeam(lg, id, games) {
   const nextCard = first ? `<section class="next-card box${fieldOf(lg)}">
       <div class="nc-top"><span>${first.live ? 'EN DIRECT' : 'Prochain match'}</span><span>${cap(shortDate(first.ko))} · ${hhmm(first.ko)}</span></div>
       <div class="nc-row">
-        <div class="nc-team">${t.l ? `<img src="${esc(t.l)}" alt="">` : '<span class="noimg"></span>'}<b>${esc(shortName(t.n))}</b></div>
+        <div class="nc-team">${t.l ? pic(t.l, 'alt=""') : '<span class="noimg"></span>'}<b>${esc(shortName(t.n))}</b></div>
         <div class="nc-mid">${first.home ? 'vs' : '@'}${(first.ch || []).slice(0, 2).map(c => chTag(c)).join('')}</div>
-        <div class="nc-team" data-team="${esc(first.oppId)}" data-league="${lg}" role="button" tabindex="0">${first.oppLogo ? `<img src="${esc(first.oppLogo)}" alt="">` : '<span class="noimg"></span>'}<b>${esc(shortName(first.oppName))}</b></div>
+        <div class="nc-team" data-team="${esc(first.oppId)}" data-league="${lg}" role="button" tabindex="0">${first.oppLogo ? pic(first.oppLogo, 'alt=""') : '<span class="noimg"></span>'}<b>${esc(shortName(first.oppName))}</b></div>
       </div>
       ${firstEvent && !first.live ? `<button class="nc-cal" type="button" data-cal="${lg}:${esc(first.eid)}">${CAL_ICON}Ajouter à mon agenda</button>` : ''}
     </section>` : '';
   const upcoming = g => `<div class="fx">
       <span class="fx-date">${cap(shortDate(g.ko))}</span>
-      ${g.oppLogo ? `<img src="${esc(g.oppLogo)}" alt="" loading="lazy">` : '<span class="noimg"></span>'}
+      ${g.oppLogo ? pic(g.oppLogo) : '<span class="noimg"></span>'}
       <span class="fx-opp">${g.home ? '' : '<small>à</small> '}${esc(shortName(g.oppName))}</span>
       <span class="fx-time">${g.live ? '<span class="live">LIVE</span>' : hhmm(g.ko)}</span>
     </div>`;
@@ -1099,7 +1110,7 @@ function renderTeam(lg, id, games) {
     </div>`; };
   return `
     <div class="team-hero2 box${fieldOf(lg)}">
-      ${t.l ? `<img src="${esc(t.l)}" alt="">` : '<span class="noimg"></span>'}
+      ${t.l ? pic(t.l, 'alt=""') : '<span class="noimg"></span>'}
       <h2 id="team-name">${esc(t.n)}</h2>
       <div class="meta"><span class="rec-cell">${meta.join(' · ')}</span></div>
       ${form.length ? `<div class="form sm">${form.map(o => `<span class="${o}">${OUTCOME_FR[o]}</span>`).join('')}</div>` : ''}
