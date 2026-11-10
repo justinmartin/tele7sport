@@ -724,20 +724,19 @@ function renderNews() {
   if (filter === 'all') html += `<div class="seg two">${[['mine', 'Pour toi'], ['all', 'Toute l\'actu']].map(([v, l]) => `<button type="button" class="${newsMode === v ? 'on' : ''}" data-newsmode="${v}">${l}</button>`).join('')}</div>`;
   if (!newsData) return html + `<p class="empty">${newsFailedAt ? 'Actu indisponible pour l\'instant, réessaie dans un moment.' : 'Chargement de l\'actu…'}</p>`;
   const all = scored();
-  // « Pour toi » : d'abord ce qui cite mes équipes ou mes compétitions, puis le reste de mes sports ;
-  // « Toute l'actu » : tout, du plus récent au plus ancien
+  // « Pour toi » : tes équipes d'abord, puis tes compétitions, en deux sections ; « Toute l'actu » : tout, par date
   const mine = newsMode === 'mine' && filter === 'all';
-  const top = mine ? all.filter(a => a.score >= 2) : all;
-  const more = mine ? all.filter(a => a.score === 1) : [];
-  if (!top.length && !more.length) return html + '<p class="empty">Pas d\'article récent pour tes favoris.</p>';
-  // À la une : l'article le plus récent qui cite une de mes équipes (sinon le plus récent), de préférence avec une image
-  const pool = top.length ? top : more;
-  const hero = pool.find(a => a.score === 3 && a.image) || pool.find(a => a.image) || pool[0];
-  const rest = top.filter(a => a !== hero), rest2 = more.filter(a => a !== hero);
-  const shown = rest.slice(0, newsLimit), left = newsLimit - shown.length;
-  return html + newsCard(hero, true) + `<div class="nw-list">${shown.map(a => newsCard(a)).join('')}</div>`
-    + (mine && left > 0 && rest2.length ? `<div class="section-title">Dans tes sports</div><div class="nw-list">${rest2.slice(0, left).map(a => newsCard(a)).join('')}</div>` : '')
-    + (rest.length + rest2.length > newsLimit ? '<button class="table-more" type="button" data-newsmore>Voir plus d\'articles</button>' : '')
+  const teamsList = mine ? all.filter(a => a.score === 3) : all;
+  const compsList = mine ? all.filter(a => a.score === 2) : [];
+  if (!teamsList.length && !compsList.length) return html + '<p class="empty">Pas d\'article récent pour tes favoris.</p>';
+  const pool = teamsList.length ? teamsList : compsList;
+  const hero = pool.find(a => a.image) || pool[0];
+  const t = teamsList.filter(a => a !== hero), c = compsList.filter(a => a !== hero);
+  const shownT = t.slice(0, newsLimit), shownC = c.slice(0, Math.max(newsLimit - shownT.length, 0));
+  const titled = (title, list) => list.length ? `${title ? `<div class="section-title">${title}</div>` : ''}<div class="nw-list">${list.map(a => newsCard(a)).join('')}</div>` : '';
+  return html + (mine && teamsList.length ? '<div class="section-title">Tes équipes</div>' : '') + newsCard(hero, true)
+    + titled('', shownT) + titled(mine ? 'Tes compétitions' : '', shownC)
+    + (t.length + c.length > newsLimit ? '<button class="table-more" type="button" data-newsmore>Voir plus d\'articles</button>' : '')
     + '<p class="note nw-credit">Titres, images et extraits des sites cités ; l\'article complet s\'ouvre chez eux.</p>';
 }
 

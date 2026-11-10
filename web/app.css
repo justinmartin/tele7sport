@@ -23,7 +23,7 @@
   --sans: 'Schibsted Grotesk', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --top-h: 130px;
+  --top-h: 122px;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -71,7 +71,7 @@ a { color: inherit; }
 
 /* ----- Barre du haut ----- */
 .top { position: fixed; inset: 0 0 auto 0; z-index: 20; }
-.topbar { display: flex; align-items: stretch; justify-content: space-between; height: calc(var(--safe-top) + 58px); padding-top: calc(var(--safe-top) + 8px); background: var(--bar); color: #fff; }
+.topbar { display: flex; align-items: stretch; justify-content: space-between; height: calc(var(--safe-top) + 50px); padding-top: var(--safe-top); background: var(--bar); color: #fff; }
 .brand { display: flex; align-items: center; padding: 0 12px; }
 .brand svg { height: 27px; width: auto; }
 .top-actions { display: flex; align-items: center; padding-right: 4px; }
@@ -549,7 +549,7 @@ main.enter { animation: page-in 0.22s ease-out; }
 .box, .ag-item { transition: transform 0.12s ease; }
 /* Classements : pas de bandeau (le choix de la compétition est dans la page) */
 body.no-strip .strip { display: none; }
-body.no-strip { --top-h: 58px; }
+body.no-strip { --top-h: 50px; }
 @media (prefers-reduced-motion: reduce) { main.enter, #match, #favs, #account, .fav-star.burst svg, .fav-star.burst::after { animation: none !important; } }
 
 /* ----- Barre du bas : 5 onglets, « Ce soir » au centre et plus gros ----- */
